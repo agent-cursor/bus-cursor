@@ -61,17 +61,18 @@ agent login
 
 ```powershell
 git clone https://github.com/agent-cursor/bus-cursor.git "$env:USERPROFILE\.cursor\skills\bus-cursor"
-node "$env:USERPROFILE\.cursor\skills\bus-cursor\scripts\bus.js" setup
+& "$env:USERPROFILE\.cursor\skills\bus-cursor\install.ps1"
 ```
 
 macOS / Linux:
 
 ```bash
 git clone https://github.com/agent-cursor/bus-cursor.git ~/.cursor/skills/bus-cursor
-node ~/.cursor/skills/bus-cursor/scripts/bus.js setup
+chmod +x ~/.cursor/skills/bus-cursor/install.sh
+~/.cursor/skills/bus-cursor/install.sh
 ```
 
-После `setup`: ярлык **Bus Cursor**, хуки в `~/.cursor/hooks.json`, правило `.cursor/rules/bus-cursor.mdc`.
+`install` / `setup` ставит ярлык **Bus Cursor** на рабочий стол, хуки в `~/.cursor/hooks.json`, правило `.cursor/rules/bus-cursor.mdc`.
 
 ## Использование
 

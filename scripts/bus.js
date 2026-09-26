@@ -299,13 +299,13 @@ function ensureGlobalHook() {
 }
 
 /**
- * То, что делает первый запуск шины: хук inbox и ярлык приложения. У `npx skills add` шага после установки нет -
- * поэтому `bus.js setup` второй строкой в инструкции по установке, а без неё то же сделает первый `ui`. Оба шага идемпотентны,
- * удалённый руками ярлык не возвращается (отметка в app.js). → { hook: true | false | Error, shortcut: { file } | { error } | null }
+ * То, что делает первый запуск шины: хуки Cursor и ярлык на рабочем столе.
+ * `bus.js setup` / install.ps1 / первый `ui` - идемпотентны; нет ярлыка на столе - создаём снова.
+ * → { hook: true | false | Error, shortcut: { file } | { error } | null }
  */
 function setup() {
   // Bus Cursor: только хуки ~/.cursor/hooks.json и ярлык. Claude settings.json не трогаем.
-  return { hook: false, cursor: ensureCursor(), shortcut: require('./app.js').autoShortcut(BUS) };
+  return { hook: false, cursor: ensureCursor(), shortcut: require('./app.js').autoShortcut(BUS, process.env, { force: true }) };
 }
 
 /**
@@ -333,9 +333,9 @@ function setupCommand() {
   if (cursor instanceof Error) console.error(`Хуки Cursor не поставлены: ${cursor.message}`);
   else if (cursor) console.log(`Хуки Bus Cursor для Cursor добавлены в ${HOOKS_FILE}, правило .cursor/rules/bus-cursor.mdc - в проекты Bus Cursor.`);
   else if (require('./cursor.js').present()) console.log(`Хуки Bus Cursor для Cursor уже стоят в ${HOOKS_FILE}.`);
-  if (shortcut && shortcut.file) console.log(`Ярлык шины: ${shortcut.file} - открывает UI отдельным окном.`);
+  if (shortcut && shortcut.file) console.log(`Ярлык Bus Cursor: ${shortcut.file}${shortcut.also?.length ? `, ещё: ${shortcut.also.join(', ')}` : ''} - открывает UI отдельным окном.`);
   else if (shortcut && shortcut.error) console.error(`Ярлык не поставлен: ${shortcut.error}. Повторить - bus.js ui --shortcut`);
-  else if (fs.existsSync(path.join(BUS, require('./app.js').MARK))) console.log('Ярлык уже ставили; удалённый вернёт bus.js ui --shortcut.');
+  else console.log('Ярлык Bus Cursor уже на месте.');
 }
 
 /**

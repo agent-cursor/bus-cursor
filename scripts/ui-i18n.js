@@ -301,7 +301,9 @@
     'Сохранённых каталогов пока нет: звезда закрепит текущий, «Обзор» найдёт новый.': 'No saved directories yet: the star pins the current one, “Browse” finds a new one.',
     'Рабочий каталог сменился - настройки закрыты, несохранённые правки сброшены.': 'The working directory changed - settings were closed, unsaved edits discarded.',
 
-    'Лимиты аккаунта claude.ai, как в строке статуса Claude Code. Снимок {age} назад': 'claude.ai account limits, as in the Claude Code status line. Snapshot taken {age} ago',
+    'Лимиты Cursor (включённый объём плана). Снимок {age} назад': 'Cursor account limits (included plan usage). Snapshot taken {age} ago',
+    ' - устарел: обновится при следующем опросе': ' - stale: will refresh on the next poll',
+    'План': 'Plan',
     ' - устарел: обновится со следующим ходом любой сессии или агента': ' - stale: refreshes on the next turn of any session or agent',
     'сброшен': 'reset',
     'Расход фонового запуска агента: ≈{n} ток.': 'Agent background run usage: ≈{n} tok.',
@@ -405,6 +407,7 @@
     'к': 'k',
     '5ч': '5h',
     '7д': '7d',
+
     '{d}д{h}ч': '{d}d{h}h',
     '{h}ч{m}м': '{h}h{m}m',
     '{m}м': '{m}m',

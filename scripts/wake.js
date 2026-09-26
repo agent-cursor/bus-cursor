@@ -590,7 +590,7 @@ const userLine = (text) => JSON.stringify({ type: 'user', message: { role: 'user
  * stream - потоковый подъём агента: stdin открыт до итога. resume - id сессии, которую продолжаем; onStart(sessionId) - claude назвал
  * сессию; btw() → [{ line }] - очередь сообщений посреди хода, опрашивается раз в секунду; onLive(entry) - строка живого хода (liveEntries);
  * onContext(ctx) - окно контекста и расход запуска сейчас (streamContext). runId - id запуска для BUS_RUN: сообщения агента из этого запуска
- * получают в журнале поле run (bus.js deliver). Лимиты аккаунта из потока (rate_limit_event) уходят в общий снимок rate-limits.js.
+ * получают в журнале поле run (bus.js deliver). Лимиты Cursor для шапки UI тянет Dashboard API (lib/rate-limits.js), не поток агента.
  * Без stream - разовый запуск: промпт и EOF.
  * → { ok, ms, tokens, context, window, usage, cost, reason, report, sessionId }
  */

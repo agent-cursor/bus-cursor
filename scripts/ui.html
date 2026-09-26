@@ -949,7 +949,7 @@
 <header class="top">
   <button class="where" id="whereBtn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="dirsPanel" title="Рабочий каталог: сменить, закрепить, подключить к шине"><b id="project">…</b><span id="cwd"></span></button>
   <div class="mine" id="mine" title="Открой диалог ответившего агента - его ответы прочитаны: сессия проекта их уже не получит и токены на них не потратит. Не откроешь - сессия увидит счётчик ответов на следующем промпте"><span id="mineText"></span></div>
-  <!-- Лимиты аккаунта 5ч/7д, как в строке статуса Claude Code; рисует renderLimits -->
+  <!-- Лимиты Cursor: План / Auto / API; рисует renderLimits -->
   <div class="limits" id="limits" hidden></div>
   <button class="ghost" id="scheduleBtn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="schedule" title="Расписание: задачи по cron"><svg class="icon"><use href="#i-clock"/></svg>Расписание<span class="sched-badge" id="scheduleBadge" hidden>0</span></button>
   <button class="ghost" id="weightBtn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="weightPanel" title="Вес переписки этой директории: столько токенов агенты затянут в контекст, прочитав несжатое. Оценка: символы / 3"><svg class="icon"><use href="#i-squeeze"/></svg><span id="weightSum"></span></button>
@@ -2258,7 +2258,7 @@ function renderLimits(snapshot = rateSnapshot) {
   box.hidden = !view;
   if (!view) return box.replaceChildren();
   box.classList.toggle('stale', view.stale);
-  const fresh = tr('Лимиты аккаунта claude.ai, как в строке статуса Claude Code. Снимок {age} назад', { age: L.duration(view.age / 1000) }) + (view.stale ? tr(' - устарел: обновится со следующим ходом любой сессии или агента') : '');
+  const fresh = tr('Лимиты Cursor (включённый объём плана). Снимок {age} назад', { age: L.duration(view.age / 1000) }) + (view.stale ? tr(' - устарел: обновится при следующем опросе') : '');
   box.title = fresh;
   box.replaceChildren(...view.windows.map((w) => el('span', { className: `win${w.reset ? ' reset' : ''}`, title: `${fresh}${w.at ? `
 ${tr('{label}: сброс в {at}, через {left}', { label: w.label, at: w.at, left: w.left })}` : ''}` },

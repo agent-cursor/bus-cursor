@@ -31,7 +31,7 @@ const i18n = require('./ui-i18n.js');
 const L = require('./ui-logic.js'); // поиск файлов для «@» - тот же, что гоняют тесты
 const update = require('./update.js');
 const app = require('./app.js'); // окно --app и ярлык на рабочем столе
-const rateLimits = require('./lib/rate-limits.js'); // лимиты аккаунта для шапки: снимок statusline и фоновых подъёмов
+const rateLimits = require('./lib/rate-limits.js'); // лимиты Cursor для шапки: кэш + Dashboard API
 
 // Язык ответа - язык вкладки, приславшей запрос (заголовок X-Bus-Lang): у двух вкладок он разный, поэтому не глобальная переменная.
 // Вне запроса (опрос, старт, консоль) языка нет - tr отдаёт русский. Тексты bus.js, scheduler.js и wake.js не переводятся:
@@ -498,13 +498,19 @@ function tick(rebuild = false) {
     liveSignature = liveSig;
     broadcast('live', live);
   }
-  // Лимиты аккаунта: снимок пишут statusline и фоновые подъёмы - где угодно, сверяем тем же проходом
+  // Лимиты Cursor: читаем кэш сразу, при устаревании refresh() сам сходит в API (TTL внутри)
   const limits = rateLimits.readSnapshot();
   const limitsSig = JSON.stringify(limits);
   if (limitsSig !== limitsSignature) {
     limitsSignature = limitsSig;
     broadcast('limits', limits);
   }
+  rateLimits.refresh().then((next) => {
+    const sig = JSON.stringify(next);
+    if (sig === limitsSignature) return;
+    limitsSignature = sig;
+    broadcast('limits', next);
+  }).catch(() => {});
   // Расписание: файлы задач правят и руками, итоги пишет раннер - сверяем тем же проходом. Каталога scheduler/ нигде нет - модуль не грузим
   if ([null, ...snapshot.roots].some((root) => fs.existsSync(root ? path.join(root, '.claude', 'bus', 'scheduler') : path.join(bus.BUS, 'scheduler')))) {
     const schedule = scheduleState(snapshot);
@@ -2116,6 +2122,7 @@ async function start(args = []) {
     rememberServer(port);
     console.log(`UI: ${url} - каталог ${cwd}. Остановить: Ctrl+C; ${appMode ? `закроешь окно - погаснет через ${APP_IDLE_MS / 1000} с` : `без открытой вкладки сам погаснет через ${IDLE_EXIT_MS / 60000} мин`}.`);
     updateTimers();
+    rateLimits.refresh().catch(() => {});
     if (open) show(url);
     setImmediate(firstRun);
     checkUpdate();

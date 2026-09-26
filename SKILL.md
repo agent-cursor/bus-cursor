@@ -28,7 +28,7 @@ node "$env:USERPROFILE\.cursor\skills\bus-cursor\scripts\bus.js" ui
 | Команда | Что делает |
 |---|---|
 | `ui [--app]` | веб-интерфейс (ярлык **Bus Cursor** на рабочем столе) |
-| `setup` | хуки Cursor + ярлык |
+| `setup` | хуки Cursor + ярлык на рабочий стол |
 | `inbox` | показать и очистить входящие |
 | `send <кому> <ТИП> <текст>` | сообщение; типы `TASK`, `QUESTION`, `DONE` |
 | `agents` | кто в Bus Cursor |

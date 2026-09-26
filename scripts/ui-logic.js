@@ -481,7 +481,7 @@
   // ---------- лимиты аккаунта и окно контекста: пороги - как в hooks/statusline.js ----------
 
   const CTX_WARN_TOKENS = 300000; // как в statusline: дальше окно считаем перегруженным - вкладка оранжевая
-  const LIMITS_STALE_MS = 60 * 60 * 1000; // снимок старше часа - цифры тусклые: ни statusline, ни подъёмы его не обновляли
+  const LIMITS_STALE_MS = 30 * 60 * 1000; // снимок старше получаса - тусклый, пока UI снова не спросит Cursor
   const levelOf = (pct) => (pct >= 80 ? 'high' : pct >= 50 ? 'mid' : 'low');
 
   /** 2д3ч / 3ч12м / 45м / 30с */
@@ -504,14 +504,13 @@
   }
 
   /**
-   * Снимок лимитов (rate-limits.js, поле rateLimits в /api/state) → { windows, stale, age } или null - снимка нет.
-   * windows: [{ key, label, pct, level: low | mid | high, left: «2ч10м», at: «18:30», reset }]. reset - окно сброшено уже после снимка:
-   * сколько потрачено в новом, снимок не знает.
+   * Снимок лимитов Cursor (rate-limits.js → /api/state.rateLimits) → { windows, stale, age } или null.
+   * windows: [{ key, label, pct, level, left, at, reset }] - План / Auto / API.
    */
   function rateLimits(snapshot, now = Date.now()) {
     if (!snapshot || typeof snapshot !== 'object') return null;
     const windows = [];
-    for (const [key, label] of [['five_hour', tr('5ч')], ['seven_day', tr('7д')]]) {
+    for (const [key, label] of [['plan', tr('План')], ['auto', 'Auto'], ['api', 'API']]) {
       const w = snapshot[key];
       if (!w || !Number.isFinite(w.used_percentage)) continue;
       const left = Number.isFinite(w.resets_at) ? w.resets_at - Math.floor(now / 1000) : null;

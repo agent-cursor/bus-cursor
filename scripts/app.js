@@ -17,8 +17,8 @@ const ICON = path.join(ASSETS, 'bus.ico');
 const SHORTCUT = 'Bus Cursor.lnk'; // имя без языка: ярлык ставит CLI, а у него языка страницы нет
 const APP_NAME = 'Bus Cursor';
 const DESKTOP_FILE = 'bus-cursor.desktop';
-const MARK = 'app-shortcut.json'; // в каталоге шины: ярлык уже ставили - удалённый руками сам не вернётся
-const MARK_V = 2; // 2 - у ярлыка Windows есть AppUserModelID окна; ярлык прошлой версии autoShortcut обновит сам
+const MARK = 'app-shortcut.json'; // в каталоге шины: куда ставили ярлык и какая версия
+const MARK_V = 3; // 3 - setup/install всегда восстанавливают ярлык, если файла нет на рабочем столе
 const PLATFORMS = ['win32', 'darwin', 'linux']; // где умеем ярлык
 
 /** Где искать браузер с режимом --app: сначала Chrome, потом Edge (на Windows он есть почти всегда). */
@@ -105,7 +105,7 @@ function shortcutPlan({ node = process.execPath, env = process.env, home = os.ho
     args: `--headless "${node}" "${BUS_JS}" ui --app`,
     cwd: home,
     icon: `${ICON},0`,
-    description: 'Claude Code agent bus',
+    description: 'Bus Cursor',
   };
 }
 
@@ -182,7 +182,7 @@ function desktopEntry({ node = process.execPath, icon = path.join(ASSETS, 'bus.p
     '[Desktop Entry]',
     'Type=Application',
     `Name=${APP_NAME}`,
-    'Comment=Claude Code agent bus',
+    'Comment=Bus Cursor',
     `Exec=${execArg(node)} ${execArg(BUS_JS)} ui --app`,
     `Icon=${icon}`,
     'Terminal=false',
@@ -271,36 +271,33 @@ function makeShortcut({ env = process.env, platform = process.platform, home = o
 }
 
 /**
- * Ярлык при первом запуске шины (ui или init): у `npx skills add` нет шага установки, ставим сами - один раз на каталог шины.
- * BUS_SHORTCUT=0 - не ставить (тесты: рабочий стол у Windows настоящий, домашнюю папку тесты подменяют, а его - нет).
- * → { file } | { error } | null - не ставили.
+ * Ярлык на рабочем столе / в меню: ставим при setup, install и первом ui/init.
+ * Уже есть и версия актуальна - null (тихо). Нет файла или старая версия - пересоздаём.
+ * force - всегда перезаписать (bus.js setup / ui --shortcut).
+ * BUS_SHORTCUT=0 - не ставить (тесты).
+ * → { file, replaced?, also? } | { error } | null
  */
-function autoShortcut(busDir, env = process.env) {
+function autoShortcut(busDir, env = process.env, { force = false } = {}) {
   if (!PLATFORMS.includes(process.platform) || env.BUS_SHORTCUT === '0') return null;
   const mark = path.join(busDir, MARK);
-  if (fs.existsSync(mark)) {
-    // ярлык прошлой версии (Windows: без ID окна - закреплялся иконкой Chrome) обновляем тихо, если его не удалили
-    const was = readJson(mark, {});
-    if (process.platform !== 'win32' || (was.v || 1) >= MARK_V || !was.file || !fs.existsSync(was.file)) return null;
-    try {
-      makeShortcut({ env });
-      fs.writeFileSync(mark, JSON.stringify({ ...was, v: MARK_V, at: new Date().toISOString() }) + '\n');
-    } catch {
-      // не вышло - остаётся старый, попробуем на следующем старте
-    }
-    return null;
-  }
+  const was = fs.existsSync(mark) ? readJson(mark, {}) : null;
+  const fileOk = Boolean(was && was.file && fs.existsSync(was.file));
+  const alsoOk = Array.isArray(was?.also) ? was.also.every((f) => fs.existsSync(f)) : true;
+  const fresh = Boolean(was && (was.v || 1) >= MARK_V && fileOk && alsoOk);
+  if (!force && fresh) return null;
+
   let result;
   try {
-    result = { file: makeShortcut({ env }).file };
+    const made = makeShortcut({ env });
+    result = { file: made.file, replaced: made.replaced, ...(made.also?.length ? { also: made.also } : {}) };
   } catch (e) {
     result = { error: e.message };
   }
   try {
     fs.mkdirSync(busDir, { recursive: true });
-    fs.writeFileSync(mark, JSON.stringify({ ...result, v: MARK_V, at: new Date().toISOString() }) + '\n'); // и при сбое: не пробовать на каждом старте
+    fs.writeFileSync(mark, JSON.stringify({ ...result, v: MARK_V, at: new Date().toISOString() }) + '\n');
   } catch {
-    // без отметки попробуем в следующий раз - не беда
+    // без отметки попробуем в следующий раз
   }
   return result;
 }
