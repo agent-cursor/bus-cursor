@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <img src="https://komarev.com/ghpvc/?username=SafonovAG&style=flat-square&color=0d9488&label=views" alt="Просмотры профиля" />
+  <img src="https://api.visitorbadge.io/api/visitors?path=github.com%2Fagent-cursor%2Fbus-cursor&label=views&countColor=%230d9488&labelColor=%23374151&style=flat" alt="Просмотры bus-cursor" />
 </p>
 
 <p align="center">
