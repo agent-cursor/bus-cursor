@@ -44,8 +44,9 @@ const { tr, N } = i18n;
 const langStore = new AsyncLocalStorage();
 i18n.provide(() => langStore.getStore());
 
-const DEFAULT_PORT = 4780;
-const PORT_TRIES = 10;
+const DEFAULT_PORT = 4781; // Claude Bus держит 4780: свой порт, чтобы не драться и не «узнавать» чужой UI
+const PORT_TRIES = 20;
+const APP = 'bus-cursor-ui'; // /api/ping: чужой bus-ui (Claude Bus) - занятый порт, не «наш» сервер
 const POLL_MS = 1000;
 const LIVE_LINES = 30; // сколько последних строк живого хода агента едет на страницу
 const HEARTBEAT_MS = 25000; // комментарий в SSE-поток: без него прокси и браузер считают соединение мёртвым
@@ -64,7 +65,7 @@ const PAGE = path.join(__dirname, 'ui.html');
 const CRON = path.join(__dirname, 'cron.js'); // разбор cron для формы расписания - тот же файл, что у демона
 const I18N = path.join(__dirname, 'ui-i18n.js'); // словарь и tr - общие у страницы, её логики, cron.js и этого сервера
 const LOGIC = path.join(__dirname, 'ui-logic.js'); // чистая логика страницы: её же гоняют тесты в node
-const UPLOAD_DIR = path.join(os.tmpdir(), `bus-ui-${process.pid}`); // загруженное, но ещё не отправленное
+const UPLOAD_DIR = path.join(os.tmpdir(), `bus-cursor-ui-${process.pid}`); // загруженное, но ещё не отправленное
 const UPLOAD_TTL_MS = 60 * 60 * 1000;
 // Только это браузер покажет картинкой. SVG сюда не входит намеренно: в нём бывает скрипт - уходит на скачивание
 const IMAGE_TYPES = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp' };
@@ -933,7 +934,7 @@ function wakeAction(action, { key }) {
 
 /**
  * Первое сообщение агенту «не в шине» само заводит его: локальное определение регистрируется (блок «Bus Cursor» допишется),
- * глобальная роль - локальной обёрткой в проекте UI, чтоб переписка осталась в проекте, а не уехала в ~/.claude/bus.
+ * глобальная роль - локальной обёрткой в проекте UI, чтоб переписка осталась в проекте, а не уехала в ~/.cursor/bus-cursor.
  */
 function enrollFromPage(entry, snapshot) {
   const wrap = entry.kind === 'global';
@@ -1110,7 +1111,7 @@ function sweepUploads() {
     return;
   }
   for (const name of names) {
-    const m = /^bus-ui-(\d+)$/.exec(name);
+    const m = /^bus-cursor-ui-(\d+)$/.exec(name);
     if (!m || Number(m[1]) === process.pid) continue;
     const dir = path.join(os.tmpdir(), name);
     try {
@@ -1223,6 +1224,8 @@ function limitsPayload(root) {
 function settingsState() {
   const root = hereRoot();
   const text = (value) => (value ? tr(value) : '');
+  let models = cursorModels.readModels();
+  if (!models.length) cursorModels.refresh().catch(() => {});
   return {
     root,
     shortcut: app.PLATFORMS.includes(process.platform), // кнопка «Ярлык приложения» - только там, где мы его умеем
@@ -1230,6 +1233,7 @@ function settingsState() {
     groups: settings.GROUPS.map((group) => ({ key: group.key, label: tr(group.label) })),
     // form: false - своё оркестратора проекта, правится в его карандаше (agentRole), а не в шестерёнке
     schema: settings.SCHEMA.filter((item) => item.form !== false).map(({ key, group, type, min, max, atLeast, global, optional, options, unit, label, hint }) => ({ key, group, type, min, max, atLeast, global: Boolean(global), optional: Boolean(optional), options, unit: text(unit), label: tr(label), hint: tr(hint), default: settings.DEFAULTS[key] })),
+    cursorModels: models,
   };
 }
 
@@ -1257,7 +1261,7 @@ function saveSettings({ values, reset }) {
   }
   const changed = reset === true ? '(сброс)' : Object.keys(values || {}).join(', ');
   bus.auditNote(`ui settings | ${root || '(вне проекта)'} | ${changed}`);
-  // Общие оркестраторов - сразу в settings.local.json всех проектов; сбой записи настройку не отменяет, а приходит предупреждением
+  // Промпт оркестраторов подхватит хук sessionStart; в .claude/settings.local.json больше не пишем
   const touched = names.filter((name) => name.startsWith('orchestrator.'));
   const isGlobal = (name) => (settings.SCHEMA.find((item) => item.key === name) || {}).global;
   const warnings = touched.length ? bus.applyOrchestrator(root, touched.find(isGlobal) || touched[0]) : [];
@@ -1293,8 +1297,15 @@ async function runService(prompt, { system, argsOf, model, timeoutMs = SUMMARY_T
   if (runtime !== 'cursor') return { ...(await runClaude(prompt, { args: argsOf(model), timeoutMs, failed })), runtime };
   const dir = path.join(os.tmpdir(), 'bus-summarize');
   fs.mkdirSync(dir, { recursive: true });
-  // --mode ask: только чтение - вход тут чужие сообщения шины, инструменты с правом записи им ни к чему (у claude - --tools "")
-  const r = await require('./cursor.js').run({ cwd: dir, role: `${system}\nDo not call any tools and do not touch files: answer with text only.`, prompt, timeoutMs, readonly: true });
+  // --mode ask: только чтение - вход тут чужие сообщения шины, инструменты с правом записи им ни к чему
+  const r = await require('./cursor.js').run({
+    cwd: dir,
+    role: `${system}\nDo not call any tools and do not touch files: answer with text only.`,
+    prompt,
+    timeoutMs,
+    readonly: true,
+    model: model && String(model).trim() ? String(model).trim() : null,
+  });
   if (!r.ok || !r.report) throw new bus.BusError(`${tr('Cursor не ответил: {why}.', { why: r.reason || tr('пустой ответ') })} ${failed}`);
   return { text: r.report, tokens: r.tokens, runtime };
 }
@@ -1591,47 +1602,36 @@ function orchestratorEntry(key, snapshot) {
 }
 
 /**
- * Роль оркестратора для редактора: своё проекта (orchestrator.project*) и общее всех оркестраторов (common, только показать -
- * правится в шестерёнке). fast - итоговый: галочка показывает, что получит сессия. where - файл, куда ложатся модель, effort и fast.
+ * Роль оркестратора для редактора: свой промпт проекта и общий (common, только показать - правится в шестерёнке).
+ * Модель чата Cursor - в пикере IDE, шина её не задаёт.
  */
 function orchestratorRole(agent) {
   const values = settings.get(agent.root);
   const common = { prompt: values['orchestrator.prompt'], model: values['orchestrator.model'], effort: values['orchestrator.effort'], fast: values['orchestrator.fast'] };
-  const own = values['orchestrator.projectFast'];
   return {
     orchestrator: true, key: agent.key, name: agent.name, kind: agent.kind, registered: true, deletable: false,
-    where: path.join(agent.root, '.claude', 'settings.local.json'),
-    body: values['orchestrator.projectPrompt'], model: values['orchestrator.projectModel'], effort: values['orchestrator.projectEffort'],
-    fast: own ? own === 'on' : common.fast, common,
+    where: 'sessionStart → ~/.cursor/hooks.json',
+    body: values['orchestrator.projectPrompt'], model: '', effort: '',
+    fast: false, common,
   };
 }
 
 /**
- * Сохранить роль оркестратора: свои настройки проекта + сразу в settings.local.json. Пустая модель и effort - как у всех оркестраторов;
- * fast совпал с общим - своего нет (сменят общий - проект пойдёт за ним). → { ok, key, file, warnings }
+ * Сохранить промпт оркестратора проекта. Модель/effort/fast в Bus Cursor не пишем - их задаёт пикер Cursor.
+ * → { ok, key, file, warnings }
  */
 function saveOrchestrator(agent, body) {
-  const values = settings.get(agent.root);
-  const model = String(body.model || '').trim();
-  const fast = checkFast(body.fast, model || values['orchestrator.model']);
-  if (body.effort !== undefined && typeof body.effort !== 'string') throw new bus.BusError(tr('effort - строка.'));
   if (typeof body.body !== 'string') throw new bus.BusError(tr('Поля роли - строки: description, model, effort, body.'));
-  const patch = {
-    'orchestrator.projectPrompt': body.body,
-    'orchestrator.projectModel': model,
-    'orchestrator.projectEffort': body.effort || '',
-    'orchestrator.projectFast': fast === values['orchestrator.fast'] ? '' : fast ? 'on' : 'off',
-  };
   try {
-    settings.set(agent.root, patch);
+    settings.set(agent.root, { 'orchestrator.projectPrompt': body.body });
   } catch (e) {
     if (!(e instanceof settings.SettingsError)) throw e;
     throw new bus.BusError(e.message);
   }
-  const warnings = bus.applyOrchestrator(agent.root, 'orchestrator.projectPrompt');
+  bus.applyOrchestrator(agent.root, 'orchestrator.projectPrompt');
   bus.auditNote(`ui orchestrator save | ${agent.key}`);
   safeTick();
-  return { ok: true, key: agent.key, file: path.join(agent.root, '.claude', 'settings.local.json'), warnings };
+  return { ok: true, key: agent.key, file: 'sessionStart → ~/.cursor/hooks.json', warnings: [] };
 }
 
 function agentRole(key) {
@@ -1794,16 +1794,21 @@ async function installUpdate() {
   if (busy.length) throw new bus.BusError(tr('{names} работает в фоне - дождись конца или останови, потом обновляй.', { names: busy.join(', ') }));
   if (updateState.state !== 'available') throw new bus.BusError(tr('Обновлять нечего: новой версии шины нет.'));
   updating = true;
+  broadcast('update-progress', { phase: 'list', done: 0, total: 0 });
   try {
     if (!frozenVersion) {
       frozenVersion = pageVersion();
       for (const file of [PAGE, LOGIC, I18N, CRON]) frozen.set(file, fs.readFileSync(file, 'utf8'));
       scheduler(); // грузится лениво: подтянутый после установки новый scheduler.js встал бы на старый bus.js
     }
-    const result = await update.install({ tag: updateState.tag });
+    const result = await update.install({
+      tag: updateState.tag,
+      onProgress: (info) => broadcast('update-progress', info),
+    });
     updateState = { ...updateState, state: 'installed' };
     console.log(`Bus Cursor обновлён до ${result.version}, копия прежней - ${result.backup}. Перезапуск - кнопкой на странице или bus.js ui`);
     broadcast('update', updatePayload());
+    broadcast('update-progress', { phase: 'done', done: 1, total: 1, version: result.version });
     return { ...result, backup: undefined };
   } finally {
     updating = false;
@@ -1926,7 +1931,7 @@ async function handle(req, res, port) {
     if (url.pathname === '/cron.js') return reply(res, 200, pageFile(CRON), 'text/javascript; charset=utf-8');
     if (url.pathname === '/api/schedule') return reply(res, 200, scheduleState());
     if (url.pathname === '/api/settings') return reply(res, 200, settingsState());
-    if (url.pathname === '/api/ping') return reply(res, 200, { app: 'bus-ui', cwd, root: projectRootOf(cwd) });
+    if (url.pathname === '/api/ping') return reply(res, 200, { app: APP, cwd, root: projectRootOf(cwd) });
     if (url.pathname === '/api/dirs') return reply(res, 200, dirsState());
     // Листинг диска - тот же токен, что у вложений: чужой вкладке файловую систему не показываем
     if (url.pathname === '/api/dirs/list') return url.searchParams.get('k') === token ? reply(res, 200, listDirs(url.searchParams.get('path') || '')) : reply(res, 403, { error: tr('Нет токена страницы. Обнови вкладку.') });
@@ -1979,6 +1984,13 @@ async function handle(req, res, port) {
       return reply(res, 200, result);
     }
     if (url.pathname === '/api/summarize') return reply(res, 200, await summarize(body));
+    if (url.pathname === '/api/rate-limits/refresh') {
+      const next = await rateLimits.refresh({ force: true });
+      const sig = JSON.stringify(next);
+      limitsSignature = sig;
+      broadcast('limits', next);
+      return reply(res, 200, { rateLimits: next });
+    }
     if (url.pathname === '/api/update') return reply(res, 200, await installUpdate());
     if (url.pathname === '/api/restart') {
       restartCheck();
@@ -2082,7 +2094,7 @@ function createShortcut() {
 async function start(args = []) {
   const at = args.indexOf('--port');
   const wanted = at >= 0 ? Number(args[at + 1]) : DEFAULT_PORT;
-  if (!Number.isInteger(wanted) || wanted < 1 || wanted > 65535) throw new bus.BusError(tr('--port: нужен номер порта, например 4780.'));
+  if (!Number.isInteger(wanted) || wanted < 1 || wanted > 65535) throw new bus.BusError(tr('--port: нужен номер порта, например 4781.'));
   if (args.includes('--shortcut')) {
     const { file, replaced, also } = createShortcut();
     console.log(`${replaced ? 'Ярлык обновлён' : 'Ярлык создан'}: ${[file, ...also].join(', ')}`);
@@ -2116,9 +2128,8 @@ async function start(args = []) {
     } catch (e) {
       if (e.code !== 'EADDRINUSE') throw e;
       const other = await ping(port);
-      if (other && other.app === 'bus-ui') {
-        // Живой UI один на всех: запустили из другого проекта шины - переключаем его туда. Не из проекта - открываем как есть.
-        // Не переключился (старая версия без ui-server.json) - как раньше: свой каталог - открываем, чужой - следующий порт
+      // Только свой UI (тот же APP): переключить каталог или открыть. Claude Bus (bus-ui) и любой другой процесс - чужие, берём следующий порт
+      if (other && other.app === APP) {
         const elsewhere = launchRoot && !(other.root && samePath(other.root, launchRoot));
         const switched = elsewhere && (await switchRunning(port, launch));
         if (switched || !elsewhere || samePath(other.cwd, launch)) {
@@ -2127,7 +2138,7 @@ async function start(args = []) {
           return;
         }
       }
-      continue; // порт занят чужим - берём следующий
+      continue; // порт занят чужим (в т.ч. Claude Bus) - свободный следующий
     }
     const url = `http://127.0.0.1:${port}`;
     rememberServer(port);
@@ -2154,9 +2165,9 @@ async function start(args = []) {
 /** Не запускали `bus.js setup` после установки - хук inbox и ярлык ставит первый старт UI (bus.setup). */
 function firstRun() {
   const { hook, shortcut: r } = bus.setup();
-  if (hook instanceof Error) console.error(`хук inbox: ${hook.message}`);
-  else if (hook) console.log('Хук inbox добавлен в глобальный settings.json - заработает в новых сессиях Claude.');
-  if (r && r.file) console.log(`Ярлык шины: ${r.file}`);
+  if (hook instanceof Error) console.error(`хуки Cursor: ${hook.message}`);
+  else if (hook) console.log('Хуки Bus Cursor добавлены в ~/.cursor/hooks.json.');
+  if (r && r.file) console.log(`Ярлык Bus Cursor: ${r.file}`);
   if (r && r.error) console.error(`ярлык: ${r.error}`);
 }
 

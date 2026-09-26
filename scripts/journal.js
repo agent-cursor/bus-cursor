@@ -1,5 +1,5 @@
 /**
- * Журнал переписки каталога - <корень>/.claude/bus/history.jsonl, строка = запись JSON; больше JOURNAL_ROTATE_BYTES - уезжает в .1.
+ * Журнал переписки каталога - <корень>/.cursor/bus-cursor/history.jsonl, строка = запись JSON; больше JOURNAL_ROTATE_BYTES - уезжает в .1.
  * Чтение, дописка, ротация, правка из UI, диалоги пары и переписка агента. Модуль от bus.js не зависит: его грузит и wake.js.
  *
  * Записи (поля короткие - журнал читают целиком на каждый history и опрос UI):
@@ -22,7 +22,7 @@ const KIND_CODE = { project: 'p', local: 'l', global: 'g' };
 const DIALOG_ID = /^[a-z0-9-]{1,40}$/;
 
 const journalFile = (busDir) => path.join(busDir, 'history.jsonl');
-const busDirOf = (agent) => path.dirname(agent.box); // <корень>/.claude/bus - общий для всех агентов каталога
+const busDirOf = (agent) => path.dirname(agent.box); // <корень>/.cursor/bus-cursor - общий для всех агентов каталога
 const isSubagent = (agent) => agent.kind === 'local' || agent.kind === 'global';
 const isDialogPair = (a, b) => (a.kind === 'project' && isSubagent(b)) || (b.kind === 'project' && isSubagent(a));
 const dialogOf = (r) => (typeof r.d === 'string' ? r.d : '');

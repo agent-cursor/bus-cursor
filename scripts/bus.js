@@ -8,10 +8,10 @@
  *   глобальный - субагент пользователя, определение в ~/.claude/agents/<имя>.md, регистрируется через add --global.
  * Человека среди адресатов нет: пользователь пишет из UI (команда ui) от имени оркестратора каталога, агенты отвечают оркестратору.
  *
- * Ящик агента - <корень>/.claude/bus/<имя>/inbox.md: непрочитанное. Переписка - одна на каталог:
- * <корень>/.claude/bus/history.jsonl, строка = сообщение. Корень - проект, для глобального агента -
- * домашняя папка. Сообщение между каталогами пишется в оба журнала с одним id. Глобально - ещё реестр и audit.log.
- * Вложения - копии в <корень>/.claude/bus/files/<id сообщения>/; в inbox и history агенту идёт только путь.
+ * Ящик агента - <корень>/.cursor/bus-cursor/<имя>/inbox.md: непрочитанное. Переписка - одна на каталог:
+ * <корень>/.cursor/bus-cursor/history.jsonl, строка = сообщение. Корень - проект, для глобального агента -
+ * домашняя папка (~/.cursor/bus-cursor). Сообщение между каталогами пишется в оба журнала с одним id. Глобально - ещё реестр и audit.log.
+ * Вложения - копии в <корень>/.cursor/bus-cursor/files/<id сообщения>/; в inbox и history агенту идёт только путь.
  * Проект видит входящие на следующем промпте: хук UserPromptSubmit зовёт `inbox --hook`, его stdout харнесс
  * кладёт в контекст. Субагентам хук не срабатывает - ящик они читают сами через --as. Поднимает их скилл (отправка
  * из чата проекта, строка «wake:») или сама шина в фоне - wake.js, когда пишут из UI или другой субагент.
@@ -49,7 +49,7 @@ function runOf(from) {
   return m && isSubagent(from) && m[1] === from.name ? m[2] : '';
 }
 const NAME = /^[a-z0-9][a-z0-9-]{0,30}$/;
-const RESERVED = ['files', 'scheduler', 'schedule', 'clear', 'prompts']; // служебные папки .claude/bus/ (prompts - промпты подъёма Cursor) и отправитель отчётов расписания - ящик агента лёг бы поверх; clear - «history clear» снёс бы журнал вместо показа переписки с таким агентом
+const RESERVED = ['files', 'scheduler', 'schedule', 'clear', 'prompts']; // служебные папки .cursor/bus-cursor/ (prompts - промпты подъёма Cursor) и отправитель отчётов расписания - ящик агента лёг бы поверх; clear - «history clear» снёс бы журнал вместо показа переписки с таким агентом
 const settings = require('./settings.js');
 // Лимиты ниже - дефолты: проект переопределяет их настройками (settings.js, шестерёнка в UI, bus.js settings)
 const MAX_LENGTH = settings.DEFAULTS['message.maxLength'];
@@ -72,7 +72,7 @@ const ORCHESTRATOR_HOOK_COMMAND = 'node "' + BUS_JS_ABS + '" orchestrator --hook
 const HOOK_MARK = 'skills/bus-cursor/scripts/bus.js';
 
 const USAGE = `Использование: node bus.js [--as <имя>] <команда>
-  setup                       после установки: хук inbox в ~/.claude/settings.json и ярлык Bus Cursor (без setup их ставит первый запуск)
+  setup                       после установки: хуки в ~/.cursor/hooks.json и ярлык Bus Cursor (без setup их ставит первый запуск)
   init <имя>                  подключить текущий проект под своим именем (необязательно: без init проект подключается сам первой командой - именем папки)
   add <имя> [--global] [--runtime cursor]   зарегистрировать субагента: .claude/agents/<имя>.md проекта или ~/.claude/agents/<имя>.md (нет там - .cursor/agents/, движок cursor); блока «Bus Cursor» в роли нет - допишет
   runtime <имя> [claude|cursor] [--model <м>]   движок фонового подъёма субагента: показать или сменить; --model - модель Cursor («-» - сбросить); только оркестратор
@@ -80,7 +80,7 @@ const USAGE = `Использование: node bus.js [--as <имя>] <кома
                               --btw - агент сейчас работает в фоне: вбросить ему посреди хода, а не ждать конца; не работает - обычная отправка
                               --evolve - самоправка роли: после DONE агент разберёт свою работу и предложит правку роли, пользователь примет её в UI; только от проекта субагенту
   broadcast <ТИП> [--file <путь>]… <текст>     отправить всем, кроме себя
-                              --file - вложение: до ${MAX_FILES} штук по ${MAX_FILE_BYTES / 1024 / 1024} МБ, копия ложится в .claude/bus/files/
+                              --file - вложение: до ${MAX_FILES} штук по ${MAX_FILE_BYTES / 1024 / 1024} МБ, копия ложится в .cursor/bus-cursor/files/
   autowake [on|off]           автоподъём субагентов в фоне (claude -p --agent или Cursor agent -p): состояние, включить, выключить
   settings [get <ключ> | set <ключ> <значение> | reset [ключ]]   настройки проекта: лимиты подъёма, сообщений, расписания; менять - только оркестратор
                               agent.promptGlobal / agent.prompt - твой текст всем субагентам (всех проектов / этого); многострочный - set <ключ> - <<'EOF' … EOF
@@ -282,20 +282,12 @@ function uninstallHook(root) {
 }
 
 /**
- * Хук в глобальных настройках: в папке не из шины он молчит (projectSelf → null), в проекте показывает входящие.
- * Проектные хуки прежних версий снимаются - с глобальным их вызов лишний. → true, если хук только что добавлен.
+ * Хук в settings.json Claude / Cursor editor не ставим: у Bus Cursor хуки только в ~/.cursor/hooks.json (cursor.ensureHooks).
+ * Раньше сюда писали формат Claude (UserPromptSubmit) - это пересекалось с Claude Bus и портило ~/.cursor/settings.json.
+ * → всегда false.
  */
 function ensureGlobalHook() {
-  const added = installHook(GLOBAL_SETTINGS);
-  for (const entry of Object.values(loadRegistry(REGISTRY))) {
-    if (!entry || !entry.project || !fs.existsSync(entry.project)) continue;
-    try {
-      uninstallHook(entry.project);
-    } catch {
-      // битый settings.local.json проекта: хук там сработает вдобавок к глобальному, ящик от этого не двоится
-    }
-  }
-  return added;
+  return false;
 }
 
 /**
@@ -339,7 +331,7 @@ function setupCommand() {
 }
 
 /**
- * Переписка личная: .claude/bus/ - в .git/info/exclude репозитория, .gitignore проекта не трогаем.
+ * Переписка личная: .cursor/bus-cursor/ - в .git/info/exclude репозитория, .gitignore проекта не трогаем.
  * Уже игнорируется или не git - ничего. rel - что исключить, от корня проекта; probe - файл внутри для check-ignore. → true, если строка дописана.
  */
 function excludeLocal(root, rel = '.cursor/bus-cursor/', probe = path.join('.cursor', 'bus-cursor', 'inbox.md')) {
@@ -356,95 +348,33 @@ function excludeLocal(root, rel = '.cursor/bus-cursor/', probe = path.join('.cur
   return true;
 }
 
-// ---------- оркестратор: модель, effort, fast и промпт ----------
-
-// Поле итога settings.orchestrator() → ключ в .claude/settings.local.json проекта (его читает любая сессия claude в каталоге)
-const ORCHESTRATOR_KEYS = [['model', 'model'], ['effort', 'effortLevel'], ['fast', 'fastMode']];
-const appliedFile = (me) => path.join(me.box, 'orchestrator-applied.json');
+// ---------- оркестратор: промпт (модель в Cursor - в пикере чата, файлом проекта не задаётся) ----------
 
 /**
- * Модель, effort и fast оркестратора → .claude/settings.local.json проекта. Что писала шина, помнит <ящик>/orchestrator-applied.json:
- * значение в шине сняли - ключ уходит из файла, только если там всё ещё записанное шиной (своё пользователя не трогаем).
- * Зовут: сохранение в карандаше и шестерёнке, подключение проекта, хук SessionStart. Битый settings.local.json - BusError, файл цел.
+ * Итог настроек оркестратора каталога. Раньше модель/effort/fast писались в .claude/settings.local.json (Claude Code);
+ * в Bus Cursor это мёртвый путь - Cursor IDE читает модель из своего пикера, промпт кладёт хук sessionStart.
  * → итог settings.orchestrator() или null (каталог не в шине).
  */
 function syncOrchestrator(root, values = settings.get(root)) {
   const me = orchestratorOf(root);
   if (!me) return null;
-  const want = settings.orchestrator(root, values);
-  const file = settingsFile(me.root);
-  const had = fs.existsSync(file);
-  const data = readSettings(file);
-  const applied = readJson(appliedFile(me), {}) || {};
-  const next = {};
-  let changed = false;
-  for (const [field, key] of ORCHESTRATOR_KEYS) {
-    const value = want[field];
-    if (value !== null && value !== '') {
-      if (data[key] !== value) changed = true;
-      data[key] = next[key] = value;
-    } else if (key in applied && key in data && data[key] === applied[key]) {
-      delete data[key];
-      changed = true;
-    }
-  }
-  if (changed) {
-    if (Object.keys(data).length) writeAtomic(file, JSON.stringify(data, null, 2) + '\n');
-    else if (had) fs.unlinkSync(file);
-    if (!had) excludeLocal(me.root, '.claude/settings.local.json', path.join('.claude', 'settings.local.json'));
-  }
-  if (JSON.stringify(next) !== JSON.stringify(applied)) {
-    fs.mkdirSync(me.box, { recursive: true });
-    if (Object.keys(next).length) writeJson(appliedFile(me), next);
-    else fs.rmSync(appliedFile(me), { force: true });
-  }
-  return want;
+  return settings.orchestrator(root, values);
 }
 
-/** Проект уходит из шины: записанное шиной в settings.local.json убрать - то, что с тех пор правил пользователь, остаётся. */
-function releaseOrchestrator(me) {
-  const applied = readJson(appliedFile(me), {}) || {};
-  const file = settingsFile(me.root);
-  if (!Object.keys(applied).length || !fs.existsSync(file)) return;
-  const data = readSettings(file);
-  const mine = Object.keys(applied).filter((key) => key in data && data[key] === applied[key]);
-  if (mine.length) {
-    mine.forEach((key) => delete data[key]);
-    if (Object.keys(data).length) writeAtomic(file, JSON.stringify(data, null, 2) + '\n');
-    else fs.unlinkSync(file);
-  }
-  fs.rmSync(appliedFile(me), { force: true });
-}
+/** Проект уходит из шины: раньше снимали записанное шиной в settings.local.json; в Bus Cursor файл не пишем. */
+function releaseOrchestrator() {}
 
-/** Все проекты реестра - после правки общих настроек оркестраторов. Битый файл одного проекта остальным не мешает. → [{ name, error }] */
+/** После правки общих настроек оркестраторов - сверить проекты. В Bus Cursor запись в .claude не нужна. → [] */
 function syncOrchestrators() {
-  const failed = [];
-  for (const entry of Object.values(loadRegistry(REGISTRY))) {
-    if (!entry || !entry.project || !fs.existsSync(entry.project)) continue;
-    try {
-      syncOrchestrator(entry.project);
-    } catch (e) {
-      failed.push({ root: entry.project, error: e.message });
-    }
-  }
-  return failed;
+  return [];
 }
 
 /**
- * После правки настроек оркестратора: общая (global) - сверить все проекты, своя - один. Правка уже сохранена, поэтому сбой записи
- * settings.local.json не ошибка команды, а предупреждение. → строки предупреждений (печатает CLI, UI показывает)
+ * После правки настроек оркестратора. В Bus Cursor меняется только промпт (хук sessionStart), файл модели не трогаем.
+ * → строки предупреждений (для совместимости с UI; обычно пусто)
  */
-function applyOrchestrator(root, key) {
-  const item = settings.SCHEMA.find((s) => s.key === key);
-  const failed = item && item.global ? syncOrchestrators() : [];
-  if (!(item && item.global)) {
-    try {
-      syncOrchestrator(root);
-    } catch (e) {
-      failed.push({ root, error: e.message });
-    }
-  }
-  return failed.map((f) => `settings.local.json не обновлён (${f.root}): ${f.error}`);
+function applyOrchestrator() {
+  return [];
 }
 
 /** Промпт оркестратора - текстом для контекста сессии; пусто - ''. */
@@ -453,9 +383,8 @@ function orchestratorPrompt(me, prompt) {
 }
 
 /**
- * orchestrator --hook (SessionStart): stdout хука Claude Code кладёт в контекст сессии. Каталог не в шине или промпта нет - молчит.
- * Заодно сверяет settings.local.json с настройками (общие могли поменяться, пока проект был закрыт) - сессия подхватит со следующего запуска.
- * Без --hook - итог для человека: откуда что берётся.
+ * orchestrator --hook (sessionStart Cursor / SessionStart Claude): stdout хука кладёт роль в контекст сессии.
+ * Каталог не в шине или промпта нет - молчит. Без --hook - итог для человека.
  */
 function orchestratorCommand(hookMode, hook = {}, cursor = null) {
   const ctx = hookMode ? context(hook) : context();
@@ -466,13 +395,7 @@ function orchestratorCommand(hookMode, hook = {}, cursor = null) {
     throw new BusError('Этот каталог не в шине - оркестратора тут нет.');
   }
   const values = settings.get(me.root);
-  let want;
-  try {
-    want = syncOrchestrator(me.root, values);
-  } catch (e) {
-    if (!hookMode) throw e;
-    want = settings.orchestrator(me.root, values); // битый settings.local.json - промпт всё равно нужен
-  }
+  const want = syncOrchestrator(me.root, values) || settings.orchestrator(me.root, values);
   const prompt = orchestratorPrompt(me, want.prompt);
   // Cursor (sessionStart): роль и входящие - одним JSON; хука на промпт, который добавил бы входящие, у Cursor нет
   if (hookMode && cursor) {
@@ -480,8 +403,7 @@ function orchestratorCommand(hookMode, hook = {}, cursor = null) {
     return console.log(JSON.stringify(prompt || out.length ? { additional_context: [prompt, ...out].filter(Boolean).join('\n\n') } : {}));
   }
   if (hookMode) return prompt && console.log(prompt);
-  const show = (value) => (value === null || value === '' ? '-' : String(value));
-  console.log(`Оркестратор «${me.name}» (${me.root}): модель ${show(want.model)}, effort ${show(want.effort)}, fast ${show(want.fast)} → ${settingsFile(me.root)}`);
+  console.log(`Оркестратор «${me.name}» (${me.root}): промпт - хуком sessionStart; модель чата - в пикере Cursor.`);
   console.log(prompt || 'Промпта нет: общий - настройка orchestrator.prompt, свой проекта - orchestrator.projectPrompt (или карандаш у оркестратора в UI).');
 }
 
@@ -927,7 +849,7 @@ function checkAttachments(items, { maxFiles = MAX_FILES, maxFileBytes = MAX_FILE
 
 /**
  * Копия лежит там, где её будет читать агент проекта: в каталоге получателя, а если тот глобальный
- * агент - в каталоге отправителя. Оба домашние - в ~/.claude/bus: busDirOf() у них и так домашний.
+ * агент - в каталоге отправителя. Оба домашние - в ~/.cursor/bus-cursor: busDirOf() у них и так домашний.
  */
 const filesDirOf = (from, to) => path.join(to.root ? busDirOf(to) : busDirOf(from), 'files');
 
@@ -1207,7 +1129,7 @@ function init(name, dir, { quiet = false } = {}) {
   const me = describe(contextOf(root), name);
   fs.mkdirSync(me.box, { recursive: true });
   fs.appendFileSync(inboxFile(me), '');
-  const added = ensureGlobalHook();
+  ensureGlobalHook(); // no-op: хуки Cursor - ниже ensureHooks
   const excluded = excludeLocal(root);
   // Cursor стоит - его хуки и правило .mdc этому проекту; остальным проектам - setup (удалённое руками правило init не возвращает)
   try {
@@ -1227,9 +1149,8 @@ function init(name, dir, { quiet = false } = {}) {
   if (quiet) return { name, root };
 
   console.log(`Агент «${name}» → ${root}`);
-  if (added) console.log(`Хук inbox добавлен в ${GLOBAL_SETTINGS} - один на все проекты, заработает в новых сессиях Claude.`);
-  if (excluded) console.log('.claude/bus/ дописан в .git/info/exclude - переписка в git не попадёт.');
-  if (shortcut && shortcut.file) console.log(`Ярлык шины: ${shortcut.file} - открывает UI отдельным окном.`);
+  if (excluded) console.log('.cursor/bus-cursor/ дописан в .git/info/exclude - переписка в git не попадёт.');
+  if (shortcut && shortcut.file) console.log(`Ярлык Bus Cursor: ${shortcut.file} - открывает UI отдельным окном.`);
   return { name, root };
 }
 

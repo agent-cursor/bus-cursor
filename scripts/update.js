@@ -127,16 +127,27 @@ function restore(dir, backup, written) {
  * Ставит релиз tag поверх папки скилла. Всё качается во временную папку и сверяется с хешами, и только потом: бэкап → запись поверх →
  * удаление файлов, которых в релизе нет (чужие файлы пользователя в папке скилла не трогаем). Сбой записи - откат из бэкапа.
  * Папку целиком не переименовываем: на Windows rename падает, пока у демона расписания или раннера открыт хендл внутри.
+ * onProgress({ phase, done, total, file? }) - для UI: list | download | backup | write | done.
  */
-async function install({ dir = SKILL_DIR, tag } = {}) {
+async function install({ dir = SKILL_DIR, tag, onProgress } = {}) {
+  const progress = (info) => {
+    try {
+      if (typeof onProgress === 'function') onProgress(info);
+    } catch {
+      // UI не должен ронять установку
+    }
+  };
   const current = release(dir);
   if (!current || fs.existsSync(path.join(dir, '.git'))) throw new BusError(tr('Обновление тут выключено: нет release.json или папка скилла - git-клон.'));
   const version = versionOf(tag);
   if (!SEMVER.test(version)) throw new BusError(tr('Не знаю, до какой версии обновлять: проверка обновлений не прошла.'));
 
+  progress({ phase: 'list', done: 0, total: 0 });
   const files = await listFiles(current.repo, tag, current.prefix);
   const stage = fs.mkdtempSync(path.join(os.tmpdir(), 'bus-update-'));
   try {
+    progress({ phase: 'download', done: 0, total: files.length });
+    let downloaded = 0;
     // allSettled, а не all: сорвался один файл - остальные ещё пишут во временную папку, и finally снёс бы её у них из-под ног
     const results = await Promise.allSettled(files.map(async (file) => {
       let buf;
@@ -148,21 +159,27 @@ async function install({ dir = SKILL_DIR, tag } = {}) {
       if (blobSha(buf) !== file.sha) throw new BusError(tr('{path} скачался повреждённым: хеш не сходится с релизом. Ничего не поменял.', { path: file.rel }));
       fs.mkdirSync(path.dirname(path.join(stage, file.rel)), { recursive: true });
       fs.writeFileSync(path.join(stage, file.rel), buf);
+      downloaded += 1;
+      progress({ phase: 'download', done: downloaded, total: files.length, file: file.rel });
     }));
     const failed = results.find((r) => r.status === 'rejected');
     if (failed) throw failed.reason;
 
+    progress({ phase: 'backup', done: 0, total: 1 });
     const backup = `${dir}.backup`;
     fs.rmSync(backup, { recursive: true, force: true });
     fs.cpSync(dir, backup, { recursive: true });
+    progress({ phase: 'backup', done: 1, total: 1 });
 
     const written = [];
     try {
+      progress({ phase: 'write', done: 0, total: files.length });
       for (const file of files) {
         const target = path.join(dir, file.rel);
         fs.mkdirSync(path.dirname(target), { recursive: true });
         written.push(file.rel);
         fs.copyFileSync(path.join(stage, file.rel), target);
+        progress({ phase: 'write', done: written.length, total: files.length, file: file.rel });
       }
       removeStale(dir, current.files, new Set(files.map((f) => f.rel)));
     } catch (e) {
@@ -173,6 +190,7 @@ async function install({ dir = SKILL_DIR, tag } = {}) {
       }
       throw new BusError(tr('Обновление сорвалось, вернул прежние файлы: {why}', { why: e.message }));
     }
+    progress({ phase: 'done', done: files.length, total: files.length });
     return { ok: true, from: current.version, version, backup };
   } finally {
     fs.rmSync(stage, { recursive: true, force: true });

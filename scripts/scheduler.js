@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Расписание шины: задачи по cron. Модуль (хранилище, CLI `bus.js schedule …`, API для ui.js) и он же процесс:
- *   node scheduler.js daemon                 - демон под pm2 (bus-scheduler): раз в 20 с сверяет cron задач всех проектов шины;
+ *   node scheduler.js daemon                 - демон под pm2 (bus-cursor-scheduler): раз в 20 с сверяет cron задач всех проектов шины;
  *   node scheduler.js run <каталог> <имя> …  - отвязанный раннер одного запуска: демон и `schedule run` его не ждут.
  *
  * Задача - файл <проект>/.cursor/bus-cursor/scheduler/<имя>.md: frontmatter (cron, to, enabled, model, timeout, catchup, rules, runtime) + тело-промпт,
@@ -13,7 +13,7 @@
  *
  * Демон живёт, пока есть хоть одна включённая задача: поднимают и гасят его add / on / off / rm и UI (syncDaemon),
  * сам он гаснет, если задачи убрали руками. pm2 на Windows после перезагрузки не встаёт - в автозагрузку кладётся
- * bus-scheduler.vbs с `pm2 resurrect`.
+ * bus-cursor-scheduler.vbs с `pm2 resurrect`.
  *
  * Лимит автоподъёмов в час расписание не держит (human: true): петли здесь быть не может, тормоз - сам cron;
  * частое расписание режет saveJob(). Рубильник autowake off гасит и расписание.
@@ -27,7 +27,7 @@ const cron = require('./cron.js');
 const wake = require('./wake.js');
 const { stamp, writeAtomic, readJson, writeJson, appendLog: appendTo, alive, lockHeld, takeRunLock } = require('./fsx.js');
 
-const PM2_NAME = 'bus-scheduler';
+const PM2_NAME = 'bus-cursor-scheduler';
 const PM2_CMD = process.env.BUS_PM2_CMD || 'pm2'; // подменяют тесты
 const HEARTBEAT = path.join(bus.BUS, 'scheduler.json'); // { pid, at, lastTick } - жив ли демон, без вызова pm2 (тот стоит секунды)
 const STARTUP_DIR = process.env.BUS_STARTUP_DIR || (process.env.APPDATA ? path.join(process.env.APPDATA, 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup') : null);
@@ -331,16 +331,19 @@ function reportToFeed(job, report) {
 /** Движок задачи без адресата: свой в задаче, иначе schedule.runtime каталога, пусто - Cursor, если CLI есть (wake.pickRuntime). */
 const runtimeOfJob = (job) => wake.pickRuntime(job.runtime || conf(job.root)['schedule.runtime'] || 'cursor');
 
-/** Чем пойдёт задача - для list и add: у Claude модель, у Cursor движок и его модель, если задана. */
-const engineOf = (job) => (runtimeOfJob(job) === 'cursor' ? (job.model ? `cursor, ${job.model}` : 'cursor') : modelOf(job));
+/** Чем пойдёт задача - для list и add: у Cursor - движок и модель (задачи или schedule.model). */
+const engineOf = (job) => {
+  if (runtimeOfJob(job) !== 'cursor') return modelOf(job);
+  const model = job.model || conf(job.root)['schedule.model'];
+  return model ? `cursor, ${model}` : 'cursor';
+};
 
 async function runHeadless(job) {
   if (!wake.enabled()) return { state: 'skipped', reason: 'автоподъём выключен (bus.js autowake on)' };
   const cwd = cwdOf(job.root);
-  // Cursor: модели Claude (schedule.model, модель оркестратора) ему чужие - только модель самой задачи; роль оркестратора - в промпт:
-  // хука SessionStart с BUS_ORCHESTRATOR у Cursor нет
+  // Cursor: модель задачи, иначе schedule.model из шестерёнки; роль оркестратора - в промпт (хука sessionStart с BUS_ORCHESTRATOR у Cursor нет)
   const r = runtimeOfJob(job) === 'cursor'
-    ? await wake.runAgent({ runtime: 'cursor', cwd, model: job.model || null, role: job.root ? settings.orchestrator(job.root, conf(job.root)).prompt : '', prompt: headlessPrompt(job), timeoutMs: job.timeout * 60000 })
+    ? await wake.runAgent({ runtime: 'cursor', cwd, model: job.model || conf(job.root)['schedule.model'] || null, role: job.root ? settings.orchestrator(job.root, conf(job.root)).prompt : '', prompt: headlessPrompt(job), timeoutMs: job.timeout * 60000 })
     // Глобальные CLAUDE.md и rules/ - про чат с пользователем, в фоне это ≈3.3к токенов шума на запуск; нужны задаче - rules: true в её файле
     : await wake.runClaude({ cwd, model: modelOf(job), settings: job.rules ? null : wake.headlessSettings(dirOf(job.root)), prompt: headlessPrompt(job), timeoutMs: job.timeout * 60000, orchestrator: Boolean(job.root) });
   reportToFeed(job, r.ok ? r.report : `СБОЙ: ${r.reason}`);
@@ -486,7 +489,7 @@ function startDaemon() {
   for (const end = Date.now() + START_WAIT_MS; Date.now() < end && !daemonAlive(); ) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
   pm2(['save', '--force']);
   const startup = installStartup();
-  return `демон поднят (pm2: ${PM2_NAME})${startup ? ', автозагрузка: bus-scheduler.vbs' : process.platform === 'win32' ? '' : '; после перезагрузки его вернёт pm2 startup'}`;
+  return `демон поднят (pm2: ${PM2_NAME})${startup ? ', автозагрузка: bus-cursor-scheduler.vbs' : process.platform === 'win32' ? '' : '; после перезагрузки его вернёт pm2 startup'}`;
 }
 
 function stopDaemon() {

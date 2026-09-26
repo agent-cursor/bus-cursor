@@ -1,5 +1,5 @@
 /**
- * Настройки шины по проектам: ~/.claude/bus/settings.json → { global: { ключ: значение }, projects: { "<каталог>": { ключ: значение } } }.
+ * Настройки шины по проектам: ~/.cursor/bus-cursor/settings.json → { global: { ключ: значение }, projects: { "<каталог>": { ключ: значение } } }.
  * Проект переопределяет дефолты из SCHEMA. В файле лежит только то, что от дефолта отличается;
  * каталога в файле нет (или root пустой - глобальный агент, UI вне проекта) - работают дефолты.
  * Ключи с global: true одни на все проекты и лежат в global: каталог им не нужен, сброс всех настроек проекта их не трогает.
@@ -21,7 +21,7 @@ const tr = (...args) => require('./ui-i18n.js').tr(...args);
 const CURSOR_HOME = process.env.CURSOR_HOME || path.join(os.homedir(), '.cursor');
 const CONFIG_DIR = process.env.BUS_CURSOR_CONFIG || CURSOR_HOME;
 const FILE = path.join(process.env.BUS_CURSOR_DATA || path.join(CURSOR_HOME, 'bus-cursor'), 'settings.json');
-const MODEL = /^[A-Za-z0-9._[\]-]{1,60}$/; // уходит в командную строку claude
+const MODEL = /^[A-Za-z0-9._[\]-]{1,60}$/; // уходит в --model Cursor CLI / имя модели в форме
 
 const GROUPS = [
   { key: 'wake', label: N('Подъём агентов') },
@@ -46,7 +46,7 @@ const SCHEMA = [
   { key: 'files.max', group: 'message', type: 'int', default: 10, min: 1, max: 20, unit: N('шт.'), label: N('Вложений в сообщении'),
     hint: N('Сколько файлов можно приложить к одному сообщению.') },
   { key: 'files.maxMb', group: 'message', type: 'int', default: 30, min: 1, max: 100, unit: N('МБ'), label: N('Размер вложения'),
-    hint: N('Предел размера одного приложенного файла. Копия каждого вложения остаётся в .claude/bus/files проекта.') },
+    hint: N('Предел размера одного приложенного файла. Копия каждого вложения остаётся в .cursor/bus-cursor/files проекта.') },
   { key: 'history.lines', group: 'message', type: 'int', default: 30, min: 5, max: 200, unit: N('строк'), label: N('Строк в history'),
     hint: N('Сколько последних сообщений агент получает командой history, когда вспоминает переписку.') },
   { key: 'history.chars', group: 'message', type: 'int', default: 8000, min: 2000, max: 50000, unit: N('символов'), label: N('Потолок history'),
@@ -57,29 +57,23 @@ const SCHEMA = [
   { key: 'agent.prompt', group: 'agent', type: 'text', default: '', max: 2000, unit: N('символов'), label: N('Агентам этого проекта'),
     hint: N('Добавка к общему тексту для субагентов этого проекта: приходит следом за ним, общий не заменяет.') },
 
-  // Оркестратор - сессия Claude в каталоге проекта. Общие (global) - дефолт всех оркестраторов, в шестерёнке; свои у проекта (form: false) -
-  // в карандаше у оркестратора, пусто - берётся общее. Промпт едет хуком SessionStart, модель, effort и fast - в .claude/settings.local.json проекта
+  // Оркестратор - чат Cursor IDE. Промпт - хук sessionStart. Модель чата - только в пикере Cursor (ниже form: false не показываем).
   { key: 'orchestrator.prompt', group: 'orchestrator', type: 'text', default: '', max: 2000, global: true, unit: N('символов'), label: N('Промпт всем оркестраторам'),
-    hint: N('Твои правила для сессии Claude в каталоге любого проекта шины. Приходят один раз в начале сессии, после /clear и после сжатия контекста; задачам расписания без адресата - тоже. Своё для проекта - карандаш у оркестратора.') },
-  { key: 'orchestrator.model', group: 'orchestrator', type: 'model', optional: true, default: '', global: true, label: N('Модель оркестраторов'),
-    hint: N('С какой модели стартует сессия в каталоге проекта шины: пишется в .claude/settings.local.json проекта. Пусто - шина модель не трогает. Открытая сессия переключится со следующего запуска.') },
-  { key: 'orchestrator.effort', group: 'orchestrator', type: 'choice', options: ['', 'low', 'medium', 'high', 'xhigh', 'max'], default: '', global: true, label: N('Effort оркестраторов'),
-    hint: N('Уровень рассуждений сессии в каталоге проекта (effortLevel в .claude/settings.local.json). Пусто - по умолчанию у модели.') },
-  { key: 'orchestrator.fast', group: 'orchestrator', type: 'bool', default: false, global: true, label: N('Fast mode оркестраторов'),
-    hint: N('Быстрый режим сессии в каталоге проекта (fastMode в .claude/settings.local.json). Есть только на Opus, стоит дороже.') },
+    hint: N('Твои правила для чата Cursor в каталоге любого проекта шины. Приходят хуком sessionStart в начале сессии и после сжатия контекста; задачам расписания без адресата - тоже. Своё для проекта - карандаш у оркестратора.') },
+  { key: 'orchestrator.model', group: 'orchestrator', type: 'model', optional: true, default: '', global: true, form: false, label: N('Модель оркестраторов'), hint: N('') },
+  { key: 'orchestrator.effort', group: 'orchestrator', type: 'choice', options: ['', 'low', 'medium', 'high', 'xhigh', 'max'], default: '', global: true, form: false, label: N('Effort оркестраторов'), hint: N('') },
+  { key: 'orchestrator.fast', group: 'orchestrator', type: 'bool', default: false, global: true, form: false, label: N('Fast mode оркестраторов'), hint: N('') },
   { key: 'orchestrator.projectPrompt', group: 'orchestrator', type: 'text', default: '', max: 2000, form: false, unit: N('символов'), label: N('Промпт оркестратора проекта'),
     hint: N('Добавка к общему промпту оркестраторов: приходит следом за ним.') },
-  { key: 'orchestrator.projectModel', group: 'orchestrator', type: 'model', optional: true, default: '', form: false, label: N('Модель оркестратора проекта'),
-    hint: N('Пусто - общая модель оркестраторов.') },
-  { key: 'orchestrator.projectEffort', group: 'orchestrator', type: 'choice', options: ['', 'low', 'medium', 'high', 'xhigh', 'max'], default: '', form: false, label: N('Effort оркестратора проекта'),
-    hint: N('Пусто - общий effort оркестраторов.') },
-  { key: 'orchestrator.projectFast', group: 'orchestrator', type: 'choice', options: ['', 'on', 'off'], default: '', form: false, label: N('Fast mode оркестратора проекта'),
-    hint: N('Пусто - как у всех оркестраторов.') },
+  { key: 'orchestrator.projectModel', group: 'orchestrator', type: 'model', optional: true, default: '', form: false, label: N('Модель оркестратора проекта'), hint: N('') },
+  { key: 'orchestrator.projectEffort', group: 'orchestrator', type: 'choice', options: ['', 'low', 'medium', 'high', 'xhigh', 'max'], default: '', form: false, label: N('Effort оркестратора проекта'), hint: N('') },
+  { key: 'orchestrator.projectFast', group: 'orchestrator', type: 'choice', options: ['', 'on', 'off'], default: '', form: false, label: N('Fast mode оркестратора проекта'), hint: N('') },
 
-  { key: 'schedule.model', group: 'schedule', type: 'model', default: '', form: false, label: N('Модель задач по расписанию (Claude)'),
-    hint: N('Только для движка Claude Code: модель headless-задачи, если в самой задаче не указана. У Cursor модель берётся из задачи (или Auto).') },
-  { key: 'schedule.runtime', group: 'schedule', type: 'choice', options: ['cursor', 'claude', ''], default: 'cursor', form: false, label: N('Движок задач без адресата'),
-    hint: N('Чем запускать задачу по расписанию без агента-адресата. В Bus Cursor по умолчанию Cursor CLI (agent -p).') },
+  // Расписание: движок всегда Cursor. Модель по умолчанию для задач без своей модели - из списка Cursor (пусто = Auto).
+  { key: 'schedule.model', group: 'schedule', type: 'model', optional: true, default: '', label: N('Модель задач по расписанию'),
+    hint: N('Модель Cursor CLI для задачи без адресата, если в самой задаче модель не указана. Пусто - Auto.') },
+  { key: 'schedule.runtime', group: 'schedule', type: 'choice', options: ['cursor'], default: 'cursor', form: false, label: N('Движок задач без адресата'),
+    hint: N('В Bus Cursor задачи без адресата всегда идут через Cursor CLI.') },
   { key: 'schedule.timeoutMin', group: 'schedule', type: 'int', default: 60, min: 1, max: 120, unit: N('мин'), label: N('Таймаут задачи'),
     hint: N('Сколько минут даётся задаче по расписанию, если в ней самой таймаут не указан.') },
   { key: 'schedule.minGapMin', group: 'schedule', type: 'int', default: 5, min: 1, max: 60, unit: N('мин'), label: N('Минимальный интервал'),
@@ -89,12 +83,12 @@ const SCHEMA = [
     hint: N('С какого веса непрочитанной и несжатой переписки он показывается рядом с агентом в списке.') },
   { key: 'ui.heavyTokens', group: 'ui', type: 'int', default: 3000, min: 0, max: 100000, atLeast: 'ui.showLoadFrom', unit: N('токенов'), label: N('Тяжёлый диалог от'),
     hint: N('С какого веса диалог подсвечивается: пора нажать «Сжать диалог», иначе агент затянет всё это в контекст.') },
-  { key: 'ui.runtime', group: 'ui', type: 'choice', options: ['cursor', 'claude', ''], default: 'cursor', form: false, label: N('Движок для сжатия и правки роли'),
-    hint: N('Чем выполнять «Сжать диалог» и «Переписать с ИИ». В Bus Cursor по умолчанию Cursor CLI.') },
-  { key: 'ui.summaryModel', group: 'ui', type: 'model', default: '', form: false, label: N('Модель для «Сжать диалог» (Claude)'),
-    hint: N('Только для Claude Code. У Cursor модель берётся сама (Auto).') },
-  { key: 'ui.rewriteModel', group: 'ui', type: 'model', default: '', form: false, label: N('Модель для правки роли (Claude)'),
-    hint: N('Только для Claude Code. У Cursor модель берётся сама (Auto).') },
+  { key: 'ui.runtime', group: 'ui', type: 'choice', options: ['cursor'], default: 'cursor', form: false, label: N('Движок для сжатия и правки роли'),
+    hint: N('В Bus Cursor «Сжать диалог» и «Переписать с ИИ» всегда идут через Cursor CLI.') },
+  { key: 'ui.summaryModel', group: 'ui', type: 'model', optional: true, default: '', label: N('Модель для «Сжать диалог»'),
+    hint: N('Модель Cursor для кнопки «Сжать диалог». Пусто - Auto. Задача простая - хватит быстрой модели.') },
+  { key: 'ui.rewriteModel', group: 'ui', type: 'model', optional: true, default: '', label: N('Модель для правки роли'),
+    hint: N('Модель Cursor для «Переписать с ИИ» в форме агента. Пусто - Auto. От модели зависит качество роли.') },
 ];
 
 const BY_KEY = new Map(SCHEMA.map((item) => [item.key, item]));

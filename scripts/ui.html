@@ -95,12 +95,134 @@
     --chat-theirs: #182533;
     color-scheme: dark;
   }
-  /* flat: без видео и стекла */
-  :root { --dim: 1; }
-  :root.has-video:not([data-theme="dark"]),
-  :root.has-video[data-theme="dark"] {
-    --glass-1: var(--panel); --glass-2: var(--glass-2); --glass-3: var(--glass-3);
-    --field: var(--field); --sheet: var(--sheet); --raised: var(--raised); --veil: transparent;
+  /* flat: без видео и стекла; --field-base держит непрозрачный цвет поля для color-mix */
+  :root { --dim: 1; --field-base: #f0f0f1; }
+  :root[data-theme="dark"] { --field-base: #242f3d; }
+  :root.has-video,
+  :root[data-bg]:not([data-bg=""]) {
+    --glass-1: color-mix(in srgb, var(--panel) calc(var(--dim) * 88%), transparent);
+    --glass-2: color-mix(in srgb, var(--panel) calc(var(--dim) * 78%), transparent);
+    --glass-3: color-mix(in srgb, var(--panel) calc(var(--dim) * 70%), transparent);
+    --field: color-mix(in srgb, var(--field-base) calc(var(--dim) * 86%), transparent);
+    --sheet: color-mix(in srgb, var(--panel) calc(var(--dim) * 90%), transparent);
+    --raised: color-mix(in srgb, var(--panel) calc(var(--dim) * 92%), transparent);
+    --blur: blur(18px) saturate(140%);
+    --veil: color-mix(in srgb, var(--bg) calc(var(--dim) * 48%), transparent);
+    --copper-glow: color-mix(in srgb, var(--copper-hi) 35%, transparent);
+  }
+
+  /* ---- цветные CSS-фоны (выбор в ⚙, localStorage bus-bg) ---- */
+  :root[data-bg="mist"] {
+    --bg: #e8eef5;
+    --blob-a: color-mix(in srgb, #7eb6ff 45%, transparent);
+    --blob-b: color-mix(in srgb, #b8a4ff 40%, transparent);
+    --blob-c: color-mix(in srgb, #9ad4c8 35%, transparent);
+    --grid: #2aabee12;
+  }
+  :root[data-theme="dark"][data-bg="mist"] {
+    --bg: #0c141c;
+    --blob-a: color-mix(in srgb, #3d7ab8 35%, transparent);
+    --blob-b: color-mix(in srgb, #6b5a9e 30%, transparent);
+    --blob-c: color-mix(in srgb, #2a7a6a 28%, transparent);
+    --grid: #6ab3f312;
+  }
+  :root[data-bg="aurora"] {
+    --bg: #e9f4ef;
+    --blob-a: color-mix(in srgb, #34d399 50%, transparent);
+    --blob-b: color-mix(in srgb, #818cf8 45%, transparent);
+    --blob-c: color-mix(in srgb, #22d3ee 40%, transparent);
+    --grid: #34d39914;
+  }
+  :root[data-theme="dark"][data-bg="aurora"] {
+    --bg: #071410;
+    --blob-a: color-mix(in srgb, #10b981 32%, transparent);
+    --blob-b: color-mix(in srgb, #6366f1 30%, transparent);
+    --blob-c: color-mix(in srgb, #06b6d4 28%, transparent);
+    --grid: #34d39914;
+  }
+  :root[data-bg="sunset"] {
+    --bg: #f7ebe4;
+    --blob-a: color-mix(in srgb, #fb923c 48%, transparent);
+    --blob-b: color-mix(in srgb, #f472b6 42%, transparent);
+    --blob-c: color-mix(in srgb, #fbbf24 38%, transparent);
+    --grid: #fb923c14;
+  }
+  :root[data-theme="dark"][data-bg="sunset"] {
+    --bg: #160e0c;
+    --blob-a: color-mix(in srgb, #ea580c 30%, transparent);
+    --blob-b: color-mix(in srgb, #db2777 28%, transparent);
+    --blob-c: color-mix(in srgb, #d97706 26%, transparent);
+    --grid: #fb923c12;
+  }
+  :root[data-bg="ocean"] {
+    --bg: #e4f2f6;
+    --blob-a: color-mix(in srgb, #0ea5e9 48%, transparent);
+    --blob-b: color-mix(in srgb, #06b6d4 42%, transparent);
+    --blob-c: color-mix(in srgb, #6366f1 36%, transparent);
+    --grid: #0ea5e914;
+  }
+  :root[data-theme="dark"][data-bg="ocean"] {
+    --bg: #061018;
+    --blob-a: color-mix(in srgb, #0284c7 32%, transparent);
+    --blob-b: color-mix(in srgb, #0891b2 28%, transparent);
+    --blob-c: color-mix(in srgb, #4f46e5 26%, transparent);
+    --grid: #38bdf812;
+  }
+  :root[data-bg="orchid"] {
+    --bg: #f3eaf6;
+    --blob-a: color-mix(in srgb, #c084fc 48%, transparent);
+    --blob-b: color-mix(in srgb, #f472b6 40%, transparent);
+    --blob-c: color-mix(in srgb, #818cf8 36%, transparent);
+    --grid: #c084fc14;
+  }
+  :root[data-theme="dark"][data-bg="orchid"] {
+    --bg: #120a16;
+    --blob-a: color-mix(in srgb, #a855f7 30%, transparent);
+    --blob-b: color-mix(in srgb, #db2777 26%, transparent);
+    --blob-c: color-mix(in srgb, #6366f1 24%, transparent);
+    --grid: #c084fc12;
+  }
+  :root[data-bg="citrus"] {
+    --bg: #f5f3e4;
+    --blob-a: color-mix(in srgb, #a3e635 48%, transparent);
+    --blob-b: color-mix(in srgb, #facc15 42%, transparent);
+    --blob-c: color-mix(in srgb, #4ade80 36%, transparent);
+    --grid: #a3e63514;
+  }
+  :root[data-theme="dark"][data-bg="citrus"] {
+    --bg: #101208;
+    --blob-a: color-mix(in srgb, #65a30d 30%, transparent);
+    --blob-b: color-mix(in srgb, #ca8a04 28%, transparent);
+    --blob-c: color-mix(in srgb, #16a34a 24%, transparent);
+    --grid: #a3e63512;
+  }
+  :root[data-bg="ember"] {
+    --bg: #f6e8e6;
+    --blob-a: color-mix(in srgb, #f87171 48%, transparent);
+    --blob-b: color-mix(in srgb, #fb923c 40%, transparent);
+    --blob-c: color-mix(in srgb, #e11d48 34%, transparent);
+    --grid: #f8717114;
+  }
+  :root[data-theme="dark"][data-bg="ember"] {
+    --bg: #140808;
+    --blob-a: color-mix(in srgb, #dc2626 30%, transparent);
+    --blob-b: color-mix(in srgb, #ea580c 26%, transparent);
+    --blob-c: color-mix(in srgb, #be123c 24%, transparent);
+    --grid: #f8717112;
+  }
+  :root[data-bg="slate"] {
+    --bg: #eceef1;
+    --blob-a: color-mix(in srgb, #94a3b8 40%, transparent);
+    --blob-b: color-mix(in srgb, #64748b 35%, transparent);
+    --blob-c: color-mix(in srgb, #cbd5e1 38%, transparent);
+    --grid: #64748b12;
+  }
+  :root[data-theme="dark"][data-bg="slate"] {
+    --bg: #0c0e12;
+    --blob-a: color-mix(in srgb, #475569 28%, transparent);
+    --blob-b: color-mix(in srgb, #334155 26%, transparent);
+    --blob-c: color-mix(in srgb, #1e293b 30%, transparent);
+    --grid: #94a3b812;
   }
 
 
@@ -129,9 +251,11 @@
   body::after { inset: -48px 0 0 -48px; background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 48px 48px; -webkit-mask-image: radial-gradient(120% 90% at 50% 40%, #000 40%, transparent); mask-image: radial-gradient(120% 90% at 50% 40%, #000 40%, transparent); animation: grid-pan 24s linear infinite; }
   @keyframes drift { 0% { transform: translate(0, 0) rotate(0deg) scale(1); } 50% { transform: translate(2%, -2%) rotate(4deg) scale(1.03); } 100% { transform: translate(-2%, 2%) rotate(-3deg) scale(1.01); } }
   @keyframes grid-pan { to { transform: translate(48px, 48px); } }
-  /* Видеофон (ролики qwatra, выбор - в ⚙): под пятнами, а пятна и сетка при нём гаснут. Ролик чуть размыт и увеличен - края размытия за экраном;
+  :root.has-video body { background: transparent; }
+  /* Видеофон (ролики, выбор - в ⚙): под пятнами, а пятна и сетка при нём гаснут. Ролик чуть размыт и увеличен - края размытия за экраном;
      вуаль по теме держит контраст стекла. Смена ролика - наплыв: новый проявляется поверх старого, старый убирает скрипт */
-  .bg-video { display: none !important; position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none; }
+  .bg-video { display: none; position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none; }
+  :root.has-video .bg-video { display: block; }
   .bg-video video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(3px); scale: 1.04; opacity: 0; transition: opacity .8s ease; }
   .bg-video video.on { opacity: 1; }
   .bg-video::after { content: ""; position: absolute; inset: 0; background: var(--veil); opacity: 0; transition: opacity .8s ease; }
@@ -263,17 +387,52 @@
   .lvl-low { --lvl: var(--done); }
   .lvl-mid { --lvl: var(--amber); }
   .lvl-high { --lvl: var(--danger); }
-  /* Стеклянная плашка высотой с кнопки шапки; на каждое окно - подпись, тонкая шкала, процент и остаток до сброса */
-  .limits { display: inline-flex; align-items: center; gap: 16px; min-height: var(--h); padding: 0 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--glass-1); box-shadow: 0 1px 0 var(--edge) inset; white-space: nowrap; cursor: help; animation: pop-in .4s var(--ease); transition: opacity .3s; }
-  .limits[hidden] { display: none; }
-  .limits.stale { opacity: .5; }
-  .limits .win { display: inline-flex; align-items: center; gap: 8px; }
-  .limits .label { font: 600 11px/1 var(--label); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
-  .limits .pct { font: 600 13px/1 var(--label); font-variant-numeric: tabular-nums; color: var(--ink); }
-  .limits .left { font: 12px/1 var(--label); font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+  /* Компактная кнопка лимитов + выпадающая панель с деталями */
+  .limits-wrap { position: relative; flex: none; animation: pop-in .4s var(--ease); }
+  .limits-wrap[hidden] { display: none !important; }
+  .limits-btn { gap: 7px; padding: 0 10px; font-variant-numeric: tabular-nums; }
+  .limits-btn.stale { opacity: .55; }
+  .limits-btn.warn { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, var(--line)); background: color-mix(in srgb, var(--danger) 8%, var(--glass-1)); }
+  .limits-btn[aria-expanded="true"] { color: var(--copper); background: var(--copper-soft); border-color: color-mix(in srgb, var(--copper) 40%, var(--line)); }
+  .limits-btn .limits-sum { display: inline-flex; align-items: center; gap: 6px; }
+  .limits-btn .pct { font: 600 13px/1 var(--label); }
+  .limits-menu {
+    position: absolute; top: calc(100% + 6px); right: 0; z-index: 12;
+    width: min(300px, calc(100vw - 24px));
+    padding: 10px 12px 12px;
+    background: var(--panel); border: 1px solid var(--line-strong); border-radius: 12px;
+    box-shadow: var(--shadow-pop);
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .limits-menu[hidden] { display: none !important; }
+  .limits-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .limits-head b { font: 600 13px/1.2 var(--body); color: var(--ink); }
+  .limits-age { font: 11px/1.3 var(--label); color: var(--ink-soft); text-align: right; }
+  .limits-age.stale { color: var(--amber); }
+  .limits-age-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    margin: -2px -4px; padding: 2px 4px; border: 0; border-radius: 6px;
+    background: none; color: inherit; font: inherit; cursor: pointer;
+  }
+  .limits-age-btn .icon { width: 12px; height: 12px; opacity: 0; transition: opacity .15s; }
+  .limits-age-btn:hover .icon,
+  .limits-age-btn:focus-visible .icon,
+  .limits-age-btn.busy .icon { opacity: 1; }
+  .limits-age-btn:hover,
+  .limits-age-btn:focus-visible { color: var(--copper); background: var(--copper-soft); }
+  .limits-age-btn.busy .icon { animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .limits-row {
+    display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; grid-template-rows: auto auto;
+    gap: 4px 10px; align-items: center;
+  }
+  .limits-row .label { grid-row: 1; grid-column: 1; font: 600 11px/1 var(--label); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+  .limits-row .meter { grid-row: 1; grid-column: 2; width: 100%; }
+  .limits-row .pct { grid-row: 1; grid-column: 3; font: 600 13px/1 var(--label); font-variant-numeric: tabular-nums; color: var(--ink); min-width: 3.2em; text-align: right; }
+  .limits-row .meta { grid-row: 2; grid-column: 1 / -1; font: 12px/1.3 var(--label); font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+  .limits-row.reset .pct { color: var(--ink-soft); font-weight: 400; }
   .meter { position: relative; width: 56px; height: 4px; border-radius: 999px; background: var(--line); overflow: hidden; }
   .meter i { position: absolute; inset: 0 auto 0 0; width: var(--p); border-radius: inherit; background: linear-gradient(90deg, color-mix(in srgb, var(--lvl) 65%, transparent), var(--lvl)); box-shadow: 0 0 8px color-mix(in srgb, var(--lvl) 60%, transparent); transition: width .6s var(--ease); }
-  .limits .reset .pct { color: var(--ink-soft); font-weight: 400; }
   /* На вкладке - кольцо: заполненная дуга цветом уровня, рядом процент */
   .tab .ctx { flex: none; display: inline-flex; align-items: center; gap: 5px; margin-left: 8px; padding: 2px 6px 2px 4px; border-radius: 999px; font: 600 11px/1 var(--label); font-variant-numeric: tabular-nums; color: var(--ink-soft); cursor: help; transition: background-color .2s, color .2s; }
   .tab.on .ctx { color: var(--ink); }
@@ -288,12 +447,98 @@
   .iconbtn:active:not(:disabled) { transform: scale(1.14); }
   .ghost:disabled { opacity: .55; }
   .iconbtn { width: var(--h); padding: 0; }
-  .ghost.update-btn { background: radial-gradient(120% 140% at 15% 10%, var(--copper-hi), var(--copper) 70%); border-color: var(--copper); color: var(--on-copper); font-weight: 600; animation: glow 3s ease-in-out infinite; }
-  .ghost.update-btn:hover:not(:disabled) { color: var(--on-copper); filter: brightness(1.08); }
-  .ghost.update-btn:disabled { opacity: .7; cursor: progress; animation: none; }
-  .update-news { font-size: 14px; color: var(--copper); text-underline-offset: 2px; }
-  .update-note { display: flex; align-items: center; gap: 8px; padding: 8px var(--gutter); font-size: 14px; background: var(--copper-soft); color: var(--copper); font-weight: 600; border-bottom: 1px solid color-mix(in srgb, var(--copper) 30%, transparent); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
-  .update-note.bad { background: var(--danger); color: var(--on-danger); }
+  .ghost.update-pulse {
+    color: var(--done);
+    background: color-mix(in srgb, var(--done) 14%, var(--glass-1));
+    border-color: color-mix(in srgb, var(--done) 40%, var(--line));
+    animation: update-soft-pulse 2.2s ease-in-out infinite;
+  }
+  .ghost.update-pulse:hover:not(:disabled) {
+    color: var(--done);
+    background: color-mix(in srgb, var(--done) 22%, var(--glass-1));
+    border-color: var(--done);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--done) 18%, transparent);
+  }
+  .ghost.update-pulse:disabled { opacity: .7; cursor: progress; animation: none; }
+  @keyframes update-soft-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--done) 35%, transparent); }
+    50% { box-shadow: 0 0 0 7px transparent; }
+  }
+  .update-backdrop {
+    position: fixed; inset: 0; z-index: 70;
+    background: color-mix(in srgb, var(--bg) 45%, transparent);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+    backdrop-filter: blur(14px) saturate(120%);
+    animation: fade-in .25s var(--ease);
+  }
+  .update-modal {
+    position: fixed; z-index: 71; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(440px, calc(100vw - 32px));
+    max-height: min(80vh, 640px);
+    overflow: auto;
+    padding: 28px 24px 22px;
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-pop);
+    text-align: center;
+    animation: need-pop .3s var(--ease);
+  }
+  .update-modal .icon-wrap {
+    width: 52px; height: 52px; margin: 0 auto 14px;
+    display: grid; place-items: center;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--done) 14%, transparent);
+    color: var(--done);
+  }
+  .update-modal .icon-wrap .icon { width: 24px; height: 24px; }
+  .update-modal.bad .icon-wrap { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); }
+  .update-modal h2 { margin: 0 0 6px; font: 650 18px/1.3 var(--label); color: var(--ink); }
+  .update-versions {
+    margin: 0 0 14px;
+    font: 600 13px/1.3 var(--mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-soft);
+  }
+  .update-notes {
+    margin: 0 0 12px; padding: 12px 14px;
+    max-height: 160px; overflow: auto;
+    text-align: left;
+    border-radius: 10px;
+    background: var(--field);
+    border: 1px solid var(--line);
+    font: 13px/1.45 var(--body);
+    color: var(--ink-soft);
+    white-space: pre-wrap;
+  }
+  .update-notes:empty { display: none; }
+  .update-link {
+    display: inline-block; margin: 0 0 18px;
+    font: 600 13px/1.3 var(--body); color: var(--copper);
+    text-underline-offset: 2px;
+  }
+  .update-link[hidden] { display: none !important; }
+  .update-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .update-actions .send, .update-actions .ghost { min-height: var(--h-lg); padding: 0 16px; }
+  .update-progress { margin: 8px 0 4px; }
+  .update-progress-text { margin: 0 0 10px; font: 600 13px/1.3 var(--body); color: var(--ink); }
+  .update-bar {
+    position: relative; height: 6px; border-radius: 999px;
+    background: var(--line); overflow: hidden;
+  }
+  .update-bar > i {
+    position: absolute; inset: 0 auto 0 0; width: var(--p, 0%);
+    border-radius: inherit; background: var(--done);
+    transition: width .25s var(--ease);
+  }
+  .update-progress-meta {
+    margin: 8px 0 0;
+    font: 12px/1.3 var(--label); font-variant-numeric: tabular-nums;
+    color: var(--ink-soft);
+  }
+  .update-done-text { margin: 0 0 16px; font: 14px/1.45 var(--body); color: var(--ink); }
+  .update-done-text.bad { color: var(--danger); }
   #toggleAgents { display: none; }
   /* Пока связь есть, молчим: индикатор «всё хорочто» - шум. Полоса появляется, только когда лента перестала быть живой */
   .link { display: none; align-items: center; gap: 8px; padding: 8px var(--gutter); font-size: 14px; background: color-mix(in srgb, var(--danger) 88%, transparent); color: var(--on-danger); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: 0 8px 24px -10px color-mix(in srgb, var(--danger) 70%, transparent); }
@@ -784,13 +1029,80 @@
     font-size: 11px; color: var(--ink-soft); opacity: .85;
   }
   #fromHint:empty { display: none; }
-  .result {
-    flex: 1 1 100%; margin: 0; min-height: 0;
-    font-size: 12px; line-height: 16px; color: var(--ink-soft);
-  }
-  .result:empty { display: none; }
-  .result.bad { color: var(--danger); }
   #attachHint { display: none !important; }
+
+  /* ---- тосты: общие уведомления сверху по центру ---- */
+  .toasts {
+    position: fixed;
+    top: max(12px, env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 110;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    width: min(420px, calc(100vw - 24px));
+    pointer-events: none;
+  }
+  .toast {
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 10px 11px 12px;
+    border-radius: 12px;
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    box-shadow: var(--shadow-pop);
+    color: var(--ink);
+    animation: toast-in .28s var(--ease);
+  }
+  .toast.out { animation: toast-out .22s var(--ease) forwards; }
+  .toast.bad { border-color: color-mix(in srgb, var(--danger) 45%, var(--line-strong)); background: color-mix(in srgb, var(--danger) 6%, var(--panel)); }
+  .toast.ok { border-color: color-mix(in srgb, var(--done) 40%, var(--line-strong)); }
+  .toast-icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    margin-top: 1px;
+    border-radius: 8px;
+    background: var(--copper-soft);
+    color: var(--copper);
+  }
+  .toast.ok .toast-icon { background: color-mix(in srgb, var(--done) 14%, transparent); color: var(--done); }
+  .toast.bad .toast-icon { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); }
+  .toast-icon .icon { width: 15px; height: 15px; }
+  .toast-body {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    padding-top: 4px;
+    font: 13px/1.4 var(--body);
+    color: var(--ink);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .toast-close {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    margin: -2px -2px 0 0;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .toast-close:hover { color: var(--ink); background: var(--glass-2); }
+  .toast-close .icon { width: 14px; height: 14px; }
+  @keyframes toast-in { from { opacity: 0; transform: translateY(-10px) scale(.98); } }
+  @keyframes toast-out { to { opacity: 0; transform: translateY(-8px) scale(.98); } }
 
   /* Главное действие - полупрозрачное, как кнопки qwatra: стекло с медным отсветом и медной рамкой. На наведении отсвет гуще и светится. Не дышит: анимированная тень перерисовывала размытую форму на каждом кадре */
   .send { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: var(--h-lg); background: color-mix(in srgb, var(--copper) 16%, var(--glass-1)); color: var(--ink); border: 1px solid color-mix(in srgb, var(--copper) 55%, transparent); border-radius: var(--r); padding: 0 16px; font: 700 12px/1.2 var(--label); letter-spacing: .08em; text-transform: uppercase; box-shadow: 0 1px 0 var(--edge) inset, 0 8px 22px -12px var(--copper-glow); transition: background-color .25s, border-color .25s, transform .3s var(--ease), box-shadow .3s; }
@@ -969,7 +1281,14 @@
   .schedule form details, .schedule form .role-ai, .schedule form .role-where { grid-column: 1 / -1; min-width: 0; }
   .schedule form textarea { min-height: 90px; max-height: min(35vh, 320px); }
   .schedule form #agentBody { min-height: 160px; max-height: min(55vh, 560px); font: 14px/1.5 var(--mono); }
-  .schedule form #agentAsk { min-height: 56px; max-height: min(25vh, 200px); }
+  .schedule form #agentAsk {
+    min-height: 56px;
+    max-height: min(40vh, 360px);
+    field-sizing: content;
+    resize: none;
+    overflow-y: hidden;
+    line-height: 1.45;
+  }
   .schedule form #schedPrompt { min-height: 90px; max-height: min(35vh, 320px); }
   /* Доступ агента: пресет и итог в шапке, ниже галочки групп в две колонки; дельта токенов прижата к правому краю строки */
   .access-head { display: grid; grid-template-columns: minmax(0, 220px) 1fr; gap: 12px; align-items: end; }
@@ -987,14 +1306,22 @@
   .role-ai-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .role-ai-note { margin: 0; font-size: 12px; color: var(--ink-soft); flex: 1; min-width: 140px; }
   .role-ai-note.bad { color: var(--danger); }
-  .role-ai-row .voice-hint, .role-ai-row .voice-rec { margin-left: auto; }
-  .sched-prompt-head { display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; }
-  .sched-prompt-head > .label { flex: 1; min-width: 0; }
+  .role-ai-head, .sched-prompt-head { display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; }
+  .role-ai-head > .label, .sched-prompt-head > .label { flex: 1; min-width: 0; }
+  .role-ai-head .voice-hint, .role-ai-head .voice-rec,
   .sched-prompt-head .voice-hint, .sched-prompt-head .voice-rec { flex: none; margin-left: 0; }
+  /* Mic в формах - круг, как в основном чате */
+  .role-ai-head .voice-hint, .sched-prompt-head .voice-hint {
+    width: 32px; min-width: 32px; height: 32px; min-height: 32px;
+    padding: 0; border-radius: 50%; justify-content: center; gap: 0;
+  }
+  .role-ai-head .voice-hint .icon, .sched-prompt-head .voice-hint .icon {
+    width: 16px; height: 16px; opacity: 1;
+  }
   /* Активная запись - чуть воздуха вокруг плашки, чтобы не прилипала к полю и соседям */
   .voice-rec:not([hidden]) { margin-block: 4px; }
+  .role-ai-head:has(.voice-rec:not([hidden])),
   .sched-prompt-head:has(.voice-rec:not([hidden])) { margin-bottom: 8px; }
-  .role-ai-row:has(.voice-rec:not([hidden])) { margin-bottom: 8px; gap: 10px; }
   #composer .voice-rec:not([hidden]) { margin: 4px 6px 6px 0; }
   /* Голосовой ввод: подсказка в покое и индикатор записи с пульсом - один вид в композере и в форме агента */
   .voice-hint {
@@ -1052,49 +1379,152 @@
 
   /* ---- настройки проекта (шестерёнка) ---- */
   #settingsBtn:hover:not(:disabled) .icon { transform: rotate(60deg); }
-  #settingsBtn .icon, #theme .icon { transition: transform .5s var(--ease); }
-  #theme:hover:not(:disabled) .icon { transform: rotate(180deg); }
+  #settingsBtn .icon { transition: transform .5s var(--ease); }
   .settings-list, #settingsStatus { grid-column: 1 / -1; }
-  /* Фон - миниатюры 16:9: кадр ролика, на наведении он играет. Выбранная - медная линия по контуру и ромб в углу, без свечения, как открытая вкладка.
-     Радио настоящие (стрелки, скринридер), спрятаны под плиткой; фокус рисует сама плитка */
-  .bg-pick, .app-pick { grid-column: 1 / -1; display: grid; gap: 8px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
-  .bg-dim { display: grid; grid-template-columns: auto minmax(0, 1fr) 44px; align-items: center; gap: 4px 16px; margin-top: 4px; }
+  /* Фон: цветные CSS-темы и видео. Затемнение - плотность стекла над фоном */
+  .ui-prefs, .bg-pick, .app-pick {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 12px;
+    padding: 4px 0 20px;
+    margin: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .ui-prefs + .bg-pick, .bg-pick + .app-pick { border-top: 0; padding-top: 20px; }
+  .ui-prefs-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px 16px;
+  }
+  .ui-pref { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .ui-pref-label {
+    font: 600 12px/1.2 var(--label);
+    letter-spacing: .04em;
+    color: var(--ink-soft);
+  }
+  .ui-seg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 12px;
+    background: var(--field);
+    border: 1px solid var(--line);
+  }
+  .ui-seg-btn {
+    min-height: 36px;
+    margin: 0; padding: 0 10px;
+    border: 0; border-radius: 9px;
+    background: transparent;
+    color: var(--ink-soft);
+    font: 600 13px/1.2 var(--body);
+    cursor: pointer;
+    transition: background-color .15s, color .15s;
+  }
+  .ui-seg-btn:hover { color: var(--ink); background: var(--glass-2); }
+  .ui-seg-btn[aria-pressed="true"] {
+    color: var(--ink);
+    background: var(--panel);
+    box-shadow: 0 1px 0 var(--line), 0 4px 12px -8px #0004;
+  }
+  .ui-prefs > .hint { margin: 0; padding: 0; max-width: 42rem; }
+  .bg-section-label { margin: 4px 0 0; font: 700 11px/1 var(--label); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+  .bg-dim { display: grid; grid-template-columns: auto minmax(0, 1fr) 48px; align-items: center; gap: 6px 14px; margin-top: 2px; }
   .bg-dim output { font: 12px var(--mono); color: var(--ink-soft); text-align: right; font-variant-numeric: tabular-nums; }
   .bg-dim .settings-revert { grid-column: 2 / -1; justify-self: start; }
-  .bg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
-  .bg-opt { position: relative; aspect-ratio: 16 / 9; border-radius: var(--r); overflow: hidden; cursor: pointer; border: 1px solid var(--line); background: var(--glass-1); box-shadow: 0 1px 0 var(--edge) inset; transition: border-color .2s; }
-  .bg-opt:hover { border-color: var(--line-strong); }
+  .bg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+  .bg-opt { position: relative; aspect-ratio: 16 / 9; border-radius: var(--r); overflow: hidden; cursor: pointer; border: 1px solid var(--line); background: var(--glass-1); box-shadow: 0 1px 0 var(--edge) inset; transition: border-color .2s, transform .25s var(--ease); }
+  .bg-opt:hover { border-color: var(--line-strong); transform: translateY(-1px); }
   .bg-opt input { position: absolute; opacity: 0; pointer-events: none; }
-  .bg-opt video, .bg-opt .bg-none { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: scale .5s var(--ease); }
+  .bg-opt video, .bg-opt .bg-face { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: scale .5s var(--ease); }
   .bg-opt:hover video { scale: 1.08; }
-  .bg-none { display: grid; place-items: center; background: radial-gradient(80% 90% at 20% 25%, var(--blob-a), transparent), radial-gradient(80% 90% at 85% 30%, var(--blob-b), transparent), radial-gradient(90% 80% at 55% 100%, var(--blob-c), transparent), var(--bg); }
-  .bg-none span { font: 700 12px/1.2 var(--label); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); text-align: center; padding: 0 6px; }
+  .bg-face { display: grid; place-items: end stretch; padding: 8px; background: var(--preview, var(--bg)); }
+  .bg-face span { font: 700 11px/1.2 var(--label); letter-spacing: .06em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 8px #0008; }
+  .bg-none { display: grid; place-items: center; background: var(--bg); }
+  .bg-none span { font: 700 11px/1.2 var(--label); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); text-align: center; padding: 0 6px; }
   .bg-opt::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 2px transparent; transition: box-shadow .2s; pointer-events: none; }
   .bg-opt:has(:checked) { border-color: var(--copper); }
   .bg-opt:has(:checked)::after { box-shadow: inset 0 0 0 1px var(--copper); }
   .bg-opt::before { content: ""; position: absolute; z-index: 1; top: 7px; right: 7px; width: 8px; height: 8px; rotate: 45deg; border-radius: 2px; background: var(--copper); box-shadow: 0 0 0 2px var(--bg); transform: scale(0); transition: transform .25s var(--ease); }
   .bg-opt:has(:checked)::before { transform: scale(1); }
   .bg-opt:has(:focus-visible) { outline: 2px solid var(--copper); outline-offset: 2px; }
+  .app-pick .shortcut-btn {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: var(--h-lg);
+    padding: 0 18px;
+    border-radius: var(--r);
+    font-weight: 600;
+    letter-spacing: .01em;
+    box-shadow: 0 1px 0 var(--edge) inset, var(--shadow-lift);
+  }
+  .app-pick .shortcut-btn .icon { width: 18px; height: 18px; flex: none; }
+  .app-pick .shortcut-btn span { line-height: 1.2; }
+  .app-pick > .hint { margin: 0; padding: 0; max-width: 42rem; }
+  #settingsForm > .hint.settings-scope-hint { margin: 16px 0 8px; padding: 0; grid-column: 1 / -1; }
   .settings-list { display: grid; gap: 0; }
   .settings-group-label { margin: 0; padding: 24px 0 0; }
   .settings-group-label:first-child { padding-top: 0; }
-  .settings-field { display: grid; gap: 8px; padding: 14px 0 16px; border-top: 1px solid var(--line); }
+  .settings-field { display: grid; gap: 10px; padding: 14px 0 18px; border-top: 1px solid var(--line); }
   .settings-group-label + .settings-field { border-top: 0; padding-top: 10px; } /* заголовок группы - сам разделитель, линия под ним отрывала его от поля */
-  .settings-field-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-  .settings-field-name { font-size: 14px; }
+  .settings-field-head { display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; flex-wrap: wrap; }
+  .settings-field-name { font-size: 14px; flex: 1; min-width: 0; }
+  .settings-field-tools { display: inline-flex; align-items: center; gap: 6px; flex: none; margin-left: auto; }
   .settings-field.changed .settings-field-name { display: inline-flex; align-items: center; gap: 6px; }
   .settings-field.changed .settings-field-name::before { content: ""; width: 6px; height: 6px; rotate: 45deg; border-radius: 1px; background: var(--copper); box-shadow: 0 0 6px var(--copper-glow); flex: none; }
   .settings-revert { border: 0; background: none; padding: 0; margin: 0; font-size: 12px; color: var(--copper); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; flex: none; }
   .settings-revert:hover { opacity: .8; }
+  .settings-field-head .voice-hint, .settings-field-head .voice-rec { flex: none; margin: 0; }
+  .settings-field-head:has(.voice-rec:not([hidden])) { margin-bottom: 2px; }
   .settings-control { display: flex; align-items: center; gap: 8px; }
+  .settings-control:has(> select) { display: block; width: 100%; }
+  .settings-control > select { width: 100%; max-width: 100%; }
   .settings-control input[type="number"], .settings-control input[type="text"] { width: 140px; flex: 0 0 140px; }
   .settings-unit { font-size: 12px; color: var(--ink-soft); white-space: nowrap; }
-  .settings-field-text .settings-control { display: grid; gap: 4px; align-items: stretch; }
-  .settings-field-text textarea { min-height: 80px; max-height: min(40vh, 360px); font-size: 14px; line-height: 18px; }
+  .settings-field-text .settings-control { display: grid; gap: 6px; align-items: stretch; }
+  .settings-field-text textarea {
+    min-height: 72px; max-height: min(40vh, 360px); font-size: 14px; line-height: 20px; width: 100%;
+    resize: none; overflow-y: hidden; field-sizing: content;
+  }
+  .settings-field-text textarea.listening {
+    border-color: var(--copper);
+    box-shadow: 0 0 0 3px var(--copper-soft), 0 0 24px -8px var(--copper-glow);
+  }
+  .settings-text-area { position: relative; display: grid; }
+  /* Нет агентов: само поле заблюрено, поверх по центру подпись */
+  .settings-field-text.empty-agents .settings-text-area textarea {
+    filter: blur(2.5px);
+    opacity: .42;
+    pointer-events: none;
+    user-select: none;
+  }
+  .settings-empty-agents {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 12px 16px;
+    text-align: center;
+    font: 600 13px/1.35 var(--label);
+    letter-spacing: .02em;
+    color: var(--ink);
+    background: color-mix(in srgb, var(--field) 40%, transparent);
+    border-radius: var(--r);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .settings-empty-agents[hidden] { display: none !important; }
   .settings-count { font-size: 12px; color: var(--ink-soft); justify-self: end; font-variant-numeric: tabular-nums; }
   .settings-count.over { color: var(--danger); }
   .settings-field.changed .settings-scope { margin-left: 0; }
-  .settings-field .hint { padding: 0; margin: 0; }
+  /* Пояснение под контролом: .schedule form .hint { margin-top: -10px } тянет текст впритык - здесь обнуляем, воздух даёт gap поля */
+  .schedule form .settings-field > .hint {
+    padding: 0;
+    margin: 0;
+    max-width: 42rem;
+  }
   .settings-field-error { color: var(--danger); font-size: 12px; margin: 0; }
   /* Булевы настройки - та же строка с галочкой и подсказкой, что у групп доступа агента */
   .schedule form .settings-list label.check { align-self: auto; min-height: 0; align-items: start; }
@@ -1154,9 +1584,7 @@
   }
 
   @media (max-width: 820px) {
-    /* Лимиты - во всю строку шапки под каталогом; остаток до сброса - в подсказке */
-    .limits { order: 1; flex: 1 1 100%; justify-content: center; gap: 12px; }
-    .limits .left { display: none; }
+    .limits-menu { left: 0; right: auto; }
     .meter { width: 40px; }
     .dialog-history li { flex-wrap: wrap; gap: 2px 8px; }
     .dialog-history .title { flex-basis: 100%; }
@@ -1271,8 +1699,27 @@
     --chat-theirs: #182533;
   }
 
-  body::before, body::after { display: none !important; }
-  .bg-video { display: none !important; }
+  /* Плоский режим: без пятен и видео. Цветной CSS-фон и видео снова включают их ниже. */
+  :root:not([data-bg]):not(.has-video) body::before,
+  :root:not([data-bg]):not(.has-video) body::after { display: none !important; }
+  .bg-video { display: none; }
+  :root.has-video .bg-video { display: block !important; }
+  :root[data-bg] body::before,
+  :root[data-bg] body::after { display: block !important; }
+
+  /* Стекло поверх фона - после Telegram-оверрайда переменных */
+  :root.has-video,
+  :root[data-bg]:not([data-bg=""]) {
+    --glass-1: color-mix(in srgb, var(--panel) calc(var(--dim) * 88%), transparent);
+    --glass-2: color-mix(in srgb, var(--panel) calc(var(--dim) * 78%), transparent);
+    --glass-3: color-mix(in srgb, var(--panel) calc(var(--dim) * 70%), transparent);
+    --field: color-mix(in srgb, var(--field-base) calc(var(--dim) * 86%), transparent);
+    --sheet: color-mix(in srgb, var(--panel) calc(var(--dim) * 90%), transparent);
+    --raised: color-mix(in srgb, var(--panel) calc(var(--dim) * 92%), transparent);
+    --blur: blur(18px) saturate(140%);
+    --veil: color-mix(in srgb, var(--bg) calc(var(--dim) * 48%), transparent);
+    --copper-glow: color-mix(in srgb, var(--copper-hi) 35%, transparent);
+  }
 
   /* ---- контролы: тонкие, без коробок ---- */
   input[type="checkbox"]::before {
@@ -1372,14 +1819,35 @@
     color: var(--danger) !important;
   }
 
-  .ghost.update-btn {
-    background: var(--copper) !important;
-    color: var(--on-copper) !important;
+  .ghost.update-pulse {
+    color: var(--done) !important;
+    background: color-mix(in srgb, var(--done) 12%, transparent) !important;
     border: 0 !important;
-    animation: none !important;
+    animation: update-soft-pulse 2.2s ease-in-out infinite !important;
+  }
+  .ghost.update-pulse:hover:not(:disabled) {
+    filter: none !important;
+    background: color-mix(in srgb, var(--done) 20%, transparent) !important;
+    color: var(--done) !important;
+  }
+  .update-backdrop {
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+  }
+  .update-modal {
+    border-radius: 16px !important;
+    border-color: var(--line) !important;
+    box-shadow: var(--shadow-pop) !important;
+  }
+  .ui-seg {
+    border-radius: 12px !important;
+    background: var(--field) !important;
+    border-color: var(--line) !important;
+  }
+  .ui-seg-btn[aria-pressed="true"] {
+    background: var(--panel) !important;
     box-shadow: none !important;
   }
-  .ghost.update-btn:hover:not(:disabled) { filter: none !important; background: var(--copper-hi) !important; color: var(--on-copper) !important; }
 
   .to-bottom {
     background: var(--copper) !important;
@@ -1432,19 +1900,31 @@
     font-size: 12px !important;
     font-weight: 600 !important;
   }
-  .limits {
-    gap: 12px !important;
-    min-height: var(--h-sm) !important;
-    padding: 0 10px !important;
-    border: 0 !important;
-    border-radius: var(--r-sm) !important;
-    background: var(--glass-2) !important;
-    box-shadow: none !important;
+  .limits-btn[aria-expanded="true"] {
+    color: var(--copper) !important;
+    background: var(--copper-soft) !important;
   }
-  .limits .label { font-size: 10px !important; letter-spacing: .06em !important; }
+  .limits-menu {
+    border-radius: 12px !important;
+    border-color: var(--line) !important;
+    box-shadow: var(--shadow-pop) !important;
+    background: var(--panel) !important;
+  }
+  .limits-row .label { font-size: 10px !important; letter-spacing: .06em !important; }
+  .limits-row .meter { width: 100% !important; height: 3px !important; }
   .meter { width: 40px !important; height: 3px !important; }
   .meter i { box-shadow: none !important; background: var(--lvl) !important; }
-  .link, .update-note {
+  .toast {
+    border-radius: 12px !important;
+    border-color: var(--line) !important;
+    box-shadow: var(--shadow-pop) !important;
+    background: var(--panel) !important;
+  }
+  .toast.bad {
+    border-color: color-mix(in srgb, var(--danger) 40%, var(--line)) !important;
+    background: color-mix(in srgb, var(--danger) 6%, var(--panel)) !important;
+  }
+  .link {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     box-shadow: none !important;
@@ -1925,6 +2405,14 @@
   #pickBtn, #filesBtn, #composer .voice-hint {
     width: 34px !important; min-height: 34px !important; height: 34px !important;
   }
+  .role-ai-head .voice-hint, .sched-prompt-head .voice-hint {
+    width: 32px !important; min-width: 32px !important; height: 32px !important; min-height: 32px !important;
+    padding: 0 !important; border-radius: 50% !important;
+    color: var(--ink-soft) !important; background: transparent !important;
+  }
+  .role-ai-head .voice-hint:hover, .sched-prompt-head .voice-hint:hover {
+    color: var(--ink) !important; background: var(--tap) !important;
+  }
   #pickBtn:hover:not(:disabled) { transform: none !important; }
   #filesBtn[aria-expanded="true"] {
     color: var(--copper) !important;
@@ -2048,7 +2536,16 @@
   }
 
   /* ---- настройки ---- */
-  .bg-pick, .app-pick { padding-bottom: 12px !important; }
+  .bg-pick, .app-pick {
+    padding: 4px 0 18px !important;
+    gap: 10px !important;
+  }
+  .bg-pick + .app-pick { padding-top: 18px !important; }
+  .app-pick .shortcut-btn {
+    border-radius: 10px !important;
+    min-height: 40px !important;
+    padding: 0 16px !important;
+  }
   .bg-opt {
     border: 0 !important;
     border-radius: 10px !important;
@@ -2064,7 +2561,8 @@
     width: 8px !important; height: 8px !important;
     box-shadow: 0 0 0 2px var(--bg) !important;
   }
-  .settings-field { padding: 10px 0 12px !important; gap: 6px !important; }
+  .settings-field { padding: 12px 0 16px !important; gap: 10px !important; }
+  .schedule form .settings-field > .hint { margin-top: 0 !important; }
   .settings-group-label { padding-top: 18px !important; }
   .settings-field.changed .settings-field-name::before {
     rotate: 0deg !important;
@@ -2135,6 +2633,7 @@
 </style>
 </head>
 <body>
+<div class="toasts" id="toasts" aria-live="polite" aria-relevant="additions"></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.5-4.5"/></symbol>
@@ -2175,19 +2674,18 @@
     <div class="projects-menu" id="projectsMenu" hidden role="menu" aria-label="Проекты"></div>
   </div>
   <div class="mine" id="mine" title="Открой диалог ответившего агента - его ответы прочитаны: сессия проекта их уже не получит и токены на них не потратит. Не откроешь - сессия увидит счётчик ответов на следующем промпте"><span id="mineText"></span></div>
-  <!-- Лимиты Cursor: План / Auto / API; рисует renderLimits -->
-  <div class="limits" id="limits" hidden></div>
+  <!-- Лимиты Cursor: компактная кнопка → панель План / Auto / API -->
+  <div class="limits-wrap" id="limitsWrap" hidden>
+    <button class="ghost limits-btn" id="limitsBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="limitsMenu" title="Лимиты Cursor" aria-label="Лимиты Cursor"><svg class="icon"><use href="#i-bolt"/></svg><span class="limits-sum" id="limitsSum"></span></button>
+    <div class="limits-menu" id="limitsMenu" hidden role="dialog" aria-label="Лимиты Cursor"></div>
+  </div>
   <button class="ghost" id="scheduleBtn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="schedule" title="Расписание: задачи по cron"><svg class="icon"><use href="#i-clock"/></svg>Расписание<span class="sched-badge" id="scheduleBadge" hidden>0</span></button>
   <button class="ghost" id="weightBtn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="weightPanel" title="Вес переписки этой директории: столько токенов агенты затянут в контекст, прочитав несжатое. Оценка: символы / 3"><svg class="icon"><use href="#i-squeeze"/></svg><span id="weightSum"></span></button>
-  <button class="ghost update-btn" id="updateBtn" type="button" hidden><svg class="icon"><use href="#i-download"/></svg><span id="updateLabel"></span></button>
-  <a class="update-news" id="updateNews" target="_blank" rel="noopener noreferrer" hidden>что нового</a>
+  <button class="ghost iconbtn update-pulse" id="updateBtn" type="button" hidden title="Доступно обновление" aria-label="Доступно обновление" aria-haspopup="dialog" aria-controls="updateModal"><svg class="icon"><use href="#i-download"/></svg></button>
   <button class="ghost" id="toggleAgents" type="button" aria-expanded="false" aria-controls="agents"><svg class="icon"><use href="#i-users"/></svg>Агенты</button>
   <button class="ghost iconbtn" id="settingsBtn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings" aria-label="Настройки проекта" title="Настройки проекта"><svg class="icon"><use href="#i-gear"/></svg></button>
-  <button class="ghost" id="lang" type="button"></button>
-  <button class="ghost iconbtn" id="theme" type="button" aria-label="Сменить тему: светлая или тёмная" title="Сменить тему"><svg class="icon"><use href="#i-theme"/></svg></button>
 </header>
 <div class="link" id="link" role="alert"><i></i><span></span></div>
-<p class="update-note" id="updateNote" role="status" hidden><span id="updateNoteText"></span><button class="ghost update-btn" id="restartBtn" type="button" hidden><svg class="icon"><use href="#i-restart"/></svg><span id="restartLabel"></span></button></p>
 
 <div class="layout">
   <aside id="agents" aria-label="Агенты"></aside>
@@ -2261,7 +2759,6 @@
         <label class="compose-pill" title="Кому"><select id="to" required aria-label="Кому"></select></label>
         <label class="compose-pill" title="Тип"><select id="type" aria-label="Тип"></select></label>
         <small id="fromHint"></small>
-        <p class="result" id="result" role="status"></p>
       </div>
       <span id="attachHint" hidden></span>
     </form>
@@ -2427,14 +2924,16 @@
     </fieldset>
 
     <fieldset class="role-ai">
-      <legend class="label">Переписать с ИИ</legend>
-      <textarea id="agentAsk" aria-label="Что поменять в роли" placeholder="Что поменять: «добавь правило - перед правкой схемы спрашивать пользователя»"></textarea>
+      <div class="role-ai-head">
+        <span class="label" id="agentAskLabel">Переписать с ИИ</span>
+        <button type="button" class="voice-hint" id="agentVoiceHint" hidden title="Диктовка: клик или удержание пробела" aria-label="Голосовой ввод"><svg class="icon"><use href="#i-mic"/></svg></button>
+        <button type="button" class="voice-rec" id="agentVoiceRec" hidden title="Остановить запись" aria-label="Остановить голосовой ввод"><span class="voice-rec-icon" aria-hidden="true"><svg class="icon"><use href="#i-mic"/></svg></span><span class="voice-rec-label">Голосовой ввод</span></button>
+      </div>
+      <textarea id="agentAsk" aria-labelledby="agentAskLabel" placeholder="Что поменять: «добавь правило - перед правкой схемы спрашивать пользователя»"></textarea>
       <div class="role-ai-row">
         <button class="squeeze" id="agentRewrite" type="button"><svg class="icon"><use href="#i-squeeze"/></svg><span>Переписать с ИИ</span></button>
         <button class="ghost" id="agentAiUndo" type="button" hidden>Откатить</button>
         <button class="ghost" id="agentReject" type="button" hidden>Отклонить правку агента</button>
-        <button type="button" class="voice-hint" id="agentVoiceHint" hidden title="Диктовка: клик или удержание пробела"><svg class="icon"><use href="#i-mic"/></svg><span>пробел</span></button>
-        <button type="button" class="voice-rec" id="agentVoiceRec" hidden title="Остановить запись" aria-label="Остановить голосовой ввод"><span class="voice-rec-icon" aria-hidden="true"><svg class="icon"><use href="#i-mic"/></svg></span><span class="voice-rec-label">Голосовой ввод</span></button>
       </div>
       <p class="role-ai-note" id="agentAiNote" role="status">ИИ правит описание и роль прямо в форме. На диск ничего не уходит, пока не нажмёшь «Сохранить».</p>
       <div class="role-diff" id="agentAiDiff" role="region" aria-label="Изменения ИИ" tabindex="0" hidden></div>
@@ -2464,14 +2963,37 @@
   <p class="sched-daemon" id="settingsRoot" hidden></p>
   <p class="sched-warn" id="settingsOff" hidden></p>
   <form id="settingsForm">
+    <div class="ui-prefs">
+      <span class="label">Интерфейс</span>
+      <div class="ui-prefs-row">
+        <div class="ui-pref">
+          <span class="ui-pref-label" id="themePrefLabel">Цветовая гамма</span>
+          <div class="ui-seg" role="radiogroup" aria-labelledby="themePrefLabel">
+            <button type="button" class="ui-seg-btn" data-theme-pick="light" aria-pressed="false">Светлая</button>
+            <button type="button" class="ui-seg-btn" data-theme-pick="dark" aria-pressed="false">Тёмная</button>
+          </div>
+        </div>
+        <div class="ui-pref">
+          <span class="ui-pref-label" id="langPrefLabel">Язык</span>
+          <div class="ui-seg" role="radiogroup" aria-labelledby="langPrefLabel">
+            <button type="button" class="ui-seg-btn" data-lang-pick="ru" aria-pressed="false">Русский</button>
+            <button type="button" class="ui-seg-btn" data-lang-pick="en" aria-pressed="false">English</button>
+          </div>
+        </div>
+      </div>
+      <p class="hint">Меняется сразу и запоминается в этом браузере для всех проектов.</p>
+    </div>
     <!-- Фон - настройка браузера, а не проекта: применяется сразу, мимо «Сохранить»; миниатюры рисует renderBgPicker -->
     <div class="bg-pick">
       <span class="label" id="bgLabel">Фон</span>
-      <div class="bg-grid" id="bgGrid" role="radiogroup" aria-labelledby="bgLabel"></div>
-      <!-- Затемнение - плотность стекла над видео; тоже настройка браузера. Без видео прячется: над пятнами стекло и так почти прозрачное -->
+      <p class="bg-section-label" id="bgColorLabel">Цвет</p>
+      <div class="bg-grid" id="bgColorGrid" role="radiogroup" aria-labelledby="bgColorLabel"></div>
+      <p class="bg-section-label" id="bgVideoLabel">Видео</p>
+      <div class="bg-grid" id="bgGrid" role="radiogroup" aria-labelledby="bgVideoLabel"></div>
+      <!-- Затемнение - плотность стекла над фоном; без фона (плоский) прячется -->
       <div class="bg-dim" id="bgDimWrap" hidden>
         <label class="label" for="bgDim">Затемнение</label>
-        <input type="range" id="bgDim" min="20" max="95" step="5" title="Плотность панелей над видео: меньше - фон виднее, больше - текст контрастнее">
+        <input type="range" id="bgDim" min="20" max="95" step="5" title="Плотность панелей над фоном: меньше - фон виднее, больше - текст контрастнее">
         <output id="bgDimValue" for="bgDim"></output>
         <button class="settings-revert" id="bgDimReset" type="button" hidden></button>
       </div>
@@ -2480,18 +3002,43 @@
     <!-- Ярлык - тоже мимо «Сохранить»: кнопка сразу ставит ярлык. Только Windows, macOS, Linux (settingsState.shortcut) -->
     <div class="app-pick" id="appPick" hidden>
       <span class="label">Приложение</span>
-      <button class="ghost" id="shortcutBtn" type="button">Ярлык приложения</button>
+      <button class="send shortcut-btn" id="shortcutBtn" type="button"><svg class="icon"><use href="#i-download"/></svg><span>Ярлык приложения</span></button>
       <p class="hint">Bus Cursor отдельным окном Chrome или Edge, без вкладок; закроешь окно - сервер погаснет сам. Windows - ярлык на рабочем столе, macOS - Bus Cursor в «Программах» и Launchpad, Linux - в меню приложений и на рабочем столе.</p>
     </div>
-    <p class="hint">Настройки действуют только в этом проекте и переопределяют значения по умолчанию. Поля с пометкой «все проекты» - общие для всей шины.</p>
+    <p class="hint settings-scope-hint">Настройки действуют только в этом проекте и переопределяют значения по умолчанию. Поля с пометкой «все проекты» - общие для всей шины.</p>
     <div class="settings-list" id="settingsList"></div>
-    <p class="result" id="settingsStatus" role="status"></p>
+    <p id="settingsStatus" hidden></p>
     <div class="sched-actions">
       <button class="send" id="settingsSave" type="submit" disabled>Сохранить</button>
       <button class="squeeze danger" id="settingsReset" type="button">Сбросить всё</button>
       <button class="ghost" id="settingsClose2" type="button">Закрыть</button>
     </div>
   </form>
+</section>
+
+<div class="update-backdrop" id="updateBackdrop" hidden></div>
+<section class="update-modal" id="updateModal" hidden role="dialog" aria-modal="true" aria-labelledby="updateTitle">
+  <div class="icon-wrap" id="updateIcon" aria-hidden="true"><svg class="icon"><use href="#i-download"/></svg></div>
+  <h2 id="updateTitle">Доступно обновление</h2>
+  <p class="update-versions" id="updateVersions"></p>
+  <div class="update-notes" id="updateNotes"></div>
+  <a class="update-link" id="updateNews" target="_blank" rel="noopener noreferrer" hidden>что нового на GitHub</a>
+  <div class="update-actions" id="updateActionsAvailable">
+    <button class="send" id="updateDownload" type="button"><svg class="icon"><use href="#i-download"/></svg><span>Скачать сейчас</span></button>
+    <button class="ghost" id="updateLater" type="button">Отложить</button>
+  </div>
+  <div class="update-progress" id="updateProgress" hidden>
+    <p class="update-progress-text" id="updateProgressText">Скачиваю…</p>
+    <div class="update-bar" aria-hidden="true"><i id="updateBarFill"></i></div>
+    <p class="update-progress-meta" id="updateProgressMeta"></p>
+  </div>
+  <div id="updateDone" hidden>
+    <p class="update-done-text" id="updateDoneText"></p>
+    <div class="update-actions">
+      <button class="send" id="restartBtn" type="button" hidden><svg class="icon"><use href="#i-restart"/></svg><span id="restartLabel">Перезапустить</span></button>
+      <button class="ghost" id="updateCloseDone" type="button">Закрыть</button>
+    </div>
+  </div>
 </section>
 
 <script src="/i18n.js"></script>
@@ -2559,17 +3106,22 @@ const staticAttrs = [];
     for (const attr of STATIC_ATTRS) if (CYRILLIC.test(node.getAttribute(attr) || '')) staticAttrs.push({ node, attr, key: node.getAttribute(attr) });
   }
 }
+function syncUiPrefs() {
+  const theme = document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+  for (const btn of document.querySelectorAll('[data-theme-pick]')) {
+    btn.setAttribute('aria-pressed', String(btn.dataset.themePick === theme));
+  }
+  const lang = I.lang();
+  for (const btn of document.querySelectorAll('[data-lang-pick]')) {
+    btn.setAttribute('aria-pressed', String(btn.dataset.langPick === lang));
+  }
+}
+
 function applyStatic() {
   document.documentElement.lang = I.lang();
   for (const { node, lead, key, tail } of staticTexts) node.data = lead + tr(key) + tail;
   for (const { node, attr, key } of staticAttrs) node.setAttribute(attr, tr(key));
-  // На кнопке - язык, на который она переключит
-  const other = I.lang() === 'en' ? 'ru' : 'en';
-  $('lang').textContent = other.toUpperCase();
-  const langTip = other === 'en' ? 'Switch to English' : 'Переключить на русский';
-  $('lang').setAttribute('data-tip', langTip);
-  $('lang').removeAttribute('title');
-  $('lang').setAttribute('aria-label', langTip);
+  syncUiPrefs();
 }
 applyStatic(); // до первого setOptions: <selectedcontent> копирует подпись опции один раз
 
@@ -3113,6 +3665,7 @@ function toggleAside(open) {
 }
 
 function renderAgents() {
+  if (settingsOpen) updateSettingsAgentPromptEmpty();
   const { here, globals, others } = L.groupAgents(state.agents);
   const aside = $('agents');
   const othersOpen = Boolean(aside.querySelector('details[open]')); // перерисовка не должна схлопывать раскрытую группу под курсором
@@ -3722,25 +4275,120 @@ function meter(pct, level, ring = false) {
   return node;
 }
 
-let rateSnapshot = null; // последний снимок лимитов: /api/state и событие limits; часы сброса тикают по таймеру ниже
+let rateSnapshot = null; // последний снимок лимитов: /api/state и событие limits
+let limitsOpen = false;
+let limitsRefreshing = false;
+
+/** В шапке показываем План, иначе окно с наибольшим расходом. */
+function limitsSummary(view) {
+  const plan = view.windows.find((w) => w.key === 'plan');
+  if (plan) return plan;
+  return view.windows.reduce((a, b) => ((b.reset ? -1 : b.pct) > (a.reset ? -1 : a.pct) ? b : a));
+}
+
+function limitsMeta(w) {
+  if (w.reset) return tr('окно сброшено');
+  if (w.at && w.left) return tr('сброс {at} · через {left}', { at: w.at, left: w.left });
+  if (w.left) return tr('через {left}', { left: w.left });
+  return '';
+}
+
+function setLimitsOpen(open) {
+  if ($('limitsWrap').hidden) open = false;
+  limitsOpen = open;
+  $('limitsMenu').hidden = !open;
+  $('limitsBtn').setAttribute('aria-expanded', String(open));
+}
+
+function closeLimits() {
+  if (!limitsOpen) return;
+  setLimitsOpen(false);
+}
+
+async function refreshLimitsNow() {
+  if (limitsRefreshing) return;
+  limitsRefreshing = true;
+  renderLimits();
+  try {
+    const data = await post('/api/rate-limits/refresh', {});
+    if (data.rateLimits) renderLimits(data.rateLimits);
+    say(tr('Лимиты обновлены'));
+  } catch (err) {
+    say(tr('Лимиты не обновились: {why}', { why: err.message }), true);
+  } finally {
+    limitsRefreshing = false;
+    renderLimits();
+  }
+}
 
 function renderLimits(snapshot = rateSnapshot) {
   rateSnapshot = snapshot || null;
-  const box = $('limits');
+  const wrap = $('limitsWrap');
+  const btn = $('limitsBtn');
+  const menu = $('limitsMenu');
   const view = L.rateLimits(rateSnapshot);
-  box.hidden = !view;
-  if (!view) return box.replaceChildren();
-  box.classList.toggle('stale', view.stale);
-  const fresh = tr('Лимиты Cursor (включённый объём плана). Снимок {age} назад', { age: L.duration(view.age / 1000) }) + (view.stale ? tr(' - устарел: обновится при следующем опросе') : '');
-  box.title = fresh;
-  box.replaceChildren(...view.windows.map((w) => el('span', { className: `win${w.reset ? ' reset' : ''}`, title: `${fresh}${w.at ? `
-${tr('{label}: сброс в {at}, через {left}', { label: w.label, at: w.at, left: w.left })}` : ''}` },
-    el('span', { className: 'label' }, w.label),
-    meter(w.pct, w.level),
-    el('span', { className: 'pct' }, w.reset ? tr('сброшен') : `${w.pct}%`),
-    w.left ? el('span', { className: 'left' }, w.left) : '')));
+  wrap.hidden = !view;
+  if (!view) {
+    closeLimits();
+    $('limitsSum').replaceChildren();
+    menu.replaceChildren();
+    return;
+  }
+  const sum = limitsSummary(view);
+  const age = L.duration(view.age / 1000);
+  const tip = tr('Лимиты Cursor (включённый объём плана). Снимок {age} назад', { age }) + (view.stale ? tr(' - устарел: обновится при следующем опросе') : '');
+  btn.classList.toggle('stale', view.stale);
+  btn.classList.toggle('warn', !sum.reset && sum.level === 'high');
+  btn.title = tip;
+  $('limitsSum').replaceChildren(
+    meter(sum.reset ? 0 : sum.pct, sum.reset ? 'low' : sum.level, true),
+    el('span', { className: 'pct' }, sum.reset ? tr('сброшен') : `${sum.pct}%`),
+  );
+  const ageBtn = el('button', {
+    type: 'button',
+    className: `limits-age limits-age-btn${view.stale ? ' stale' : ''}${limitsRefreshing ? ' busy' : ''}`,
+    title: tr('Обновить лимиты сейчас'),
+    ariaLabel: tr('Обновить лимиты сейчас'),
+  },
+    el('span', { className: 'limits-age-text' }, view.stale ? tr('устарел · {age}', { age }) : tr('{age} назад', { age })),
+    icon('restart'),
+  );
+  ageBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    refreshLimitsNow();
+  });
+  menu.replaceChildren(
+    el('div', { className: 'limits-head' },
+      el('b', {}, tr('Лимиты Cursor')),
+      ageBtn,
+    ),
+    ...view.windows.map((w) => el('div', { className: `limits-row${w.reset ? ' reset' : ''}` },
+      el('span', { className: 'label' }, w.label),
+      meter(w.reset ? 0 : w.pct, w.reset ? 'low' : w.level),
+      el('span', { className: 'pct' }, w.reset ? tr('сброшен') : `${w.pct}%`),
+      el('span', { className: 'meta' }, limitsMeta(w) || '\u00a0'),
+    )),
+  );
 }
 setInterval(() => renderLimits(), 30 * 1000);
+setInterval(() => { if (limitsOpen) renderLimits(); }, 1000);
+
+$('limitsBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  setLimitsOpen(!limitsOpen);
+});
+$('limitsMenu').addEventListener('click', (e) => e.stopPropagation());
+$('limitsWrap').addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && limitsOpen) {
+    e.stopPropagation();
+    closeLimits();
+    $('limitsBtn').focus();
+  }
+});
+document.addEventListener('click', () => { if (limitsOpen) closeLimits(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && limitsOpen) closeLimits();
+});
 
 /** Окно контекста последнего запуска агента в диалоге - на вкладке: полоска и процент, токены в подсказке. */
 function tabMeter(target, d) {
@@ -3878,63 +4526,210 @@ function connect() {
   // Задачи или итог запуска поменялись на диске - панель, если открыта, перерисовывается; форму, которую сейчас правят, не трогаем
   source.addEventListener('schedule', (e) => applySchedule(JSON.parse(e.data)));
   source.addEventListener('update', (e) => applyUpdate(JSON.parse(e.data)));
+  source.addEventListener('update-progress', (e) => applyUpdateProgress(JSON.parse(e.data)));
   source.addEventListener('limits', (e) => renderLimits(JSON.parse(e.data)));
 }
 
 // ---------- обновление шины ----------
 
-// state с сервера: off | none | error - кнопки нет; available - кнопка; installed - плашка с кнопкой «Перезапустить». note - итог клика в этой вкладке
-const updateView = { data: { state: 'off' }, busy: false, restarting: false, note: '', bad: false };
+// state: off | none | error - кнопки нет; available - пульс в шапке; installed - успех в модалке
+const updateView = {
+  data: { state: 'off' },
+  busy: false,
+  restarting: false,
+  open: false,
+  phase: 'idle', // idle | progress | done | error
+  progress: null,
+  note: '',
+  bad: false,
+  postponed: '',
+};
+
+try {
+  updateView.postponed = sessionStorage.getItem('bus-update-later') || '';
+} catch {
+  updateView.postponed = '';
+}
 
 function applyUpdate(data) {
   data = data || { state: 'off' };
-  if (data.state !== updateView.data.state) Object.assign(updateView, { note: '', bad: false, restarting: false }); // итог клика - про прежнее состояние
+  if (data.state !== updateView.data.state) {
+    Object.assign(updateView, { note: '', bad: false, restarting: false });
+    if (data.state === 'available') updateView.phase = 'idle';
+  }
   updateView.data = data;
+  if (data.state === 'installed' && updateView.open) {
+    updateView.phase = 'done';
+    updateView.busy = false;
+    updateView.note = tr('Обновлено до v{version}. Перезапусти шину - заработает новая версия', { version: data.latest });
+    updateView.bad = false;
+  }
+  renderUpdate();
+}
+
+function applyUpdateProgress(info) {
+  if (!info || typeof info !== 'object') return;
+  updateView.progress = info;
+  if (info.phase === 'done') return; // финал придёт через applyUpdate / ответ POST
+  updateView.phase = 'progress';
+  updateView.busy = true;
+  if (updateView.open) renderUpdateModal();
+}
+
+function updatePhaseLabel(info) {
+  if (!info) return tr('Готовлю обновление…');
+  if (info.phase === 'list') return tr('Сверяю список файлов…');
+  if (info.phase === 'download') return tr('Скачиваю файлы…');
+  if (info.phase === 'backup') return tr('Делаю резервную копию…');
+  if (info.phase === 'write') return tr('Записываю файлы…');
+  if (info.phase === 'done') return tr('Готово');
+  return tr('Обновляю…');
+}
+
+function renderUpdateModal() {
+  const { data, phase, progress, note, bad, restarting, busy } = updateView;
+  const available = data.state === 'available';
+  const installed = data.state === 'installed' || phase === 'done';
+  const failed = phase === 'error';
+  $('updateTitle').textContent = failed
+    ? tr('Не обновилось')
+    : installed
+      ? tr('Обновление установлено')
+      : phase === 'progress'
+        ? tr('Обновление')
+        : tr('Доступно обновление');
+  $('updateVersions').textContent = data.current && data.latest ? `v${data.current} → v${data.latest}` : '';
+  $('updateNotes').textContent = available && phase === 'idle' ? (data.notes || '') : '';
+  const news = Boolean(data.url) && (phase === 'idle' || available);
+  $('updateNews').hidden = !news || phase === 'progress' || installed || failed;
+  if (data.url) $('updateNews').href = data.url;
+  $('updateActionsAvailable').hidden = !(available && phase === 'idle');
+  $('updateDownload').disabled = busy;
+  $('updateProgress').hidden = phase !== 'progress';
+  if (phase === 'progress') {
+    const total = progress && progress.total > 0 ? progress.total : 0;
+    const done = progress ? progress.done : 0;
+    const pct = total ? Math.min(100, Math.round((done / total) * 100)) : (progress && progress.phase === 'backup' ? 50 : 8);
+    $('updateBarFill').style.setProperty('--p', `${pct}%`);
+    $('updateProgressText').textContent = updatePhaseLabel(progress);
+    $('updateProgressMeta').textContent = total
+      ? `${done} / ${total}${progress && progress.file ? ` · ${progress.file}` : ''}`
+      : '';
+  }
+  $('updateDone').hidden = !(installed || failed);
+  $('updateDoneText').textContent = note || (installed ? tr('Обновлено до v{version}. Перезапусти шину - заработает новая версия', { version: data.latest }) : '');
+  $('updateDoneText').className = `update-done-text${bad || failed ? ' bad' : ''}`;
+  $('restartBtn').hidden = !installed || failed;
+  $('restartBtn').disabled = restarting;
+  $('restartLabel').textContent = restarting ? tr('Перезапускаю…') : tr('Перезапустить');
+  $('updateModal').classList.toggle('bad', bad || failed);
+  const icon = failed ? 'x' : installed ? 'check' : 'download';
+  $('updateIcon').replaceChildren(iconSvg(icon));
+}
+
+function iconSvg(name) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'icon');
+  const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+  use.setAttribute('href', `#i-${name}`);
+  svg.append(use);
+  return svg;
+}
+
+function openUpdateModal() {
+  updateView.open = true;
+  if (updateView.data.state === 'installed') updateView.phase = 'done';
+  else if (!updateView.busy) updateView.phase = 'idle';
+  $('updateBackdrop').hidden = false;
+  $('updateModal').hidden = false;
+  renderUpdateModal();
+}
+
+function closeUpdateModal(force = false) {
+  if (updateView.busy && !force) return;
+  updateView.open = false;
+  $('updateBackdrop').hidden = true;
+  $('updateModal').hidden = true;
+}
+
+function postponeUpdate() {
+  const ver = updateView.data.latest || '';
+  updateView.postponed = ver;
+  try { sessionStorage.setItem('bus-update-later', ver); } catch {}
+  closeUpdateModal(true);
   renderUpdate();
 }
 
 function renderUpdate() {
-  const { data, busy } = updateView;
-  const available = data.state === 'available';
-  $('updateBtn').hidden = !available;
-  $('updateBtn').disabled = busy;
-  $('updateLabel').textContent = busy ? tr('Обновляю…') : tr('Обновить до v{version}', { version: data.latest });
-  $('updateBtn').title = available ? `v${data.current} → v${data.latest}${data.notes ? `\n\n${data.notes}` : ''}` : '';
-  $('updateNews').hidden = !available || !data.url;
-  if (data.url) $('updateNews').href = data.url;
-  const installed = data.state === 'installed';
-  const note = updateView.note || (installed ? tr('Обновлено до v{version}. Перезапусти шину - заработает новая версия', { version: data.latest }) : '');
-  $('updateNote').hidden = !note;
-  $('updateNoteText').textContent = note;
-  $('updateNote').className = `update-note${updateView.bad ? ' bad' : ''}`;
-  $('restartBtn').hidden = !installed;
-  $('restartBtn').disabled = updateView.restarting;
-  $('restartLabel').textContent = updateView.restarting ? tr('Перезапускаю…') : tr('Перезапустить');
+  const { data, busy, postponed } = updateView;
+  const available = data.state === 'available' && postponed !== data.latest;
+  $('updateBtn').hidden = !available && data.state !== 'installed';
+  if (data.state === 'installed') {
+    $('updateBtn').hidden = false;
+    $('updateBtn').classList.remove('update-pulse');
+    const label = tr('Обновление установлено - перезапусти');
+    $('updateBtn').setAttribute('data-tip', label);
+    $('updateBtn').setAttribute('aria-label', label);
+  } else {
+    $('updateBtn').classList.add('update-pulse');
+    const label = available ? tr('Доступно обновление v{version}', { version: data.latest }) : tr('Доступно обновление');
+    $('updateBtn').setAttribute('data-tip', label);
+    $('updateBtn').setAttribute('aria-label', label);
+    $('updateBtn').hidden = !available;
+  }
+  $('updateBtn').disabled = busy && !updateView.open;
+  if (updateView.open) renderUpdateModal();
 }
 
-// Сервер закрывает порт и поднимает себя заново; вкладка переподключится и по новой метке страницы перезагрузится сама (см. load)
+$('updateBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  openUpdateModal();
+});
+$('updateLater').addEventListener('click', postponeUpdate);
+$('updateCloseDone').addEventListener('click', () => closeUpdateModal(true));
+$('updateBackdrop').addEventListener('click', () => {
+  if (updateView.phase === 'idle') postponeUpdate();
+  else if (updateView.phase === 'done' || updateView.phase === 'error') closeUpdateModal(true);
+});
+$('updateModal').addEventListener('click', (e) => e.stopPropagation());
+
 $('restartBtn').addEventListener('click', async () => {
   if (updateView.restarting) return;
   Object.assign(updateView, { restarting: true, note: tr('Перезапускаю шину - вкладка обновится сама'), bad: false });
-  renderUpdate();
+  renderUpdateModal();
   try {
     await post('/api/restart', {});
   } catch (err) {
-    Object.assign(updateView, { restarting: false, note: tr('Не перезапустилось: {why}. Руками: bus.js ui, демон расписания - pm2 restart bus-scheduler', { why: err.message }), bad: true });
-    renderUpdate();
+    Object.assign(updateView, {
+      restarting: false,
+      note: tr('Не перезапустилось: {why}. Руками: bus.js ui, демон расписания - pm2 restart bus-cursor-scheduler', { why: err.message }),
+      bad: true,
+      phase: 'error',
+    });
+    renderUpdateModal();
   }
 });
 
-$('updateBtn').addEventListener('click', async () => {
-  const { latest } = updateView.data;
-  if (updateView.busy || !confirm(tr('Bus Cursor обновится до v{version}. Файлы скилла заменятся, копия старых - в skills/bus-cursor.backup', { version: latest }))) return;
-  Object.assign(updateView, { busy: true, note: '', bad: false });
+$('updateDownload').addEventListener('click', async () => {
+  if (updateView.busy || updateView.data.state !== 'available') return;
+  Object.assign(updateView, { busy: true, phase: 'progress', progress: { phase: 'list', done: 0, total: 0 }, note: '', bad: false });
   renderUpdate();
   try {
     await post('/api/update', {});
-    updateView.data = { ...updateView.data, state: 'installed' }; // SSE принесёт то же - плашка не зависит от того, кто первый
+    updateView.data = { ...updateView.data, state: 'installed' };
+    Object.assign(updateView, {
+      phase: 'done',
+      note: tr('Обновлено до v{version}. Перезапусти шину - заработает новая версия', { version: updateView.data.latest }),
+      bad: false,
+    });
+    try { sessionStorage.removeItem('bus-update-later'); } catch {}
+    updateView.postponed = '';
   } catch (err) {
-    Object.assign(updateView, { note: tr('Не обновилось: {why}', { why: err.message }), bad: true });
+    Object.assign(updateView, {
+      phase: 'error',
+      note: tr('Не обновилось: {why}', { why: err.message }),
+      bad: true,
+    });
   } finally {
     updateView.busy = false;
     renderUpdate();
@@ -4048,7 +4843,7 @@ function fillAgentForm(role) {
   resetAgentAi();
   $('agentReject').hidden = true;
   if (!fresh && role.proposal) showProposal(role);
-  fitArea($('agentAsk'), 56, () => Math.min(window.innerHeight * 0.25, 200));
+  fitArea($('agentAsk'), 56, () => Math.min(window.innerHeight * 0.4, 360));
   fitArea($('agentBody'), 160, () => Math.min(window.innerHeight * 0.55, 560));
 }
 
@@ -4326,7 +5121,7 @@ $('agentRewrite').addEventListener('click', async () => {
     renderAgentDiff();
     agentAiNote(tr('ИИ переписал за {time} · ≈{n} ток. Проверь изменения и жми «Сохранить» - до этого на диске ничего не поменялось.', { time: spent(), n: L.short(r.tokens) }));
     $('agentAsk').value = '';
-    fitArea($('agentAsk'), 56, () => Math.min(window.innerHeight * 0.25, 200));
+    fitArea($('agentAsk'), 56, () => Math.min(window.innerHeight * 0.4, 360));
     fitArea($('agentBody'), 160, () => Math.min(window.innerHeight * 0.55, 560));
   } catch (err) {
     agentAiNote(`${err.message} ${tr('Ушло времени: {time}.', { time: spent() })}`, true);
@@ -4365,11 +5160,56 @@ $('agentReject').addEventListener('click', async () => {
   }
 });
 
-// ---------- отправка ----------
+// ---------- уведомления (тосты) ----------
 
+const TOAST_MS = 30 * 1000;
+const toastTimers = new WeakMap();
+
+function dismissToast(node) {
+  if (!node || !node.isConnected) return;
+  const t = toastTimers.get(node);
+  if (t) clearTimeout(t);
+  toastTimers.delete(node);
+  if (node.classList.contains('out')) return;
+  node.classList.add('out');
+  const done = () => node.remove();
+  node.addEventListener('animationend', done, { once: true });
+  setTimeout(done, 280);
+}
+
+function clearToasts() {
+  for (const node of [...$('toasts').children]) dismissToast(node);
+}
+
+function pushToast(text, bad = false) {
+  const node = el('div', {
+    className: `toast${bad ? ' bad' : ' ok'}`,
+    role: bad ? 'alert' : 'status',
+  },
+    el('span', { className: 'toast-icon', ariaHidden: true }, icon(bad ? 'x' : 'check')),
+    el('p', { className: 'toast-body' }, text),
+    el('button', {
+      type: 'button',
+      className: 'toast-close',
+      title: tr('Закрыть'),
+      ariaLabel: tr('Закрыть уведомление'),
+      onclick: () => dismissToast(node),
+    }, icon('x')),
+  );
+  $('toasts').append(node);
+  toastTimers.set(node, setTimeout(() => dismissToast(node), TOAST_MS));
+  return node;
+}
+
+/** Общие уведомления скила: сверху по центру. Пустой текст - убрать все тосты. */
 function say(text, bad = false) {
-  $('result').textContent = text;
-  $('result').className = `result${bad ? ' bad' : ''}`;
+  const msg = String(text || '').trim();
+  if (!msg) return clearToasts();
+  pushToast(msg, bad);
+}
+
+function settingsSay(text, bad = false) {
+  say(text, bad);
 }
 
 /** Ответ сервера → данные; не 2xx - исключение с его текстом (field - поле формы настроек, к которому относится отказ; code - вид отказа, см. L.isFrequentError). */
@@ -4656,7 +5496,7 @@ function fitArea(field, min = 40, max = 360) {
 const FIT_AREAS = [
   { id: 'text', min: 40, max: () => Math.min(window.innerHeight * 0.4, 360) },
   { id: 'schedPrompt', min: 90, max: () => Math.min(window.innerHeight * 0.35, 320) },
-  { id: 'agentAsk', min: 56, max: () => Math.min(window.innerHeight * 0.25, 200) },
+  { id: 'agentAsk', min: 56, max: () => Math.min(window.innerHeight * 0.4, 360) },
   { id: 'agentBody', min: 160, max: () => Math.min(window.innerHeight * 0.55, 560) },
 ];
 
@@ -4666,6 +5506,7 @@ function fitText() {
 
 function fitAllAreas() {
   for (const a of FIT_AREAS) fitArea($(a.id), a.min, a.max);
+  for (const ta of document.querySelectorAll('#settingsList .settings-field-text textarea')) fitSettingsArea(ta);
 }
 
 function bindFitAreas() {
@@ -4679,9 +5520,11 @@ function bindFitAreas() {
   document.addEventListener('input', (e) => {
     const t = e.target;
     if (!(t instanceof HTMLTextAreaElement) || !t.closest('.settings-field-text')) return;
-    fitArea(t, 80, Math.min(window.innerHeight * 0.4, 360));
+    fitSettingsArea(t);
   });
 }
+
+const fitSettingsArea = (ta) => fitArea(ta, 72, () => Math.min(window.innerHeight * 0.4, 360));
 
 bindFitAreas();
 window.addEventListener('resize', fitAllAreas);
@@ -4791,35 +5634,55 @@ const VOICE_SLOTS = [
   { field: 'agentAsk', hint: 'agentVoiceHint', rec: 'agentVoiceRec', open: () => !$('agentPanel').hidden },
   { field: 'text', hint: 'composerVoiceHint', rec: 'composerVoiceRec', open: () => true },
 ];
+let settingsVoiceSlots = []; // промпты в ⚙ - пересобираются с формой
+
+const voiceField = (s) => (typeof s.field === 'string' ? $(s.field) : s.field);
+const voiceHint = (s) => (typeof s.hint === 'string' ? $(s.hint) : s.hint);
+const voiceRec = (s) => (typeof s.rec === 'string' ? $(s.rec) : s.rec);
+const allVoiceSlots = () => [...settingsVoiceSlots, ...VOICE_SLOTS];
 
 function voiceSlotFor(el) {
   if (!el) return null;
-  return VOICE_SLOTS.find((s) => el === $(s.field) || el.id === s.hint || el.id === s.rec
-    || (el.closest && el.closest(`#${s.hint}, #${s.rec}`))) || null;
+  return allVoiceSlots().find((s) => {
+    const field = voiceField(s);
+    const hint = voiceHint(s);
+    const rec = voiceRec(s);
+    return el === field || el === hint || el === rec
+      || (el.closest && ((hint && hint.id && el.closest(`#${hint.id}`)) || (rec && rec.id && el.closest(`#${rec.id}`))
+        || el.closest('.settings-field-tools') && field && el.closest('.settings-field') === field.closest('.settings-field')));
+  }) || null;
 }
 
 function voiceSlot() {
   const focused = voiceSlotFor(document.activeElement);
   if (focused) return focused;
-  return VOICE_SLOTS.find((s) => s.open()) || VOICE_SLOTS[VOICE_SLOTS.length - 1];
+  return allVoiceSlots().find((s) => s.open()) || VOICE_SLOTS[VOICE_SLOTS.length - 1];
 }
 
 function syncVoiceHints() {
   const on = Boolean(SpeechRec) && !voice.rec;
-  for (const s of VOICE_SLOTS) $(s.hint).hidden = !(on && s.open());
+  for (const s of allVoiceSlots()) {
+    const hint = voiceHint(s);
+    if (hint) hint.hidden = !(on && s.open());
+  }
 }
 
 /** Индикатор записи у того слота, куда сейчас пишется диктовка. */
 function showVoiceRec() {
   const slot = voiceSlotFor(voice.field) || voiceSlot();
-  for (const s of VOICE_SLOTS) {
-    $(s.rec).hidden = s !== slot;
-    $(s.hint).hidden = true;
+  for (const s of allVoiceSlots()) {
+    const rec = voiceRec(s);
+    const hint = voiceHint(s);
+    if (rec) rec.hidden = s !== slot;
+    if (hint) hint.hidden = true;
   }
 }
 
 function hideVoiceRec() {
-  for (const s of VOICE_SLOTS) $(s.rec).hidden = true;
+  for (const s of allVoiceSlots()) {
+    const rec = voiceRec(s);
+    if (rec) rec.hidden = true;
+  }
   syncVoiceHints();
 }
 
@@ -4865,7 +5728,7 @@ function startVoice() {
   // Фокус в поле - туда; иначе - поле активного слота (форма расписания / агент / композер)
   const field = voice.tap === 'type' && voice.target && L.spaceTap(voice.target.tagName, voice.target.type) === 'type'
     ? voice.target
-    : $(voiceSlot().field);
+    : voiceField(voiceSlot());
   field.focus();
   Object.assign(voice, { field, before: field.value.slice(0, field.selectionStart), after: field.value.slice(field.selectionEnd), final: '', error: '' });
 
@@ -4909,7 +5772,8 @@ function toggleVoiceClick(e) {
   if (!SpeechRec) return voiceSay(L.voiceNote('unsupported'), true);
   if (voice.rec) return stopVoice();
   const slot = voiceSlotFor(e.currentTarget) || voiceSlot();
-  const field = $(slot.field);
+  const field = voiceField(slot);
+  if (!field || field.disabled) return;
   Object.assign(voice, { tap: 'type', target: field });
   startVoice();
 }
@@ -4927,7 +5791,13 @@ document.addEventListener('keydown', (e) => {
     return;
   }
   if (e.key === 'Escape' && mention.open) return; // список «@» закроет поле само - выделение в ленте не трогаем
+  if (e.key === 'Escape' && updateView.open) {
+    if (updateView.busy) return;
+    if (updateView.phase === 'idle') return postponeUpdate();
+    return closeUpdateModal(true);
+  }
   if (e.key === 'Escape' && agentPanel.open) return closeAgentPanel();
+  if (e.key === 'Escape' && limitsOpen) return closeLimits();
   if (e.key === 'Escape' && scheduleOpen) return closeSchedule();
   if (e.key === 'Escape' && weightOpen) return closeWeight();
   if (e.key === 'Escape' && dirsOpen) return closeDirs();
@@ -4997,16 +5867,34 @@ $('wrap').addEventListener('scroll', () => {
   pinned = atBottom();
   if (pinned) $('toBottom').hidden = true;
 }, { passive: true });
-$('theme').addEventListener('click', () => {
-  const dark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-  document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+function setTheme(theme) {
+  document.documentElement.dataset.theme = theme === 'light' ? 'light' : 'dark';
   try { localStorage.setItem('bus-theme', document.documentElement.dataset.theme); } catch {}
+  syncUiPrefs();
+}
+
+document.querySelectorAll('[data-theme-pick]').forEach((btn) => {
+  btn.addEventListener('click', () => setTheme(btn.dataset.themePick));
 });
 try { if (localStorage.getItem('bus-theme')) document.documentElement.dataset.theme = localStorage.getItem('bus-theme'); } catch {}
+syncUiPrefs();
 
-// ---------- видеофон ----------
-// Выбор живёт в localStorage, как тема: это вкус пользователя, а не настройка проекта. '0' - без видео, пятна
+// ---------- фон страницы (видео + цветные CSS-темы) ----------
+// Выбор в localStorage (bus-bg), как тема: вкус пользователя, не настройка проекта.
+// '0' - плоский Telegram; css:* - цветные пятна; иначе id ролика из assets/bg.
 const STILL = matchMedia('(prefers-reduced-motion: reduce)');
+const CSS_BG = [
+  { id: 'mist', label: N('Туман'), preview: 'linear-gradient(135deg, #7eb6ff 0%, #b8a4ff 50%, #9ad4c8 100%)' },
+  { id: 'aurora', label: N('Аврора'), preview: 'linear-gradient(135deg, #34d399 0%, #818cf8 50%, #22d3ee 100%)' },
+  { id: 'sunset', label: N('Закат'), preview: 'linear-gradient(135deg, #fb923c 0%, #f472b6 55%, #fbbf24 100%)' },
+  { id: 'ocean', label: N('Океан'), preview: 'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 45%, #6366f1 100%)' },
+  { id: 'orchid', label: N('Орхидея'), preview: 'linear-gradient(135deg, #c084fc 0%, #f472b6 50%, #818cf8 100%)' },
+  { id: 'citrus', label: N('Цитрус'), preview: 'linear-gradient(135deg, #a3e635 0%, #facc15 50%, #4ade80 100%)' },
+  { id: 'ember', label: N('Уголь'), preview: 'linear-gradient(135deg, #f87171 0%, #fb923c 50%, #e11d48 100%)' },
+  { id: 'slate', label: N('Сланец'), preview: 'linear-gradient(135deg, #94a3b8 0%, #64748b 50%, #cbd5e1 100%)' },
+];
+const cssBgId = (name) => (String(name || '').startsWith('css:') ? name.slice(4) : '');
+const cssBgKey = (id) => `css:${id}`;
 let bgName = '0';
 let bgList = null; // ролики с сервера (/api/bg); грузим, когда впервые открыли ⚙
 
@@ -5016,35 +5904,57 @@ function bgClip(src, props = {}) {
   return node;
 }
 
-/** Новый ролик проявляется поверх старого и только потом старый уходит - без чёрного кадра между ними. Не загрузился - назад к пятнам. */
+function clearBgVideos() {
+  const layer = $('bgVideo');
+  for (const node of [...layer.querySelectorAll('video')]) {
+    node.classList.remove('on');
+    setTimeout(() => node.remove(), 900);
+  }
+}
+
+/** Фон: плоский / CSS-тема / видео. Не загрузился ролик - назад к плоскому. */
 function setBackground(name, save = true) {
-  bgName = name;
-  if (save) try { localStorage.setItem('bus-bg', name); } catch {}
+  const raw = String(name || '0');
+  const themeId = cssBgId(raw) || (CSS_BG.some((t) => t.id === raw) ? raw : '');
+  bgName = themeId ? cssBgKey(themeId) : raw;
+  if (save) try { localStorage.setItem('bus-bg', bgName); } catch {}
+
+  const root = document.documentElement;
+  root.classList.remove('has-video');
+  root.removeAttribute('data-bg');
+  syncBgPicker();
+
+  if (bgName === '0') {
+    clearBgVideos();
+    return;
+  }
+  if (themeId) {
+    root.setAttribute('data-bg', themeId);
+    clearBgVideos();
+    return;
+  }
+
   const layer = $('bgVideo');
   const old = [...layer.querySelectorAll('video')];
   const drop = () => old.forEach((node) => { node.classList.remove('on'); setTimeout(() => node.remove(), 900); });
-  syncBgPicker();
-  if (name === '0') {
-    document.documentElement.classList.remove('has-video');
-    return drop();
-  }
-  const node = bgClip(`/bg/${name}.mp4`, { preload: 'auto', autoplay: bgLive() });
+  const want = bgName;
+  const node = bgClip(`/bg/${want}.mp4`, { preload: 'auto', autoplay: bgLive() });
   node.addEventListener('loadeddata', () => {
-    if (bgName !== name) return node.remove(); // пока грузился, выбрали другой
+    if (bgName !== want) return node.remove(); // пока грузился, выбрали другой
     node.classList.add('on');
-    document.documentElement.classList.add('has-video');
-    syncBgPlay(); // пока грузился, вкладку могли спрятать или вернуть - autoplay этого не знает
+    root.classList.add('has-video');
+    syncBgPlay();
     drop();
+    syncBgPicker();
   }, { once: true });
   node.addEventListener('error', () => {
     node.remove();
-    if (bgName === name) setBackground('0', true); // и запомнить: иначе id удалённого ролика слал бы 404 на каждом F5
+    if (bgName === want) setBackground('0', true);
   }, { once: true });
   layer.append(node);
 }
 
-// Фон крутим, только пока на страницу смотрят: вкладка видна и окно в фокусе. Иначе декодер видео ест батарею впустую -
-// и за скрытой вкладкой, и за окном, рядом с которым работают в терминале. «Меньше движения» в системе переключают и на ходу
+// Фон крутим, только пока на страницу смотрят: вкладка видна и окно в фокусе.
 const bgLive = () => !document.hidden && document.hasFocus() && !STILL.matches;
 function syncBgPlay() {
   const node = $('bgVideo').querySelector('video.on');
@@ -5058,11 +5968,14 @@ addEventListener('blur', syncBgPlay);
 STILL.addEventListener('change', syncBgPlay);
 
 function syncBgPicker() {
-  for (const input of $('bgGrid').querySelectorAll('input')) input.checked = input.value === bgName;
+  for (const input of document.querySelectorAll('#bgGrid input, #bgColorGrid input')) {
+    input.checked = input.value === bgName || (cssBgId(bgName) && input.value === cssBgKey(cssBgId(bgName)));
+  }
+  // Затемнение нужно и для видео, и для цветных тем (стекло над фоном)
   $('bgDimWrap').hidden = bgName === '0';
 }
 
-/** Затемнение: плотность стекла над видео в процентах. Плотности в CSS написаны для 65 % (DIM_BASE, --dim = 1), по умолчанию - 40 %: фон виден явнее. Сразу и в localStorage, как фон. */
+/** Затемнение: плотность стекла над фоном в процентах. */
 const DIM_BASE = 65;
 const DIM_DEFAULT = 40;
 function setDim(value, save = true) {
@@ -5080,7 +5993,24 @@ $('bgDim').addEventListener('input', (e) => setDim(e.target.value));
 $('bgDimReset').addEventListener('click', () => { setDim(DIM_DEFAULT); $('bgDim').focus(); });
 try { setDim(localStorage.getItem('bus-dim') || DIM_DEFAULT, false); } catch { setDim(DIM_DEFAULT, false); }
 
-/** Плитки: «Без видео» и кадр каждого ролика; на наведении и фокусе ролик в плитке играет. Выбор - сразу, мимо «Сохранить». */
+function bgTile(value, label, face) {
+  const input = el('input', { type: 'radio', name: 'bg', value, onchange: () => setBackground(value) });
+  input.setAttribute('aria-label', label);
+  const opt = el('label', { className: 'bg-opt', title: label }, input, face);
+  tipArm(opt);
+  const clip = face.tagName === 'VIDEO' ? face : null;
+  if (clip) {
+    const play = () => { if (!STILL.matches) clip.play().catch(() => {}); };
+    const stop = () => { if (!opt.matches(':hover') && !input.matches(':focus-visible')) clip.pause(); };
+    opt.addEventListener('pointerenter', play);
+    opt.addEventListener('pointerleave', stop);
+    input.addEventListener('focus', play);
+    input.addEventListener('blur', stop);
+  }
+  return opt;
+}
+
+/** Плитки: цветные темы + «Плоский» + ролики. Выбор сразу, мимо «Сохранить». */
 async function renderBgPicker() {
   if (!bgList) {
     try {
@@ -5089,31 +6019,32 @@ async function renderBgPicker() {
       bgList = [];
     }
   }
-  const tile = (value, label, face) => {
-    const input = el('input', { type: 'radio', name: 'bg', value, onchange: () => setBackground(value) });
-    input.setAttribute('aria-label', label);
-    const opt = el('label', { className: 'bg-opt', title: label }, input, face);
-    const clip = face.tagName === 'VIDEO' ? face : null;
-    if (clip) {
-      const play = () => { if (!STILL.matches) clip.play().catch(() => {}); };
-      const stop = () => { if (!opt.matches(':hover') && !input.matches(':focus-visible')) clip.pause(); }; // фокус от клика мышью ролик не держит
-      opt.addEventListener('pointerenter', play);
-      opt.addEventListener('pointerleave', stop);
-      input.addEventListener('focus', play);
-      input.addEventListener('blur', stop);
-    }
-    return opt;
-  };
-  $('bgGrid').replaceChildren(
-    tile('0', tr('Без видео'), el('span', { className: 'bg-none' }, el('span', {}, tr('Без видео')))),
-    ...bgList.map((name) => tile(name, tr('Видео {n}', { n: name }), bgClip(`/bg/${name}.mp4#t=0.5`, { preload: 'metadata' }))),
+  $('bgColorGrid').replaceChildren(
+    bgTile('0', tr('Плоский'), el('span', { className: 'bg-none bg-face' }, el('span', {}, tr('Плоский')))),
+    ...CSS_BG.map((t) => {
+      const face = el('span', { className: 'bg-face' }, el('span', {}, tr(t.label)));
+      face.style.setProperty('--preview', t.preview);
+      face.style.background = t.preview;
+      return bgTile(cssBgKey(t.id), tr(t.label), face);
+    }),
   );
+  $('bgGrid').replaceChildren(
+    ...bgList.map((name) => bgTile(name, tr('Видео {n}', { n: name }), bgClip(`/bg/${name}.mp4#t=0.5`, { preload: 'metadata' }))),
+  );
+  $('bgVideoLabel').hidden = !bgList.length;
+  $('bgGrid').hidden = !bgList.length;
   syncBgPicker();
-  setDim($('bgDim').value, false); // подпись сброса - на языке вкладки
+  setDim($('bgDim').value, false);
 }
 
-const BG_DEFAULT = '7'; // ещё не выбирали - этот ролик; нет его в папке - откат на пятна, как у любого незагрузившегося
-try { setBackground(localStorage.getItem('bus-bg') || BG_DEFAULT, false); } catch { setBackground(BG_DEFAULT, false); }
+const BG_DEFAULT = 'css:mist'; // ещё не выбирали - мягкий цветной фон; видео - по желанию
+try {
+  const saved = localStorage.getItem('bus-bg');
+  if (saved) setBackground(saved, false);
+  else setBackground(BG_DEFAULT, true);
+} catch {
+  setBackground(BG_DEFAULT, true);
+}
 
 // ---------- расписание ----------
 
@@ -5468,12 +6399,6 @@ let settingsForm = {}; // текущие значения формы, ключ �
 let settingsFields = new Map(); // ключ настройки → { item, wrap, input, revert, error }
 let settingsDirtyPatch = {}; // то, что уйдёт в POST - пересчитывается на каждую правку поля
 
-function settingsSay(text, bad = false) {
-  $('settingsStatus').textContent = text;
-  $('settingsStatus').className = `result${bad ? ' bad' : ''}`;
-}
-
-/** «вкл»/«выкл» или число с единицей, или имя модели - как показать значение по умолчанию на кнопке возврата. */
 function settingsDefaultLabel(item) {
   if (item.type === 'bool') return item.default ? tr('вкл') : tr('выкл');
   if (item.type === 'model' || item.type === 'choice') return item.default || tr('пусто');
@@ -5495,7 +6420,41 @@ function syncSettingsInput(key) {
   const node = settingsFields.get(key);
   if (!node) return;
   if (node.item.type === 'bool') node.input.checked = Boolean(settingsForm[key]);
+  else if (node.item.type === 'model') fillSettingsModelSelect(node.input, settingsForm[key]);
   else node.input.value = settingsForm[key] === undefined ? '' : String(settingsForm[key]);
+}
+
+/** Модели Cursor в select настроек - через setOptions, иначе base-select без <button><selectedcontent> не открывается. */
+function fillSettingsModelSelect(input, selected) {
+  const cur = String(selected || '').trim();
+  const fromApi = Array.isArray(state.cursorModels) ? state.cursorModels : [];
+  const list = [['', tr('Auto - по умолчанию Cursor')]];
+  for (const m of fromApi) {
+    if (!m || typeof m.id !== 'string' || m.id === 'default') continue;
+    list.push([m.id, m.label && m.label !== m.id ? `${m.label} (${m.id})` : m.id]);
+  }
+  if (cur && !list.some(([v]) => v === cur)) list.push([cur, cur]);
+  setOptions(input, list.map(([value, label]) => el('option', { value }, label)));
+  input.value = list.some(([v]) => v === cur) ? cur : '';
+}
+
+/** В этом каталоге есть субагенты (не оркестратор) - иначе поле agent.prompt пустое. */
+function settingsHasProjectAgents() {
+  return state.agents.some((a) => a.here && a.kind !== 'project');
+}
+
+function updateSettingsAgentPromptEmpty() {
+  const node = settingsFields.get('agent.prompt');
+  if (!node || !node.empty) return;
+  const has = settingsHasProjectAgents();
+  node.wrap.classList.toggle('empty-agents', !has);
+  node.empty.hidden = has;
+  const root = settingsData && settingsData.root;
+  const pending = state.here.attach && state.here.attach.name;
+  const canEditProject = Boolean(root) || Boolean(pending);
+  node.input.disabled = !has || !canEditProject;
+  if (voice.field === node.input && node.input.disabled) stopVoice();
+  syncVoiceHints();
 }
 
 /** Индикатор «изменено», кнопка возврата и текст ошибки одного поля - по текущему settingsForm[key] против ДЕФОЛТА (не против сервера:
@@ -5541,6 +6500,7 @@ function settingsFieldNode(item) {
   let input;
   let wrap;
   let count = null;
+  let empty = null;
   // Форма - про один проект, а общая настройка действует во всех: пометка у имени, чтоб правка не стала сюрпризом в соседнем каталоге
   const name = el('span', { className: 'settings-field-name' }, item.label, ...(item.global ? [el('span', { className: 'settings-scope' }, tr('все проекты'))] : []));
   if (item.type === 'bool') {
@@ -5550,36 +6510,68 @@ function settingsFieldNode(item) {
     wrap = el('label', { className: 'check settings-field' }, input, el('span', {}, head, el('small', {}, item.hint)));
   } else {
     let control;
+    let voiceBtn = null;
+    let voiceRecBtn = null;
     if (item.type === 'text') {
-      input = el('textarea', { rows: 6, maxLength: item.max * 2 }); // запас сверх лимита: вставленное целиком видно, счётчик краснеет - а не молча обрезано
+      input = el('textarea', { rows: 3, maxLength: item.max * 2 }); // запас сверх лимита: вставленное целиком видно, счётчик краснеет - а не молча обрезано
+      input.id = `settings-ta-${item.key.replace(/\./g, '-')}`;
       input.setAttribute('aria-label', item.label);
       count = el('span', { className: 'settings-count' });
-      control = el('div', { className: 'settings-control' }, input, count);
+      empty = item.key === 'agent.prompt'
+        ? el('span', { className: 'settings-empty-agents', hidden: true }, tr('Нет агентов в проекте'))
+        : null;
+      const area = el('div', { className: 'settings-text-area' }, input, ...(empty ? [empty] : []));
+      control = el('div', { className: 'settings-control' }, area, count);
+      const tip = tr('Диктовка: клик или удержание пробела');
+      voiceBtn = el('button', { type: 'button', className: 'voice-hint', hidden: true, title: tip, ariaLabel: tr('Голосовой ввод') }, icon('mic'));
+      const recIcon = el('span', { className: 'voice-rec-icon' }, icon('mic'));
+      recIcon.setAttribute('aria-hidden', 'true');
+      voiceRecBtn = el('button', { type: 'button', className: 'voice-rec', hidden: true, title: tr('Остановить запись'), ariaLabel: tr('Остановить голосовой ввод') },
+        recIcon, el('span', { className: 'voice-rec-label' }, tr('Голосовой ввод')));
+      voiceBtn.id = `settings-vh-${item.key.replace(/\./g, '-')}`;
+      voiceRecBtn.id = `settings-vr-${item.key.replace(/\./g, '-')}`;
+      voiceBtn.addEventListener('click', toggleVoiceClick);
+      voiceRecBtn.addEventListener('click', toggleVoiceClick);
     } else if (item.type === 'choice') {
-      input = el('select', {}, ...item.options.map((value) => el('option', { value }, value || tr('пусто'))));
+      input = el('select');
       input.setAttribute('aria-label', item.label);
+      setOptions(input, item.options.map((value) => el('option', { value }, value || tr('пусто'))));
       control = el('div', { className: 'settings-control' }, input);
     } else if (item.type === 'model') {
-      const listId = `settings-models-${item.key}`;
-      input = el('input', { type: 'text', autocomplete: 'off', spellcheck: false });
-      input.setAttribute('list', listId);
-      control = el('div', { className: 'settings-control' }, input, el('datalist', { id: listId }, ...['haiku', 'sonnet', 'opus'].map((m) => el('option', { value: m }))));
+      input = el('select');
+      input.setAttribute('aria-label', item.label);
+      fillSettingsModelSelect(input, '');
+      control = el('div', { className: 'settings-control' }, input);
     } else {
       input = el('input', { type: 'number', min: item.min, max: item.max, step: 1 });
       control = el('div', { className: 'settings-control' }, input, ...(item.unit ? [el('span', { className: 'settings-unit' }, item.unit)] : []));
     }
     input.addEventListener('input', () => onSettingsInput(item));
     input.addEventListener('change', () => onSettingsInput(item)); // стрелки у number и автозаполнение не всегда шлют input
-    const head = el('div', { className: 'settings-field-head' }, name, revert);
+    const tools = voiceBtn
+      ? el('span', { className: 'settings-field-tools' }, revert, voiceBtn, voiceRecBtn)
+      : revert;
+    const head = el('div', { className: 'settings-field-head' }, name, tools);
     wrap = el('div', { className: `settings-field${item.type === 'text' ? ' settings-field-text' : ''}` }, head, control, el('p', { className: 'hint' }, item.hint), error);
+    if (voiceBtn) {
+      settingsVoiceSlots.push({
+        field: input,
+        hint: voiceBtn,
+        rec: voiceRecBtn,
+        open: () => settingsOpen && !input.disabled && !wrap.classList.contains('empty-agents'),
+      });
+    }
   }
   wrap.dataset.key = item.key;
-  return { item, wrap, input, revert, error, count };
+  return { item, wrap, input, revert, error, count, empty };
 }
 
 /** Вся форма с нуля - по schema/groups снимка settingsData и текущим значениям settingsForm. */
 function renderSettingsFields() {
   const list = $('settingsList');
+  // Старые слоты голоса снимаем: узлы уйдут вместе с формой
+  if (voice.field && settingsVoiceSlots.some((s) => voiceField(s) === voice.field)) stopVoice();
+  settingsVoiceSlots = [];
   list.replaceChildren();
   settingsFields = new Map();
   if (!settingsData) return;
@@ -5599,10 +6591,11 @@ function renderSettingsFields() {
       updateSettingsField(item.key);
     }
   }
-  for (const ta of list.querySelectorAll('textarea')) fitArea(ta, 80, Math.min(window.innerHeight * 0.4, 360));
+  for (const ta of list.querySelectorAll('textarea')) fitSettingsArea(ta);
+  syncVoiceHints();
 }
 
-/** Каталог сверху и disabled на проектные поля, когда UI открыт не из проекта шины - там их привязывать не к чему. Общие (global) правятся и так. */
+/** Каталог сверху и disabled на проектные поля. Каталог ещё не в шине, но attach есть - поля проекта тоже правятся: сохранение подключит его. */
 function renderSettingsRoot() {
   const root = settingsData && settingsData.root;
   $('settingsOff').hidden = Boolean(root);
@@ -5611,7 +6604,11 @@ function renderSettingsRoot() {
   $('settingsRoot').hidden = !root;
   if (root) $('settingsRoot').textContent = tr('Каталог: {root}', { root });
   $('settingsReset').disabled = !root;
-  for (const { item, input } of settingsFields.values()) input.disabled = !root && !item.global;
+  const canEditProject = Boolean(root) || Boolean(pending);
+  for (const { item, input } of settingsFields.values()) {
+    input.disabled = !item.global && !canEditProject;
+  }
+  updateSettingsAgentPromptEmpty();
 }
 
 /** Кнопка «Сохранить» живёт, только пока есть несохранённые правки без ошибок - и есть куда их положить. */
@@ -5626,6 +6623,7 @@ function updateSettingsSave() {
 function applySettingsResponse(r) {
   settingsData = { root: r.root, values: r.values, groups: r.groups, schema: r.schema };
   if ('shortcut' in r) $('appPick').hidden = !r.shortcut; // POST save/reset флага не несёт - не прячем кнопку
+  if (Array.isArray(r.cursorModels) && r.cursorModels.length) state.cursorModels = r.cursorModels;
   settingsForm = { ...r.values };
   renderSettingsFields();
   renderSettingsRoot();
@@ -5652,22 +6650,28 @@ async function openSettings() {
   $('settings').hidden = false;
   $('settingsBtn').setAttribute('aria-expanded', 'true');
   settingsSay('');
+  syncUiPrefs();
   renderBgPicker();
   try {
+    await ensureCursorModels();
     applySettingsResponse(await getJson('/api/settings')); // у GET нет limits - пороги страницы не трогаются
   } catch (err) {
     settingsSay(tr('Настройки не загрузились: {why}', { why: err.message }), true);
   }
+  syncVoiceHints();
   $('settingsClose').focus();
 }
 
 /** Несохранённые правки молча не теряем: подтверждение, как и у прочих необратимых действий страницы. */
 function closeSettings() {
   if (settingsOpen && Object.keys(settingsDirtyPatch).length && !confirm(tr('Есть несохранённые изменения. Закрыть без сохранения?'))) return;
+  if (voice.field && settingsVoiceSlots.some((s) => voiceField(s) === voice.field)) stopVoice();
   settingsOpen = false;
+  settingsVoiceSlots = [];
   $('settingsBackdrop').hidden = true;
   $('settings').hidden = true;
   $('settingsBtn').setAttribute('aria-expanded', 'false');
+  syncVoiceHints();
   const back = settingsOpener;
   if (back && back.isConnected) back.focus();
   else $('settingsBtn').focus();
@@ -5739,10 +6743,15 @@ function setLanguage(lang) {
   applyAgents({ agents: state.agents, here: state.here });
   renderFeed(new Set(), false);
   renderUpdate();
+  renderLimits();
   if (projectsOpen) renderProjectsMenu();
   say('');
 }
-$('lang').addEventListener('click', () => setLanguage(I.lang() === 'en' ? 'ru' : 'en'));
+document.querySelectorAll('[data-lang-pick]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    if (btn.dataset.langPick !== I.lang()) setLanguage(btn.dataset.langPick);
+  });
+});
 
 // ---------- окно приложения (ui --app) ----------
 // Адрес с ?app=1 открывает только app.js. Размер и место окна уходят на сервер - следующее окно откроется таким же; зум Chrome помнит сам.

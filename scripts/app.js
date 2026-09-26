@@ -236,8 +236,8 @@ function macPlist() {
 <dict>
   <key>CFBundleName</key><string>${APP_NAME}</string>
   <key>CFBundleDisplayName</key><string>${APP_NAME}</string>
-  <key>CFBundleIdentifier</key><string>io.github.jtapes.claude-bus</string>
-  <key>CFBundleExecutable</key><string>claude-bus</string>
+  <key>CFBundleIdentifier</key><string>io.github.agent-cursor.bus-cursor</string>
+  <key>CFBundleExecutable</key><string>bus-cursor</string>
   <key>CFBundleIconFile</key><string>bus.icns</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleVersion</key><string>1</string>
@@ -254,7 +254,7 @@ function macShortcut(env, home) {
   fs.mkdirSync(path.join(contents, 'MacOS'), { recursive: true });
   fs.mkdirSync(path.join(contents, 'Resources'), { recursive: true });
   fs.writeFileSync(path.join(contents, 'Info.plist'), macPlist());
-  const launcher = path.join(contents, 'MacOS', 'claude-bus');
+  const launcher = path.join(contents, 'MacOS', 'bus-cursor');
   fs.writeFileSync(launcher, macLauncher(), { mode: 0o755 });
   fs.chmodSync(launcher, 0o755);
   fs.copyFileSync(path.join(ASSETS, 'bus.icns'), path.join(contents, 'Resources', 'bus.icns'));

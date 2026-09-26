@@ -66,11 +66,11 @@ function liveEntries(e, cwd) {
 const textOf = (e) => (e.message.content || []).filter((b) => b && b.type === 'text').map((b) => String(b.text || '')).join('');
 
 /**
- * Промпт - файлом в <каталог>/.claude/bus/prompts/: каталог агента Cursor читает без вопросов, а .claude/bus/ уже в .git/info/exclude.
+ * Промпт - файлом в <каталог>/.cursor/bus-cursor/prompts/: каталог агента Cursor читает без вопросов, а .cursor/bus-cursor/ уже в .git/info/exclude.
  * Роль идёт первой - у Cursor нет --agent, её кладёт шина. → { file, arg } - arg в кавычках для командной строки.
  */
 function promptFile(cwd, text, role) {
-  const dir = path.join(cwd, '.claude', 'bus', 'prompts');
+  const dir = path.join(cwd, '.cursor', 'bus-cursor', 'prompts');
   fs.mkdirSync(dir, { recursive: true });
   // stop убивает раннер вместе с Cursor - свой файл он не убрал; подметаем брошенные при следующем запуске
   for (const name of fs.readdirSync(dir)) {
@@ -256,8 +256,8 @@ function ensureHooks() {
 }
 
 /**
- * Правило проекта .cursor/rules/bus.mdc: хуки кладут входящие только на старте чата и после вызова инструмента - пришедшее,
- * пока чат простаивал, агент увидит, лишь позвав inbox. Файл личный, как .claude/bus/: в .git/info/exclude (exclude - bus.excludeLocal).
+ * Правило проекта .cursor/rules/bus-cursor.mdc: хуки кладут входящие только на старте чата и после вызова инструмента - пришедшее,
+ * пока чат простаивал, агент увидит, лишь позвав inbox. Файл личный, как .cursor/bus-cursor/: в .git/info/exclude (exclude - bus.excludeLocal).
  * Руками поправленное не переписываем. → true, если файл создан.
  */
 function ensureRule(root, exclude = null) {
