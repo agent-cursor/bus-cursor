@@ -55,6 +55,7 @@ const IDLE_EXIT_MS = 15 * 60 * 1000;
 // холодный старт браузера бывает долгим
 const APP_IDLE_MS = Number(process.env.BUS_APP_IDLE_MS) || 10 * 1000;
 const ICON_SVG = path.join(__dirname, '..', 'assets', 'bus.svg');
+const ICON_MARK = path.join(__dirname, '..', 'assets', 'bus-core.svg');
 const BODY_LIMIT = 16 * 1024;
 const ROLE_BODY_LIMIT = 64 * 1024; // роль агента - до 20 КБ текста плюс поля формы
 const SEND_BODY_LIMIT = 1024 * 1024; // поле сообщения длину не режет: длинный текст уходит агенту вложением
@@ -1937,6 +1938,7 @@ async function handle(req, res, port) {
     if (url.pathname === '/i18n.js') return reply(res, 200, pageFile(I18N), 'text/javascript; charset=utf-8');
     if (url.pathname === '/logic.js') return reply(res, 200, pageFile(LOGIC), 'text/javascript; charset=utf-8');
     if (url.pathname === '/favicon.svg') return reply(res, 200, pageFile(ICON_SVG), 'image/svg+xml');
+    if (url.pathname === '/icon.svg') return reply(res, 200, pageFile(ICON_MARK), 'image/svg+xml');
     if (url.pathname === '/cron.js') return reply(res, 200, pageFile(CRON), 'text/javascript; charset=utf-8');
     if (url.pathname === '/api/schedule') return reply(res, 200, scheduleState());
     if (url.pathname === '/api/settings') return reply(res, 200, settingsState());

@@ -285,6 +285,7 @@
   button:disabled { cursor: default; }
   :focus-visible { outline: 2px solid var(--copper); outline-offset: 2px; }
   svg.icon { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  svg.icon.icon-fill { fill: currentColor; stroke: none; stroke-width: 0; }
   .label { font-family: var(--label); text-transform: uppercase; letter-spacing: .1em; font-size: 12px; color: var(--ink-soft); }
   * { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
   ::selection { background: color-mix(in srgb, var(--copper) 35%, transparent); }
@@ -1533,14 +1534,13 @@
   .about-modal .about-close {
     position: absolute; top: 10px; right: 10px;
   }
-  .about-modal .icon-wrap {
-    width: 52px; height: 52px; margin: 0 auto 14px;
-    display: grid; place-items: center;
-    border-radius: 16px;
-    background: color-mix(in srgb, var(--copper) 14%, transparent);
-    color: var(--copper);
+  .about-modal .about-logo {
+    display: block;
+    width: 88px;
+    height: 88px;
+    margin: 4px auto 16px;
+    object-fit: contain;
   }
-  .about-modal .icon-wrap .icon { width: 26px; height: 26px; }
   .about-modal h2 { margin: 0 0 4px; font: 650 18px/1.3 var(--label); color: var(--ink); }
   .about-ver {
     margin: 0 0 16px;
@@ -1560,8 +1560,10 @@
     vertical-align: middle;
   }
   .about-check {
+    display: inline-flex;
     width: 100%;
     justify-content: center;
+    align-items: center;
     min-height: var(--h-lg);
     margin: 0 0 18px;
     gap: 8px;
@@ -1569,41 +1571,82 @@
   .about-check .icon { width: 16px; height: 16px; }
   .about-links {
     display: grid;
-    gap: 8px;
-    margin: 0 0 14px;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 0 0 16px;
   }
   .about-link {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
-    min-height: var(--h);
-    padding: 0 12px;
+    justify-content: center;
+    gap: 8px;
+    aspect-ratio: 1;
+    min-height: 0;
+    padding: 14px 10px;
     border-radius: var(--r);
     border: 1px solid var(--line);
     background: var(--glass-1);
     color: var(--ink);
     text-decoration: none;
-    font: 500 13px/1.3 var(--body);
-    transition: background-color .2s, border-color .2s, color .2s;
+    text-align: center;
+    transition: background-color .2s, border-color .2s, color .2s, transform .2s var(--ease);
   }
   .about-link:hover {
     background: var(--glass-2);
     border-color: var(--line-strong);
     color: var(--copper);
+    transform: translateY(-1px);
   }
-  .about-link .icon { width: 18px; height: 18px; flex: none; color: var(--ink-soft); }
-  .about-link:hover .icon { color: var(--copper); }
-  .about-link span { flex: 1; text-align: left; min-width: 0; }
-  .about-link small {
-    flex: none;
-    font: 12px/1 var(--label);
+  .about-link-brand {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    color: var(--ink);
+  }
+  .about-link-brand .icon {
+    width: 24px;
+    height: 24px;
+  }
+  .about-link-brand .icon-cursor { width: 20px; height: 24px; }
+  .about-link-brand .icon-claude { color: #d97757; width: 24px; height: 24px; }
+  .about-link:hover .about-link-brand { color: inherit; }
+  .about-link:hover .about-link-brand .icon-claude { color: #d97757; }
+  .about-link-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    min-width: 0;
+    width: 100%;
+  }
+  .about-link-main > b {
+    display: block;
+    font: 600 12px/1.2 var(--mono);
+    color: inherit;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+  .about-link-note {
+    font: 500 10px/1.2 var(--label);
+    letter-spacing: .02em;
     color: var(--ink-soft);
   }
+  .about-link:hover .about-link-note { color: color-mix(in srgb, var(--copper) 65%, var(--ink-soft)); }
   .about-copy {
     margin: 0;
     font: 12px/1.4 var(--body);
     color: var(--ink-soft);
   }
+  .about-copy a {
+    color: var(--copper);
+    text-decoration: none;
+    text-underline-offset: 2px;
+  }
+  .about-copy a:hover { text-decoration: underline; }
   .settings-list { display: grid; gap: 0; }
   .settings-group-label { margin: 0; padding: 24px 0 0; }
   .settings-group-label:first-child { padding-top: 0; }
@@ -2112,7 +2155,7 @@
     box-shadow: var(--shadow-pop) !important;
   }
   .about-link {
-    border-radius: 12px !important;
+    border-radius: 14px !important;
     background: var(--field) !important;
   }
   .about-link:hover {
@@ -2839,6 +2882,8 @@
   <symbol id="i-github" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M12 2C6.48 2 2 6.58 2 12.26c0 4.52 2.87 8.35 6.84 9.71.5.1.68-.22.68-.48 0-.24-.01-.87-.01-1.7-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.55-1.14-4.55-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.73 0 0 .84-.27 2.75 1.05A9.3 9.3 0 0 1 12 6.84c.85.004 1.71.12 2.51.35 1.91-1.32 2.75-1.05 2.75-1.05.55 1.42.2 2.47.1 2.73.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.8-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.59.69.49A10.03 10.03 0 0 0 22 12.26C22 6.58 17.52 2 12 2z"/></symbol>
   <symbol id="i-telegram" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M21.8 4.3 2.9 11.5c-1.3.5-1.3 1.2-.2 1.5l4.8 1.5 1.9 5.7c.2.7.4.9 1 .9.6 0 .8-.3 1.1-.6l2.8-2.7 5.6 4.1c1 .5 1.7.3 2-.9L23.2 5.8c.3-1.3-.4-1.9-1.4-1.5z"/></symbol>
   <symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+  <symbol id="i-cursor-ide" viewBox="0 0 49 56"><path fill="currentColor" stroke="none" d="M48.0226 13.2547L25.6601 0.311786C24.942 -0.103929 24.0559 -0.103929 23.3378 0.311786L0.976347 13.2547C0.372691 13.6041 0 14.2503 0 14.9502V41.0498C0 41.7496 0.372691 42.3958 0.976347 42.7453L23.3389 55.6882C24.057 56.1039 24.943 56.1039 25.6611 55.6882L48.0237 42.7453C48.6273 42.3958 49 41.7496 49 41.0498V14.9502C49 14.2503 48.6273 13.6041 48.0237 13.2547H48.0226ZM46.6179 15.9964L25.0302 53.4802C24.8842 53.7328 24.4989 53.6296 24.4989 53.337V28.793C24.4989 28.3026 24.2375 27.849 23.8134 27.6027L2.61094 15.3312C2.35898 15.1849 2.46186 14.7987 2.75372 14.7987H45.9292C46.5423 14.7987 46.9255 15.4649 46.619 15.9974L46.6179 15.9964Z"/></symbol>
+  <symbol id="i-claude" viewBox="0 0 100 100"><path fill="currentColor" stroke="none" d="m19.6 66.5 19.7-11 .3-1-.3-.5h-1l-3.3-.2-11.2-.3L14 53l-9.5-.5-2.4-.5L0 49l.2-1.5 2-1.3 2.9.2 6.3.5 9.5.6 6.9.4L38 49.1h1.6l.2-.7-.5-.4-.4-.4L29 41l-10.6-7-5.6-4.1-3-2-1.5-2-.6-4.2 2.7-3 3.7.3.9.2 3.7 2.9 8 6.1L37 36l1.5 1.2.6-.4.1-.3-.7-1.1L33 25l-6-10.4-2.7-4.3-.7-2.6c-.3-1-.4-2-.4-3l3-4.2L28 0l4.2.6L33.8 2l2.6 6 4.1 9.3L47 29.9l2 3.8 1 3.4.3 1h.7v-.5l.5-7.2 1-8.7 1-11.2.3-3.2 1.6-3.8 3-2L61 2.6l2 2.9-.3 1.8-1.1 7.7L59 27.1l-1.5 8.2h.9l1-1.1 4.1-5.4 6.9-8.6 3-3.5L77 13l2.3-1.8h4.3l3.1 4.7-1.4 4.9-4.4 5.6-3.7 4.7-5.3 7.1-3.2 5.7.3.4h.7l12-2.6 6.4-1.1 7.6-1.3 3.5 1.6.4 1.6-1.4 3.4-8.2 2-9.6 2-14.3 3.3-.2.1.2.3 6.4.6 2.8.2h6.8l12.6 1 3.3 2 1.9 2.7-.3 2-5.1 2.6-6.8-1.6-16-3.8-5.4-1.3h-.8v.4l4.6 4.5 8.3 7.5L89 80.1l.5 2.4-1.3 2-1.4-.2-9.2-7-3.6-3-8-6.8h-.5v.7l1.8 2.7 9.8 14.7.5 4.5-.7 1.4-2.6 1-2.7-.6-5.8-8-6-9-4.7-8.2-.5.4-2.9 30.2-1.3 1.5-3 1.2-2.5-2-1.4-3 1.4-6.2 1.6-8 1.3-6.4 1.2-7.9.7-2.6v-.2H49L43 72l-9 12.3-7.2 7.6-1.7.7-3-1.5.3-2.8L24 86l10-12.8 6-7.9 4-4.6-.1-.5h-.3L17.2 77.4l-4.7.6-2-2 .2-3 1-1 8-5.5Z"/></symbol>
 </svg>
 
 <div class="bg-video" id="bgVideo" aria-hidden="true"></div>
@@ -3211,22 +3256,27 @@
 <div class="update-backdrop" id="aboutBackdrop" hidden></div>
 <section class="about-modal" id="aboutModal" hidden role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
   <button class="ghost iconbtn about-close" id="aboutClose" type="button" aria-label="Закрыть"><svg class="icon"><use href="#i-x"/></svg></button>
-  <div class="icon-wrap" aria-hidden="true"><svg class="icon"><use href="#i-info"/></svg></div>
+  <img class="about-logo" src="/icon.svg" alt="" width="88" height="88" decoding="async">
   <h2 id="aboutTitle">Bus Cursor</h2>
   <p class="about-ver" id="aboutVersion">v—</p>
   <button type="button" class="ghost about-check" id="aboutCheckUpdate"><svg class="icon"><use href="#i-download"/></svg><span>Проверить обновления</span></button>
   <div class="about-links">
-    <a class="about-link" href="https://github.com/SafonovAG" target="_blank" rel="noopener noreferrer">
-      <svg class="icon"><use href="#i-user"/></svg><span>SafonovAG</span><small>GitHub</small>
-    </a>
-    <a class="about-link" href="https://t.me/safonov_ag" target="_blank" rel="noopener noreferrer">
-      <svg class="icon"><use href="#i-telegram"/></svg><span>@safonov_ag</span><small>Telegram</small>
-    </a>
     <a class="about-link" href="https://github.com/agent-cursor/bus-cursor" target="_blank" rel="noopener noreferrer">
-      <svg class="icon"><use href="#i-github"/></svg><span>bus-cursor</span><small>Репозиторий</small>
+      <span class="about-link-brand" aria-hidden="true"><svg class="icon icon-fill icon-cursor"><use href="#i-cursor-ide"/></svg></span>
+      <span class="about-link-main">
+        <b>bus-cursor</b>
+        <span class="about-link-note">для Cursor</span>
+      </span>
+    </a>
+    <a class="about-link" href="https://github.com/jtapes/claude-bus" target="_blank" rel="noopener noreferrer">
+      <span class="about-link-brand" aria-hidden="true"><svg class="icon icon-fill icon-claude"><use href="#i-claude"/></svg></span>
+      <span class="about-link-main">
+        <b>claude-bus</b>
+        <span class="about-link-note">для Claude</span>
+      </span>
     </a>
   </div>
-  <p class="about-copy">© SafonovAG</p>
+  <p class="about-copy" id="aboutCopy"></p>
 </section>
 
 <div class="update-backdrop" id="updateBackdrop" hidden></div>
@@ -6948,6 +6998,15 @@ function syncAbout() {
     btn.disabled = false;
     if (label) label.textContent = tr('Проверить обновления');
   }
+  const copy = $('aboutCopy');
+  if (copy) {
+    copy.replaceChildren(
+      document.createTextNode('© '),
+      el('a', { href: 'https://github.com/jtapes', target: '_blank', rel: 'noopener noreferrer' }, 'JTapes'),
+      document.createTextNode(` ${tr('и')} `),
+      el('a', { href: 'https://github.com/SafonovAG', target: '_blank', rel: 'noopener noreferrer' }, 'SafonovAG'),
+    );
+  }
 }
 
 let aboutOpen = false;
@@ -6996,7 +7055,7 @@ $('aboutCheckUpdate').addEventListener('click', async () => {
     } else if (data.state === 'none') {
       say(tr('Уже последняя версия: v{version}', { version: data.current || '—' }));
     } else if (data.state === 'off') {
-      say(tr('Обновления тут выключены: нет release.json или папка скилла - git-клон.'), true);
+      say(tr('Обновления тут выключены: нет release.json.'), true);
     } else if (data.state === 'error') {
       say(tr('Не обновилось: {why}', { why: data.reason || tr('неизвестная ошибка') }), true);
     } else {
@@ -7125,6 +7184,7 @@ document.querySelectorAll('[data-lang-pick]').forEach((btn) => {
 // ---------- окно приложения (ui --app) ----------
 // Адрес с ?app=1 открывает только app.js. Размер и место окна уходят на сервер - следующее окно откроется таким же; зум Chrome помнит сам.
 // Флаги --window-size/--window-position уже запущенный Chrome пропускает, поэтому прошлые размер и место ставим отсюда
+document.addEventListener('contextmenu', (e) => e.preventDefault());
 if (new URLSearchParams(location.search).has('app')) {
   /** Окно за краем экрана (отключили монитор) возвращаем на текущий: Chrome по --window-position ставит куда сказано, даже в пустоту. */
   const keepOnScreen = () => {

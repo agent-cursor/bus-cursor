@@ -806,7 +806,9 @@
     'О приложении': 'About',
     'доступна v{version}': 'v{version} available',
     'Репозиторий': 'Repository',
-    '© SafonovAG': '© SafonovAG',
+    'для Cursor': 'for Cursor',
+    'для Claude': 'for Claude',
+    'и': 'and',
 
     // ---------- интерфейс: тема и язык в настройках ----------
     'Интерфейс': 'Interface',
@@ -861,7 +863,8 @@
     'Дерево релиза пришло не целиком - установка отменена.': 'The release tree came truncated - not installing.',
     'В релизе подозрительный путь: {path}. Установка отменена.': 'Suspicious path in the release: {path}. Not installing.',
     'В релизе нет release.json - после такой установки обновления бы кончились. Установка отменена.': 'The release has no release.json - after installing it updates would stop. Not installing.',
-    'Обновление тут выключено: нет release.json или папка скилла - git-клон.': 'Updates are off here: no release.json, or the skill folder is a git clone.',
+    'Обновление тут выключено: нет release.json.': 'Updates are off here: no release.json.',
+    'Обновления тут выключены: нет release.json.': 'Updates are off here: no release.json.',
     'Не знаю, до какой версии обновлять: проверка обновлений не прошла.': 'Unknown target version: the update check did not succeed.',
     'Не скачался {path}: {why}': 'Failed to download {path}: {why}',
     'таймаут': 'timeout',
