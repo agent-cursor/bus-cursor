@@ -39,7 +39,12 @@
     // ---------- ui.html: скрипт страницы ----------
     'просьба сделать': 'to-do request',
     'нужен ответ': 'needs an answer',
-    'к сведению, ответа не жду': 'FYI, no reply expected',
+    'прими к сведению': 'for your information',
+    'Задача': 'Task',
+    'Вопрос': 'Question',
+    'Информация': 'Info',
+    'Фильтры': 'Filters',
+    'Фильтры по типу сообщений': 'Filter by message type',
     'тебе ответил - открой диалог, и прочитано': 'replied to you - open the dialog to mark as read',
     'лежит в его inbox': 'waiting in its inbox',
     'Роль агента: посмотреть, поправить, удалить': 'Agent role: view, edit, delete',

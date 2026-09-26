@@ -7,18 +7,10 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>
   /*
-   * Образ - стекло над живым фоном (по мотивам qwatra): панели - слои белого 10/20/40 % с размытием, под ними плывут медные и фиолетовые пятна и тонкая сетка.
-   * Шина осталась: рейка - светящаяся нить через ленту, каждое сообщение - отвод от неё; ветка монотонная, цвет агента несёт только узел.
-   * Узлы, точки и галочки - ромбы; главное действие - полупрозрачное стекло с медным отсветом; кнопки на наведении чуть растут.
-   * Медь - то, что ждёт пользователя. Шрифты системные: страница локальная и должна открываться без сети.
-   * Размытие (--blur) - только у крупных панелей: на каждой карточке ленты оно тормозило бы прокрутку, а пятна фона и так мягкие.
-   *
-   * Набор: кегли 12 (бирки, подписи, мета, прописные) · 14 (текст, кнопки, поля - по умолчанию) · 15-16 (заголовки); мельче 12 не бывает; отступы кратны 2, в ходу 4/8/12/16/20;
-   * высоты контролов --h-sm / --h / --h-lg, радиусы --r-sm / --r / --r-lg. Поверхности: --bg (фон под стеклом) → --glass-1/2/3 (слои стекла) → --raised (выпадающее);
-   * поле ввода - --field. Кнопки: .send - главное действие, .squeeze - действие над перепиской, .ghost - нейтральное.
+   * Образ - премиальный минимализм Telegram: плоские панели, тонкие линии, пузыри ленты, без свечений и тяжёлых плашек.\n   * Акцент - лёд Telegram (#2AABEE). Светлая и тёмная темы. Поле ввода - --field. Кнопки: .send - главное действие, .squeeze - действие над перепиской, .ghost - нейтральное.
    */
   :root {
-    --bg: #f4f4f5;
+    --bg: #f0f2f5;
     --panel: #ffffff;
     --glass-1: #ffffff;
     --glass-2: #f4f4f5;
@@ -32,8 +24,8 @@
     --ink-soft: #6b6b70;
     --line: #11111314;
     --line-strong: #11111328;
-    --copper: #0d9488;
-    --copper-hi: #14b8a6;
+    --copper: #2aabee;
+    --copper-hi: #5bc8f5;
     --copper-soft: color-mix(in srgb, var(--copper) 12%, transparent);
     --copper-glow: color-mix(in srgb, var(--copper-hi) 35%, transparent);
     --on-copper: #ffffff;
@@ -68,27 +60,27 @@
     --feed-left: 56px;
     --cx: calc(var(--rail-x) + var(--rail-w) / 2 - var(--feed-left));
     --tap-curve: none;
-    --accent: #0d9488;
-    --chat-mine: #ccfbf1;
+    --accent: #2aabee;
+    --chat-mine: #effdde;
     --chat-theirs: #ffffff;
     color-scheme: light;
   }
   :root[data-theme="dark"] {
-    --bg: #0e0e10;
-    --panel: #161618;
-    --glass-1: #161618;
-    --glass-2: #1c1c1f;
-    --glass-3: #232326;
-    --raised: #1c1c1f;
-    --sheet: #161618;
-    --field: #0e0e10;
+    --bg: #0e1621;
+    --panel: #17212b;
+    --glass-1: #17212b;
+    --glass-2: #1e2a36;
+    --glass-3: #242f3d;
+    --raised: #1e2a36;
+    --sheet: #17212b;
+    --field: #242f3d;
     --edge: transparent;
     --ink: #e8e8ea;
     --ink-soft: #8b8b90;
     --line: #ffffff12;
     --line-strong: #ffffff22;
-    --copper: #5ac8c8;
-    --copper-hi: #7dd3d3;
+    --copper: #6ab3f3;
+    --copper-hi: #8ec7f7;
     --on-copper: #0e0e10;
     --on-danger: #2a0b09;
     --wire-l: 70%; --wire-s: 12%; --tap: #ffffff22;
@@ -99,8 +91,8 @@
     --shadow-pop: 0 12px 32px -12px #000000aa;
     --shadow-lift: 0 4px 12px -4px #00000088;
     --scrim: #00000088; --veil: transparent;
-    --chat-mine: #134e4a;
-    --chat-theirs: #1c1c1f;
+    --chat-mine: #2b5278;
+    --chat-theirs: #182533;
     color-scheme: dark;
   }
   /* flat: без видео и стекла */
@@ -112,24 +104,25 @@
   }
 
 
-  /* Bus Cursor Telegram-flat extras */
-  body::before, body::after { display: none !important; }
-  .msg, .card, .bubble { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
-  .send { background: var(--copper) !important; color: var(--on-copper) !important; border-radius: var(--r) !important; font-weight: 600; transition: transform .15s var(--ease), filter .15s var(--ease); }
-  .send:hover { filter: brightness(1.06); transform: translateY(-1px); }
-  .ghost { border-radius: var(--r-sm) !important; }
-  #list .agent, .agent-row { border-radius: var(--r) !important; transition: background .15s var(--ease); }
-  #list .agent:hover, .agent-row:hover { background: var(--glass-2); }
-  #list .agent.on, .agent-row.on { background: var(--copper-soft); box-shadow: inset 3px 0 0 var(--copper); }
-  .feed .item, .msg-card { border-radius: var(--r) !important; box-shadow: var(--shadow) !important; border: 1px solid var(--line) !important; backdrop-filter: none !important; }
-  header.top, .topbar { border-bottom: 1px solid var(--line); background: var(--panel) !important; backdrop-filter: none !important; }
-  aside, .sidebar, #here { background: var(--panel) !important; border-right: 1px solid var(--line); backdrop-filter: none !important; }
-
   * { box-sizing: border-box; }
   [hidden] { display: none !important; } /* иначе display у .ghost и .squeeze перебивает атрибут */
-  html, body { height: 100%; margin: 0; }
+  html, body {
+    height: 100%;
+    min-height: 100%;
+    height: 100dvh;
+    min-height: 100dvh;
+    margin: 0;
+  }
   /* Колонка, а не grid: полоса «нет связи» то есть, то нет, и раскладка под ней не должна менять ряд */
-  body { background: var(--bg); color: var(--ink); font: 14px/1.5 var(--body); display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.5 var(--body);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+  }
   /* Живой фон под стеклом: крупные мягкие пятна - фон ровный, без клякс; плывут по кругу, сетка медленно едет на одну клетку - чтов не виден */
   body::before, body::after { content: ""; position: fixed; z-index: -1; pointer-events: none; }
   body::before { inset: -25%; background: radial-gradient(70% 60% at 25% 30%, var(--blob-a), transparent), radial-gradient(70% 65% at 80% 35%, var(--blob-b), transparent), radial-gradient(80% 60% at 55% 90%, var(--blob-c), transparent); animation: drift 90s ease-in-out infinite alternate; }
@@ -228,9 +221,9 @@
   @keyframes blink { 50% { opacity: .35; } }
 
   /* ---- раскладка ---- */
-  .layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); flex: 1; min-height: 0; position: relative; }
-  aside { position: relative; overflow-y: auto; padding: 16px 8px 24px; background: var(--glass-1); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border-right: 1px solid transparent; border-image: linear-gradient(to bottom, transparent, var(--line-strong) 15%, var(--line-strong) 85%, transparent) 1; animation: from-left .8s .08s var(--ease) backwards; }
-  main { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; min-height: 0; min-width: 0; position: relative; }
+  .layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); flex: 1 1 0; min-height: 0; position: relative; }
+  aside { position: relative; overflow-y: auto; min-height: 0; padding: 16px 8px 24px; background: var(--glass-1); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border-right: 1px solid transparent; border-image: linear-gradient(to bottom, transparent, var(--line-strong) 15%, var(--line-strong) 85%, transparent) 1; animation: from-left .8s .08s var(--ease) backwards; }
+  main { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; min-height: 0; min-width: 0; height: 100%; position: relative; }
 
   /* ---- агенты ---- */
   .group { margin-bottom: 20px; }
@@ -315,6 +308,40 @@
   .picked-bar #markedCount, .pair .stat { display: inline-flex; align-items: center; gap: 6px; min-height: var(--h); padding: 0 12px; border: 1px solid var(--line); border-radius: var(--r); font: 400 14px/1.2 var(--body); color: var(--ink-soft); white-space: nowrap; }
   .picked-bar .ghost:hover:not(:disabled) { background: var(--glass-3); box-shadow: 0 1px 0 var(--edge) inset, 0 0 16px -6px var(--copper-glow), 0 8px 20px -12px #0006; }
   .picked-bar .squeeze.danger:not(:hover) { background: color-mix(in srgb, var(--danger) 6%, var(--glass-2)); }
+
+  /* ---- фильтры типов: кнопка + выпадающий список с галочками ---- */
+  .type-filters { position: relative; flex: none; }
+  .filters-btn { gap: 6px !important; }
+  .filters-btn.active { color: var(--copper) !important; background: var(--copper-soft) !important; }
+  .filters-btn.open { color: var(--ink) !important; background: var(--glass-2) !important; }
+  .filters-count {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+    background: var(--copper); color: var(--on-copper);
+    font: 600 11px/18px var(--body); font-variant-numeric: tabular-nums;
+  }
+  .filters-menu {
+    position: absolute; top: calc(100% + 6px); right: 0; z-index: 8;
+    min-width: 240px; padding: 6px;
+    background: var(--panel); border: 0; border-radius: 12px;
+    box-shadow: var(--shadow-pop);
+    display: grid; gap: 2px;
+  }
+  .filters-menu[hidden] { display: none !important; }
+  .filter-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    margin: 0; padding: 8px 10px; border-radius: 8px;
+    cursor: pointer; color: var(--ink);
+  }
+  .filter-row:hover { background: var(--glass-2); }
+  .filter-row input { margin-top: 2px; }
+  .filter-row .dot {
+    flex: none; width: 8px; height: 8px; margin-top: 6px;
+    border-radius: 50%; background: var(--c);
+  }
+  .filter-text { display: grid; gap: 2px; min-width: 0; }
+  .filter-name { font: 600 13px/1.3 var(--body); }
+  .filter-row small { font: 12px/1.35 var(--body); color: var(--ink-soft); }
 
   /* ---- вкладки диалогов с агентом: «+» - новый, «×» - закрыть в историю ---- */
   .tabs { position: relative; display: flex; align-items: flex-end; gap: 4px; padding: 6px var(--gutter) 0; border-bottom: 1px solid var(--line); overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
@@ -550,8 +577,8 @@
   #type option span { margin-left: .3em; color: var(--ink-soft); font-weight: 400; }
   #type option::checkmark { padding-left: 12px; }
   #fromHint { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--ink-soft); }
-  /* Поле растёт с текстом до ~40% экрана, дальше - прокрутка. Где field-sizing нет (Firefox) - высоту ставит fitText. Тянуть руками незачем: растянутое так и осталось бы высоким после отправки */
-  #composer textarea { field-sizing: content; min-height: var(--h-lg); max-height: min(40vh, 360px); resize: none; }
+  /* Поле растёт с текстом до ~40% экрана, дальше - прокрутка. Высоту всегда догоняет fitText (и где field-sizing есть, и где нет). */
+  #composer textarea { field-sizing: content; min-height: 40px; max-height: min(40vh, 360px); resize: none; overflow-y: hidden; line-height: 1.45; }
   #composer textarea::placeholder { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* длинная подсказка в одну строку, а не обрезанная вторая */
   /* Главное действие - полупрозрачное, как кнопки qwatra: стекло с медным отсветом и медной рамкой. На наведении отсвет гуще и светится. Не дышит: анимированная тень перерисовывала размытую форму на каждом кадре */
   .send { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: var(--h-lg); background: color-mix(in srgb, var(--copper) 16%, var(--glass-1)); color: var(--ink); border: 1px solid color-mix(in srgb, var(--copper) 55%, transparent); border-radius: var(--r); padding: 0 16px; font: 700 12px/1.2 var(--label); letter-spacing: .08em; text-transform: uppercase; box-shadow: 0 1px 0 var(--edge) inset, 0 8px 22px -12px var(--copper-glow); transition: background-color .25s, border-color .25s, transform .3s var(--ease), box-shadow .3s; }
@@ -902,7 +929,7 @@
     #scheduleBtn { margin-left: auto; }
     .search { flex-basis: 100%; }
     /* Типы - одной прокручиваемой строкой: шесть фишек в два ряда съедали бы ленту */
-    #types { flex: 1 1 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+    #types, .type-filters { flex: none; }
     #composer { grid-template-columns: minmax(0, 1fr) auto; } /* вторая колонка - папка и скрепка */
     #composer .send, .result { grid-column: 1 / -1; }
     #attachHint, .keys { display: none; } /* перетаскивать и держать пробел на телефоне нечем, а лента и так зажата формой */
@@ -913,6 +940,868 @@
     .job-toggle, .job-actions .ghost { min-height: 32px; }
   }
   @keyframes from-bottom-soft { from { transform: translateY(24px); opacity: 0; } }
+
+  /* ========== Bus Cursor · Telegram premium minimal ==========
+     Плоские поверхности, тонкие линии, без свечений и тяжёлых плашек.
+     Перекрывает стекло / qwatra-хром выше по файлу. */
+
+  :root {
+    --bg: #f0f2f5;
+    --panel: #ffffff;
+    --glass-1: #ffffff;
+    --glass-2: #f0f2f5;
+    --glass-3: #e8eaed;
+    --plate: #ffffff;
+    --raised: #ffffff;
+    --sheet: #ffffff;
+    --field: #f0f2f5;
+    --edge: transparent;
+    --ink: #0f1419;
+    --ink-soft: #707579;
+    --line: #0000000f;
+    --line-strong: #0000001a;
+    --copper: #2aabee;
+    --copper-hi: #5bc8f5;
+    --copper-soft: color-mix(in srgb, var(--copper) 12%, transparent);
+    --copper-glow: transparent;
+    --on-copper: #ffffff;
+    --on-danger: #ffffff;
+    --wire-l: 42%;
+    --wire-s: 10%;
+    --tap: #00000014;
+    --dot-s: 55%; --dot-l: 48%;
+    --task: #2aabee;
+    --question: #8b5cf6;
+    --done: #31b545;
+    --fyi: #707579;
+    --danger: #e53935;
+    --amber: #e5a00d;
+    --blob-a: transparent; --blob-b: transparent; --blob-c: transparent;
+    --grid: transparent;
+    --blur: none;
+    --shadow: none;
+    --shadow-pop: 0 8px 28px -10px #00000028;
+    --shadow-lift: 0 2px 8px -4px #00000018;
+    --scrim: #00000055;
+    --veil: transparent;
+    --r-xs: 6px; --r-sm: 10px; --r: 12px; --r-lg: 16px;
+    --h-sm: 28px; --h: 32px; --h-lg: 36px;
+    --gutter: 14px;
+    --label: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+    --body: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+    --mono: "Cascadia Mono", Consolas, ui-monospace, monospace;
+    --ease: cubic-bezier(.2, .8, .2, 1);
+    --accent: #2aabee;
+    --chat-mine: #effdde;
+    --chat-theirs: #ffffff;
+    --rail-w: 1px;
+    --feed-left: 48px;
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0e1621;
+    --panel: #17212b;
+    --glass-1: #17212b;
+    --glass-2: #1e2a36;
+    --glass-3: #242f3d;
+    --raised: #1e2a36;
+    --sheet: #17212b;
+    --field: #242f3d;
+    --ink: #f5f5f5;
+    --ink-soft: #8b9aab;
+    --line: #ffffff0f;
+    --line-strong: #ffffff1a;
+    --copper: #6ab3f3;
+    --copper-hi: #8ec7f7;
+    --on-copper: #0e1621;
+    --on-danger: #2a0b09;
+    --wire-l: 68%; --wire-s: 14%; --tap: #ffffff14;
+    --dot-s: 60%; --dot-l: 62%;
+    --question: #a78bfa; --done: #62d26f; --fyi: #8b9aab; --danger: #f07178; --amber: #f0c674;
+    --shadow: none;
+    --shadow-pop: 0 12px 36px -12px #000000aa;
+    --shadow-lift: 0 2px 10px -4px #00000066;
+    --scrim: #00000099;
+    --chat-mine: #2b5278;
+    --chat-theirs: #182533;
+  }
+
+  body::before, body::after { display: none !important; }
+  .bg-video { display: none !important; }
+
+  /* ---- контролы: тонкие, без коробок ---- */
+  input[type="checkbox"]::before {
+    width: 16px; height: 16px; rotate: 0deg !important; border-radius: 5px !important;
+    border: 1.5px solid var(--ink-soft) !important; background: transparent !important; box-shadow: none !important;
+  }
+  input[type="checkbox"]::after {
+    width: 8px; height: 8px; rotate: 0deg !important; border-radius: 2px !important;
+    background: var(--copper) !important; box-shadow: none !important;
+  }
+  input[type="checkbox"]:checked::before { border-color: var(--copper) !important; background: var(--copper-soft) !important; box-shadow: none !important; }
+  input[type="range"]::-webkit-slider-thumb,
+  input[type="range"]::-moz-range-thumb {
+    rotate: 0deg !important; border-radius: 50% !important; width: 14px !important; height: 14px !important;
+    box-shadow: 0 0 0 2px var(--bg) !important;
+  }
+  input[type="range"]:hover::-webkit-slider-thumb { scale: 1.05 !important; }
+
+  .ghost {
+    min-height: var(--h) !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: var(--r-sm) !important;
+    padding: 0 8px !important;
+    box-shadow: none !important;
+    color: var(--ink-soft) !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+  }
+  .ghost:hover:not(:disabled) {
+    color: var(--ink) !important;
+    background: var(--glass-2) !important;
+    box-shadow: none !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  .iconbtn { width: var(--h) !important; padding: 0 !important; }
+  .iconbtn:hover:not(:disabled), .iconbtn:active:not(:disabled) { transform: none !important; }
+
+  .send {
+    min-height: var(--h-lg) !important;
+    background: var(--copper) !important;
+    color: var(--on-copper) !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    padding: 0 16px !important;
+    font: 600 13px/1 var(--body) !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+  }
+  .send .icon { color: inherit !important; }
+  .send:hover:not(:disabled) {
+    background: var(--copper-hi) !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  .send:active:not(:disabled) { opacity: .92; }
+  .send:disabled {
+    background: var(--glass-3) !important;
+    color: var(--ink-soft) !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .squeeze {
+    min-height: var(--h) !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: var(--r-sm) !important;
+    padding: 0 10px !important;
+    font: 600 12px/1 var(--body) !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+    box-shadow: none !important;
+    color: var(--copper) !important;
+  }
+  .squeeze:hover:not(:disabled) {
+    background: var(--copper-soft) !important;
+    border: 0 !important;
+    color: var(--copper) !important;
+    box-shadow: none !important;
+  }
+  .squeeze:disabled, .squeeze.danger:disabled {
+    background: transparent !important;
+    color: var(--ink-soft) !important;
+    border: 0 !important;
+  }
+  .squeeze.danger { color: var(--danger) !important; }
+  .squeeze.danger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--danger) 10%, transparent) !important;
+    color: var(--danger) !important;
+  }
+
+  .ghost.update-btn {
+    background: var(--copper) !important;
+    color: var(--on-copper) !important;
+    border: 0 !important;
+    animation: none !important;
+    box-shadow: none !important;
+  }
+  .ghost.update-btn:hover:not(:disabled) { filter: none !important; background: var(--copper-hi) !important; color: var(--on-copper) !important; }
+
+  .to-bottom {
+    background: var(--copper) !important;
+    border-radius: 999px !important;
+    box-shadow: var(--shadow-lift) !important;
+    animation: rise .35s var(--ease) !important;
+    font: 600 12px var(--body) !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+  }
+
+  /* ---- шапка ---- */
+  .top {
+    padding: 8px var(--gutter) !important;
+    gap: 4px 6px !important;
+    background: var(--panel) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-bottom: 1px solid var(--line) !important;
+    animation: none !important;
+  }
+  .top::after, #composer::before { background: var(--line) !important; opacity: 1; }
+  .where b { font: 600 14px/1.3 var(--body) !important; }
+  .where span { font-size: 11px !important; }
+  .mine {
+    border-radius: var(--r-sm) !important;
+    min-height: var(--h-sm) !important;
+    padding: 0 10px !important;
+    box-shadow: none !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+  }
+  .limits {
+    gap: 12px !important;
+    min-height: var(--h-sm) !important;
+    padding: 0 10px !important;
+    border: 0 !important;
+    border-radius: var(--r-sm) !important;
+    background: var(--glass-2) !important;
+    box-shadow: none !important;
+  }
+  .limits .label { font-size: 10px !important; letter-spacing: .06em !important; }
+  .meter { width: 40px !important; height: 3px !important; }
+  .meter i { box-shadow: none !important; background: var(--lvl) !important; }
+  .link, .update-note {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    padding: 6px var(--gutter) !important;
+    font-size: 13px !important;
+  }
+  .link i { border-radius: 50% !important; rotate: 0deg !important; width: 6px !important; height: 6px !important; }
+
+  /* ---- сайдбар ---- */
+  .layout { grid-template-columns: 280px minmax(0, 1fr) !important; grid-template-rows: minmax(0, 1fr) !important; flex: 1 1 0 !important; min-height: 0 !important; }
+  aside { min-height: 0 !important; }
+  main { height: 100% !important; min-height: 0 !important; }
+  .feed-wrap { min-height: 0 !important; }
+  aside {
+    padding: 10px 6px 20px !important;
+    background: var(--panel) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-right: 1px solid var(--line) !important;
+    border-image: none !important;
+    animation: none !important;
+  }
+  .group { margin-bottom: 12px !important; }
+  .group > .label { padding: 4px 12px 6px !important; font-size: 11px !important; letter-spacing: .08em !important; }
+  .agent {
+    gap: 8px !important;
+    padding: 7px 10px !important;
+    border-radius: var(--r-sm) !important;
+    transition: background-color .15s !important;
+  }
+  .agent:hover { background: var(--glass-2) !important; box-shadow: none !important; }
+  .agent[aria-pressed="true"] {
+    background: var(--copper-soft) !important;
+    box-shadow: inset 2px 0 0 var(--copper) !important;
+  }
+  .agent .wire {
+    width: 8px !important; height: 8px !important; margin-top: 6px !important;
+    rotate: 0deg !important; border-radius: 50% !important;
+    box-shadow: none !important;
+  }
+  .agent .badge {
+    background: var(--copper) !important;
+    box-shadow: none !important;
+    font-weight: 600 !important;
+    min-width: 18px !important; height: 18px !important; line-height: 18px !important;
+  }
+  .agent .badge.wait {
+    background: var(--glass-3) !important;
+    color: var(--ink-soft) !important;
+    box-shadow: none !important;
+  }
+  .agent.running .wire { animation: none !important; outline: 2px solid color-mix(in srgb, var(--done) 50%, transparent); outline-offset: 2px; }
+  .agent-edit {
+    color: var(--ink-soft) !important;
+    border-radius: var(--r-sm) !important;
+  }
+  .agent-edit:hover, .agent-edit:focus-visible {
+    color: var(--copper) !important;
+    background: var(--copper-soft) !important;
+    transform: none !important;
+  }
+  .unpick {
+    background: var(--panel) !important;
+    margin-bottom: 8px !important;
+    box-shadow: none !important;
+  }
+
+  /* ---- фильтры / чипы ---- */
+  main > div:first-child { animation: none !important; }
+  main > div:first-child::before {
+    background: var(--panel) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .filters {
+    padding: 8px var(--gutter) !important;
+    gap: 6px !important;
+    border-bottom: 1px solid var(--line) !important;
+    border-image: none !important;
+  }
+  .search {
+    min-height: var(--h) !important;
+    border-radius: var(--r-sm) !important;
+    border: 0 !important;
+    background: var(--field) !important;
+    padding: 0 12px !important;
+    box-shadow: none !important;
+  }
+  .search:hover { border: 0 !important; }
+  .search:focus-within {
+    border: 0 !important;
+    box-shadow: inset 0 0 0 1.5px var(--copper) !important;
+    color: var(--ink-soft) !important;
+  }
+  .chip {
+    min-height: var(--h-sm) !important;
+    border: 0 !important;
+    border-radius: var(--r-sm) !important;
+    background: var(--glass-2) !important;
+    padding: 0 10px 0 8px !important;
+    font: 600 11px/1 var(--body) !important;
+    letter-spacing: 0 !important;
+    box-shadow: none !important;
+    text-transform: none !important;
+  }
+  .chip::before {
+    width: 6px !important; height: 6px !important;
+    rotate: 0deg !important; border-radius: 50% !important;
+    box-shadow: none !important;
+  }
+  .chip:hover {
+    border: 0 !important;
+    background: var(--glass-3) !important;
+    box-shadow: none !important;
+    color: var(--ink) !important;
+  }
+  .chip:hover::before { transform: none !important; }
+  .chip[aria-pressed="true"] {
+    background: color-mix(in srgb, var(--c) 18%, var(--glass-2)) !important;
+    border: 0 !important;
+    color: var(--ink) !important;
+    box-shadow: none !important;
+  }
+  .chip[aria-pressed="true"]::before { background: var(--c) !important; }
+
+  /* ---- вкладки ---- */
+  .tabs { padding: 4px var(--gutter) 0 !important; gap: 2px !important; }
+  .tab {
+    border: 0 !important;
+    border-radius: var(--r-sm) var(--r-sm) 0 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .tab:hover { background: var(--glass-2) !important; }
+  .tab.on, .tab-tools .tab-history[aria-expanded="true"] {
+    background: var(--panel) !important;
+    color: var(--ink) !important;
+    border: 0 !important;
+    box-shadow: inset 0 -2px 0 var(--copper) !important;
+  }
+  .tab .open { min-height: 30px !important; padding: 0 4px 0 10px !important; font-size: 13px !important; }
+  .tab .close { width: 28px !important; height: 28px !important; }
+  .tab .close:hover { transform: none !important; }
+  .tab-tools {
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+  }
+  .tab-tools .ghost {
+    min-height: 30px !important;
+    border: 0 !important;
+    border-radius: var(--r-sm) var(--r-sm) 0 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .tab-tools .ghost:hover:not(:disabled) {
+    background: var(--glass-2) !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+  .tab-tools .tab-history[aria-expanded="true"],
+  .tab-tools .tab-history[aria-expanded="true"]:hover {
+    color: var(--copper) !important;
+    background: var(--panel) !important;
+    box-shadow: inset 0 -2px 0 var(--copper) !important;
+    border: 0 !important;
+  }
+  .dialog-history li {
+    border: 0 !important;
+    border-radius: var(--r-sm) !important;
+    background: var(--glass-2) !important;
+    box-shadow: none !important;
+    padding: 6px 8px 6px 12px !important;
+  }
+  .dialog-history li:hover {
+    background: var(--glass-3) !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+  .tab .ctx {
+    border-radius: var(--r-sm) !important;
+    box-shadow: none !important;
+  }
+  .tab .ctx.warn { box-shadow: none !important; }
+
+  /* ---- плавающие бары ---- */
+  .picked-bar > *, .pair .stat, .pair .note {
+    background: var(--panel) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: var(--shadow-lift) !important;
+    border: 1px solid var(--line) !important;
+  }
+  .picked-bar #markedCount, .pair .stat {
+    border-radius: var(--r-sm) !important;
+    min-height: var(--h-sm) !important;
+    padding: 0 10px !important;
+    font-size: 12px !important;
+  }
+  .pair .note { border-radius: var(--r-sm) !important; padding: 6px 10px !important; font-size: 13px !important; }
+  .pair .weight.heavy .read,
+  #squeeze:hover:not(:disabled) {
+    box-shadow: none !important;
+    border-color: var(--line) !important;
+  }
+
+  /* ---- лента: пузыри как в Telegram ---- */
+  .feed-wrap { animation: none !important; }
+  .feed { padding: 10px var(--gutter) 24px var(--feed-left) !important; }
+  .feed::before {
+    width: 1px !important;
+    background: var(--line-strong) !important;
+    box-shadow: none !important;
+  }
+  .day {
+    margin: 12px auto !important;
+    padding: 3px 10px !important;
+    border: 0 !important;
+    border-radius: var(--r-sm) !important;
+    background: color-mix(in srgb, var(--bg) 70%, var(--ink) 8%) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    font-size: 11px !important;
+    letter-spacing: .04em !important;
+    left: 50%;
+    transform: translateX(calc(-50% + (var(--feed-left) - var(--gutter)) / 2));
+  }
+  .day::before, .day::after { display: none !important; }
+
+  .msg {
+    margin: 0 0 6px !important;
+    padding: 8px 11px 9px !important;
+    max-width: min(720px, 78cqw) !important;
+    border: 0 !important;
+    border-radius: 14px 14px 14px 4px !important;
+    background: var(--chat-theirs) !important;
+    box-shadow: none !important;
+    transition: background-color .15s !important;
+  }
+  .msg:hover {
+    background: var(--chat-theirs) !important;
+    border: 0 !important;
+    filter: brightness(1.02);
+  }
+  .msg::before { opacity: .45; }
+  .node {
+    rotate: 0deg !important;
+    border-radius: 50% !important;
+    width: 8px !important; height: 8px !important;
+    left: calc(var(--px) - 4px) !important;
+    border-width: 0 !important;
+    background: var(--dot) !important;
+    box-shadow: 0 0 0 2px var(--bg) !important;
+  }
+  .msg.unread .node,
+  .msg.cont.unread .node {
+    box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--copper) !important;
+  }
+  .msg.cont { margin-top: -2px !important; }
+  .msg.cont .node {
+    left: calc(var(--px) - 3px) !important;
+    width: 6px !important; height: 6px !important;
+    box-shadow: 0 0 0 2px var(--bg) !important;
+  }
+  .msg.to-me {
+    background: color-mix(in srgb, var(--copper) 8%, var(--chat-theirs)) !important;
+    border: 0 !important;
+  }
+  .msg.unread {
+    border: 0 !important;
+    box-shadow: inset 2px 0 0 var(--copper) !important;
+  }
+  .msg.covered {
+    opacity: .72;
+    box-shadow: none !important;
+    background: color-mix(in srgb, var(--chat-theirs) 55%, transparent) !important;
+    border: 0 !important;
+  }
+  .msg.from-me {
+    border-radius: 14px 14px 4px 14px !important;
+    background: var(--chat-mine) !important;
+  }
+  .msg.from-me:hover { background: var(--chat-mine) !important; filter: brightness(1.02); }
+  .msg.picked {
+    background: color-mix(in srgb, var(--copper) 12%, var(--chat-theirs)) !important;
+    box-shadow: inset 2px 0 0 var(--copper) !important;
+  }
+  .msg.from-me.picked {
+    background: color-mix(in srgb, var(--copper) 16%, var(--chat-mine)) !important;
+  }
+  .msg.fresh { animation: fade-up .3s var(--ease) !important; }
+  .msg.fresh .node { animation: none !important; }
+  .msg.fresh::before { animation: none !important; }
+
+  .pick::before {
+    rotate: 0deg !important;
+    border-radius: 5px !important;
+    width: 15px !important; height: 15px !important;
+    box-shadow: none !important;
+  }
+  .pick::after {
+    rotate: 0deg !important;
+    border-radius: 3px !important;
+    box-shadow: none !important;
+  }
+  .pick:hover { transform: none !important; }
+
+  .type, .new, .sched-tag, .btw-tag {
+    font: 600 10px/1 var(--body) !important;
+    letter-spacing: .02em !important;
+    text-transform: uppercase !important;
+    border-radius: 6px !important;
+    padding: 3px 6px !important;
+    box-shadow: none !important;
+    background: color-mix(in srgb, var(--c) 12%, transparent) !important;
+  }
+  .new {
+    background: var(--copper) !important;
+    box-shadow: none !important;
+  }
+  .usage {
+    border-radius: 6px !important;
+    padding: 2px 6px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-size: 11px !important;
+  }
+  .usage:hover { box-shadow: none !important; }
+  .who:hover { text-shadow: none !important; }
+  .arrow:hover { transform: none !important; }
+
+  .live {
+    border: 0 !important;
+    border-radius: var(--r-sm) !important;
+    background: var(--field) !important;
+    padding: 6px 8px !important;
+  }
+  .run-mark { border-top: 1px solid var(--line) !important; margin-top: 8px !important; padding-top: 6px !important; }
+  .text code, .text pre, .hint code {
+    border: 0 !important;
+    border-radius: 6px !important;
+    box-shadow: none !important;
+  }
+  mark { box-shadow: none !important; }
+  .thumb {
+    border: 0 !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+  }
+  a:hover > .thumb { box-shadow: none !important; transform: none !important; border: 0 !important; }
+  .filechip {
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: var(--field) !important;
+    box-shadow: none !important;
+    min-height: 26px !important;
+  }
+  a.filechip:hover { border: 0 !important; background: var(--glass-3) !important; }
+  .filechip.refs {
+    border: 0 !important;
+    background: var(--copper-soft) !important;
+  }
+  .summary {
+    border: 0 !important;
+    border-radius: 12px !important;
+    background: var(--copper-soft) !important;
+    box-shadow: none !important;
+    padding: 8px 12px !important;
+  }
+  .summary::before, .summary::after { display: none !important; }
+  .empty { padding: 32px 0 !important; }
+
+  /* ---- композер ---- */
+  #composer {
+    padding: 8px var(--gutter) 10px !important;
+    gap: 6px 8px !important;
+    background: var(--panel) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    animation: none !important;
+    border-top: 1px solid var(--line);
+  }
+  form select, form textarea, form input:not([type="checkbox"]):not([type="file"]):not([type="range"]) {
+    border: 0 !important;
+    border-radius: var(--r) !important;
+    background: var(--field) !important;
+    min-height: var(--h) !important;
+    box-shadow: none !important;
+    padding: 7px 12px !important;
+  }
+  form select:hover, form textarea:hover, form input:not([type="checkbox"]):not([type="file"]):not([type="range"]):hover {
+    border: 0 !important;
+  }
+  form select:focus, form textarea:focus, form input:not([type="checkbox"]):not([type="file"]):not([type="range"]):focus {
+    border: 0 !important;
+    box-shadow: inset 0 0 0 1.5px var(--copper) !important;
+    background: var(--field) !important;
+    outline: none !important;
+  }
+  textarea.listening, input.listening {
+    border: 0 !important;
+    box-shadow: inset 0 0 0 1.5px var(--copper) !important;
+  }
+  form .compose-meta select {
+    min-height: var(--h-sm) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-size: 12px !important;
+  }
+  form .compose-meta select:hover { background: var(--glass-2) !important; }
+  #composer textarea {
+    min-height: 40px !important;
+    max-height: min(40vh, 360px) !important;
+    border-radius: 18px !important;
+    padding: 10px 14px !important;
+    overflow-y: hidden !important;
+    field-sizing: content;
+  }
+  #pickBtn, #filesBtn { width: var(--h) !important; min-height: var(--h) !important; }
+  #pickBtn:hover:not(:disabled) { transform: none !important; }
+  #filesBtn[aria-expanded="true"] { color: var(--copper) !important; border: 0 !important; background: var(--copper-soft) !important; }
+  main.drop .feed-wrap { outline: 1.5px dashed var(--copper) !important; background: var(--copper-soft) !important; }
+  main.drop #composer textarea { box-shadow: inset 0 0 0 1.5px var(--copper) !important; }
+
+  /* ---- модалки / панели ---- */
+  .need-project-backdrop {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    background: var(--scrim) !important;
+  }
+  .need-project-modal {
+    padding: 22px 20px 18px !important;
+    border: 0 !important;
+    border-radius: 16px !important;
+    box-shadow: var(--shadow-pop) !important;
+  }
+  .need-project-modal .icon-wrap {
+    width: 40px !important; height: 40px !important;
+    border-radius: 12px !important;
+    margin-bottom: 12px !important;
+  }
+  .need-project-modal h2 { font-size: 17px !important; }
+  .need-project-modal p { margin-bottom: 16px !important; font-size: 13px !important; }
+  .need-project-modal .send, .need-project-modal .ghost { min-height: var(--h) !important; }
+
+  .sched-backdrop {
+    backdrop-filter: blur(2px) !important;
+    -webkit-backdrop-filter: blur(2px) !important;
+  }
+  .schedule {
+    background: var(--sheet) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-left: 1px solid var(--line) !important;
+    box-shadow: var(--shadow-pop) !important;
+    width: min(440px, 100vw) !important;
+  }
+  .schedule::before { display: none !important; }
+  .sched-head {
+    padding: 10px var(--gutter) !important;
+    background: var(--panel) !important;
+  }
+  .sched-head b { font-size: 15px !important; font-weight: 600 !important; }
+  .sched-head .iconbtn:hover:not(:disabled) { transform: none !important; }
+  .sched-badge {
+    min-width: 16px !important; height: 16px !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+  }
+  .sched-badge.alert { box-shadow: none !important; }
+  .job {
+    padding: 10px var(--gutter) !important;
+    row-gap: 2px !important;
+  }
+  .job-toggle {
+    width: 36px !important; height: 20px !important;
+    box-shadow: none !important;
+    background: var(--glass-3) !important;
+  }
+  .job-toggle[aria-checked="true"] {
+    background: var(--copper) !important;
+    box-shadow: none !important;
+  }
+  .job-actions .ghost { min-height: 26px !important; padding: 0 8px !important; }
+  #scheduleNew { margin: 12px var(--gutter) 8px !important; }
+
+  .schedule form {
+    gap: 12px 10px !important;
+    padding: 12px var(--gutter) 16px !important;
+  }
+  .sched-cron, .role-ai {
+    border: 0 !important;
+    border-radius: var(--r) !important;
+    background: var(--glass-2) !important;
+    box-shadow: none !important;
+    padding: 10px 12px 12px !important;
+  }
+  .sched-actions button { min-height: var(--h) !important; padding: 0 14px !important; }
+  #agentPanel { width: min(760px, 100vw) !important; }
+  #agentForm .sched-actions {
+    background: var(--panel) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-top: 1px solid var(--line) !important;
+    padding: 10px var(--gutter) !important;
+  }
+
+  .weight-row { padding: 8px var(--gutter) !important; }
+  .weight-row:hover { background: var(--glass-2) !important; }
+  #weightBtn.heavy { box-shadow: none !important; color: var(--copper) !important; }
+
+  .dirs-current { padding: 10px var(--gutter) !important; }
+  .dir-row { padding: 8px var(--gutter) !important; }
+  .dirs-picker-toolbar, .dirs-picker-foot {
+    padding: 8px 10px !important;
+    background: var(--panel) !important;
+  }
+  .dirs-picker-addr {
+    border: 0 !important;
+    border-radius: var(--r-sm) !important;
+    background: var(--field) !important;
+  }
+  .dirs-picker-place.on, .dirs-picker-row.selected {
+    background: var(--copper-soft) !important;
+    box-shadow: inset 2px 0 0 var(--copper) !important;
+  }
+  .mention {
+    border: 0 !important;
+    border-radius: 12px !important;
+    box-shadow: var(--shadow-pop) !important;
+    background: var(--panel) !important;
+  }
+  .mention-row[aria-selected="true"] {
+    background: var(--copper-soft) !important;
+    box-shadow: inset 2px 0 0 var(--copper) !important;
+  }
+
+  /* ---- настройки ---- */
+  .bg-pick, .app-pick { padding-bottom: 12px !important; }
+  .bg-opt {
+    border: 0 !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
+    outline: 1px solid var(--line);
+  }
+  .bg-opt:hover { outline-color: var(--line-strong); }
+  .bg-opt:has(:checked) { outline: 1.5px solid var(--copper) !important; border: 0 !important; }
+  .bg-opt:has(:checked)::after { box-shadow: none !important; }
+  .bg-opt::before {
+    rotate: 0deg !important;
+    border-radius: 50% !important;
+    width: 8px !important; height: 8px !important;
+    box-shadow: 0 0 0 2px var(--bg) !important;
+  }
+  .settings-field { padding: 10px 0 12px !important; gap: 6px !important; }
+  .settings-group-label { padding-top: 18px !important; }
+  .settings-field.changed .settings-field-name::before {
+    rotate: 0deg !important;
+    border-radius: 50% !important;
+    box-shadow: none !important;
+    width: 5px !important; height: 5px !important;
+  }
+  .role-diff {
+    border: 0 !important;
+    border-radius: 10px !important;
+  }
+  .role-bus { border: 0 !important; border-radius: 10px !important; }
+
+  /* ---- селекты ---- */
+  form select:hover { border: 0 !important; }
+  @supports (appearance: base-select) {
+    form select:open {
+      border: 0 !important;
+      box-shadow: inset 0 0 0 1.5px var(--copper) !important;
+    }
+    form select::picker(select) {
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      border: 0 !important;
+      border-radius: 12px !important;
+      padding: 6px !important;
+      box-shadow: var(--shadow-pop) !important;
+      background: var(--raised) !important;
+    }
+    form select option {
+      padding: 8px 12px !important;
+      border-radius: 8px !important;
+    }
+    form select option:hover, form select option:focus-visible {
+      background: var(--copper-soft) !important;
+    }
+  }
+
+  /* ---- мобильный ---- */
+  @media (max-width: 820px) {
+    :root { --h-sm: 30px; --h: 34px; --h-lg: 38px; --gutter: 12px; --feed-left: 40px; }
+    aside {
+      background: var(--panel) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      box-shadow: var(--shadow-pop) !important;
+      border-bottom: 1px solid var(--line) !important;
+    }
+    .msg { max-width: 88cqw !important; }
+  }
+
+
+  /* Круглая отправка в композере - как в Telegram */
+  #composer .send.send-round {
+    width: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    height: 36px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    gap: 0 !important;
+  }
+  #composer .send.send-round .icon { width: 18px; height: 18px; margin-left: 1px; }
+  /* Шапка: иконки без тяжёлых плашек, текст кнопок чуть легче */
+  .top .ghost { gap: 5px !important; }
+  .top .ghost .sched-badge { margin-left: 0 !important; }
+  .label { letter-spacing: .06em !important; font-size: 11px !important; font-weight: 600 !important; }
 </style>
 </head>
 <body>
@@ -942,6 +1831,7 @@
   <symbol id="i-edit" viewBox="0 0 24 24"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></symbol>
   <symbol id="i-restart" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></symbol>
   <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 5h16l-6.5 7.5V19l-3 1.5v-8L4 5z"/></symbol>
   <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
 </svg>
 
@@ -969,7 +1859,14 @@
     <div>
     <div class="filters">
       <label class="search"><svg class="icon"><use href="#i-search"/></svg><input type="search" id="q" placeholder="Поиск по тексту и именам" aria-label="Поиск по ленте"></label>
-      <span id="types" role="group" aria-label="Типы сообщений"></span>
+      <div class="type-filters" id="typeFilters">
+        <button class="ghost filters-btn" id="filtersBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="filtersMenu" title="Фильтры по типу сообщений">
+          <svg class="icon"><use href="#i-filter"/></svg>
+          <span id="filtersBtnLabel">Фильтры</span>
+          <span class="filters-count" id="filtersCount" hidden>0</span>
+        </button>
+        <div class="filters-menu" id="filtersMenu" hidden role="group" aria-label="Типы сообщений"></div>
+      </div>
     </div>
     <!-- Плавающие над лентой справа: пара (вес диалога) и под ней выделение - стопкой, друг на друга не ложатся -->
     <div class="floats">
@@ -1010,7 +1907,7 @@
         <button class="ghost iconbtn" id="filesBtn" type="button" title="Файл проекта - то же, что набрать @" aria-label="Файл проекта" aria-expanded="false" aria-controls="mention"><svg class="icon"><use href="#i-folder"/></svg></button>
         <button class="ghost iconbtn" id="pickBtn" type="button" title="Приложить файл" aria-label="Приложить файл"><svg class="icon"><use href="#i-clip"/></svg></button>
       </div>
-      <button class="send" id="sendBtn" type="submit"><svg class="icon"><use href="#i-send"/></svg>Отправить</button>
+      <button class="send send-round" id="sendBtn" type="submit" title="Отправить" aria-label="Отправить"><svg class="icon"><use href="#i-send"/></svg></button>
       <div class="attach">
         <input type="file" id="pick" multiple hidden>
         <span class="filechip refs" id="refsChip" hidden title="Выделенные в ленте сообщения уйдут агенту цитатами вместе с этим сообщением"></span>
@@ -1319,8 +2216,10 @@ let picked = []; // загруженные, но ещё не отправлен�
 let showCovered = false; // в режиме пары: раскрыты ли сообщения, которые уже ушли в сводку
 const filters = { agents: new Set(), types: new Set(), q: '', dialog: null }; // dialog - открытая вкладка { pair, d }, ставит renderDialogs
 const chosenDialog = new Map(); // пара → d вкладки, которую открыл пользователь; нет - открыт текущий диалог (куда агент ответит)
-const TYPE_NOTE = { TASK: N('просьба сделать'), QUESTION: N('нужен ответ'), DONE: N('к сведению, ответа не жду') };
+const TYPE_NOTE = { TASK: N('просьба сделать'), QUESTION: N('нужен ответ'), DONE: N('прими к сведению') };
+const TYPE_LABEL = { TASK: N('Задача'), QUESTION: N('Вопрос'), DONE: N('Информация') };
 const typeNote = (type) => tr(TYPE_NOTE[type] || '');
+const typeLabel = (type) => tr(TYPE_LABEL[type] || type);
 
 const messageList = () => [...state.messages.values()];
 const hueOf = (name, kind) => (state.hues.has(name) ? state.hues.get(name) : L.hue(name, kind));
@@ -2204,23 +3103,50 @@ function resetFilters() {
 }
 const resetButton = () => el('button', { type: 'button', className: 'ghost', onclick: resetFilters }, tr('Сбросить фильтры'));
 
-/** relabel - сменился язык: подписи в списке «Тип» пересобираем, выбранное значение остаётся. */
+/** relabel - сменился язык: подписи фильтров и списка «Тип» пересобираем, выбранное значение остаётся. */
 function renderTypes(relabel = false) {
-  $('types').replaceChildren(...state.types.map((type) => {
-    const chip = el('button', { type: 'button', className: `chip ${type}`, title: typeNote(type) }, el('span', {}, type)); // span - под обрезку строки по прописным
-    chip.setAttribute('aria-pressed', String(filters.types.has(type)));
-    chip.addEventListener('click', () => {
-      filters.types.has(type) ? filters.types.delete(type) : filters.types.add(type);
+  const menu = $('filtersMenu');
+  const btn = $('filtersBtn');
+  const count = $('filtersCount');
+  const n = filters.types.size;
+  $('filtersBtnLabel').textContent = tr('Фильтры');
+  btn.title = tr('Фильтры по типу сообщений');
+  btn.classList.toggle('active', n > 0);
+  count.hidden = !n;
+  count.textContent = n ? String(n) : '';
+  menu.setAttribute('aria-label', tr('Типы сообщений'));
+  menu.replaceChildren(...state.types.map((type) => {
+    const input = el('input', { type: 'checkbox', checked: filters.types.has(type) });
+    input.addEventListener('change', () => {
+      if (input.checked) filters.types.add(type);
+      else filters.types.delete(type);
       renderTypes();
       renderFeed();
     });
-    return chip;
+    return el('label', { className: `filter-row ${type}` },
+      input,
+      el('span', { className: 'dot', 'aria-hidden': 'true' }),
+      el('span', { className: 'filter-text' },
+        el('span', { className: 'filter-name' }, typeLabel(type)),
+        el('small', {}, typeNote(type))));
   }));
   const select = $('type');
   if (select.options.length && !relabel) return;
   const keep = select.value;
-  setOptions(select, state.types.map((type) => el('option', { value: type }, type, el('span', {}, ` - ${typeNote(type)}`))));
+  setOptions(select, state.types.map((type) => el('option', { value: type }, typeLabel(type), el('span', {}, ` - ${typeNote(type)}`))));
   if (keep) select.value = keep;
+}
+
+function setFiltersOpen(open) {
+  const menu = $('filtersMenu');
+  const btn = $('filtersBtn');
+  menu.hidden = !open;
+  btn.setAttribute('aria-expanded', String(open));
+  btn.classList.toggle('open', open);
+}
+
+function toggleFilters() {
+  setFiltersOpen($('filtersMenu').hidden);
 }
 
 // ---------- данные ----------
@@ -3149,13 +4075,14 @@ function setMentionActive(i) {
   $('text').setAttribute('aria-activedescendant', rows[mention.active].id);
 }
 
-/** Высота поля по тексту там, где CSS field-sizing нет; в Chrome и Edge растит сам CSS, тут ничего не делаем. */
-const fieldSizing = CSS.supports('field-sizing', 'content');
+/** Высота поля по тексту: растёт с переносами строк до max-height, дальше - прокрутка внутри. */
 function fitText() {
-  if (fieldSizing) return;
   const field = $('text');
+  const max = Math.min(window.innerHeight * 0.4, 360);
   field.style.height = 'auto';
-  field.style.height = `${field.scrollHeight + field.offsetHeight - field.clientHeight}px`;
+  const next = Math.min(Math.max(field.scrollHeight, 40), max);
+  field.style.height = `${next}px`;
+  field.style.overflowY = field.scrollHeight > max + 1 ? 'auto' : 'hidden';
 }
 
 /** Заменить слово «@…» у курсора. execCommand - чтоб Ctrl+Z откатывал вставку; input сам снова проверит слово. */
@@ -3248,6 +4175,8 @@ $('text').addEventListener('input', fitText);
 $('text').addEventListener('click', checkMention);
 $('text').addEventListener('keyup', (e) => ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key) && checkMention());
 $('text').addEventListener('blur', closeMention);
+window.addEventListener('resize', fitText);
+fitText();
 
 // ---------- голосовой ввод: удержание пробела ----------
 
@@ -3361,6 +4290,17 @@ $('q').addEventListener('input', (e) => {
   filters.q = e.target.value.trim();
   clearTimeout(searchTimer);
   searchTimer = setTimeout(renderFeed, 120); // лента пересобирается целиком - не на каждую букву
+});
+$('filtersBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  toggleFilters();
+});
+$('filtersMenu').addEventListener('click', (e) => e.stopPropagation());
+document.addEventListener('click', () => {
+  if (!$('filtersMenu').hidden) setFiltersOpen(false);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !$('filtersMenu').hidden) setFiltersOpen(false);
 });
 $('to').addEventListener('change', renderFrom);
 $('toggleAgents').addEventListener('click', () => toggleAside());
