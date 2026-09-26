@@ -553,6 +553,13 @@
   @keyframes rise { from { transform: translate(-50%, 12px); opacity: 0; } }
 
   /* ---- отправка ---- */
+  /* Обёртка на всю ширину main: оверлей вешаем на неё, не на form - у form absolute часто сжимается */
+  .composer-dock {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    align-self: stretch;
+  }
   #composer {
     position: relative;
     display: flex; flex-direction: column; gap: 8px;
@@ -560,23 +567,23 @@
     background: var(--glass-1);
     -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
     animation: from-bottom .8s .16s var(--ease) backwards;
-    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
   }
   #composer::before { top: 0; }
-  /* Нет агентов: простое наложение на весь блок композера */
-  #composer.empty > :not(.compose-lock):not(.to-bottom) {
+  .composer-dock.empty #composer {
     pointer-events: none;
     user-select: none;
   }
   .compose-lock {
     position: absolute;
-    left: 0; right: 0; top: 0; bottom: 0;
+    inset: 0;
     z-index: 6;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 12px; padding: 16px var(--gutter);
-    margin: 0; width: auto; height: auto; box-sizing: border-box;
+    margin: 0; width: 100%; height: 100%; box-sizing: border-box;
     text-align: center;
-    background: color-mix(in srgb, var(--panel) 55%, transparent);
+    background: color-mix(in srgb, var(--panel) 62%, transparent);
     -webkit-backdrop-filter: blur(8px) saturate(140%);
     backdrop-filter: blur(8px) saturate(140%);
   }
@@ -1698,6 +1705,10 @@
   .empty { padding: 32px 0 !important; }
 
   /* ---- композер ---- */
+  .composer-dock {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
   #composer {
     padding: 8px var(--gutter) 10px !important;
     gap: 6px !important;
@@ -1706,11 +1717,14 @@
     -webkit-backdrop-filter: none !important;
     animation: none !important;
     border-top: 1px solid var(--line);
-    overflow: hidden !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
   .compose-lock {
+    position: absolute !important;
+    inset: 0 !important;
     left: 0 !important; right: 0 !important; top: 0 !important; bottom: 0 !important;
-    width: auto !important; height: auto !important;
+    width: 100% !important; height: 100% !important;
     background: color-mix(in srgb, var(--panel) 62%, transparent) !important;
     backdrop-filter: blur(8px) saturate(140%) !important;
     -webkit-backdrop-filter: blur(8px) saturate(140%) !important;
@@ -2092,6 +2106,7 @@
     <div class="dialog-history" id="dialogHistory" hidden></div>
     </div>
     <div class="feed-wrap" id="wrap"><ol class="feed" id="feed" aria-live="polite"></ol></div>
+    <div class="composer-dock" id="composerDock">
     <form id="composer">
       <button class="to-bottom" id="toBottom" type="button" hidden>Новые сообщения ↓</button>
 
@@ -2130,12 +2145,13 @@
         <p class="result" id="result" role="status"></p>
       </div>
       <span id="attachHint" hidden></span>
+    </form>
 
       <div class="compose-lock" id="composeLock" hidden>
         <p id="composeLockText">Чтобы писать, нужно создать агента</p>
         <button class="send" id="composeNewAgent" type="button"><svg class="icon"><use href="#i-plus"/></svg><span>Создать агента</span></button>
       </div>
-    </form>
+    </div>
   </main>
 </div>
 
