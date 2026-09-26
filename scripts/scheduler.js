@@ -4,12 +4,12 @@
  *   node scheduler.js daemon                 - демон под pm2 (bus-scheduler): раз в 20 с сверяет cron задач всех проектов шины;
  *   node scheduler.js run <каталог> <имя> …  - отвязанный раннер одного запуска: демон и `schedule run` его не ждут.
  *
- * Задача - файл <проект>/.claude/bus/scheduler/<имя>.md: frontmatter (cron, to, enabled, model, timeout, catchup, rules) + тело-промпт,
+ * Задача - файл <проект>/.cursor/bus-cursor/scheduler/<имя>.md: frontmatter (cron, to, enabled, model, timeout, catchup, rules, runtime) + тело-промпт,
  * правится и руками. Рядом: <имя>.log - отчёты, <имя>.state.json - итог последнего запуска, <имя>.lock - запуск идёт.
- * Глобальные задачи - ~/.claude/bus/scheduler/, исполняются в домашней папке и только headless.
+ * Глобальные задачи - ~/.cursor/bus-cursor/scheduler/, исполняются в домашней папке и только headless.
  *
  * to: <агент> - TASK от оркестратора каталога + фоновый подъём (wake.js), ответ агента - в ленте UI.
- * без to      - headless `claude -p` в каталоге проекта; отчёт - в лог и сообщением «schedule → оркестратор» в журнал каталога.
+ * без to      - headless `agent -p` (Cursor) в каталоге проекта; отчёт - в лог и сообщением «schedule → оркестратор» в журнал каталога.
  *
  * Демон живёт, пока есть хоть одна включённая задача: поднимают и гасят его add / on / off / rm и UI (syncDaemon),
  * сам он гаснет, если задачи убрали руками. pm2 на Windows после перезагрузки не встаёт - в автозагрузку кладётся
@@ -53,7 +53,8 @@ const LOG_REPORT = 4000;
 const AGENT_JOBS_MAX = 10; // своих задач у субагента: заведённые в цикле жгли бы токены каждым cron
 const WAKE_TOKENS = 20000; // первый ход фонового подъёма без урезанного доступа (access-weights.json, замер 21.09.2026 - 19.7к), для оценки цены частого расписания
 
-const dirOf = (root) => (root ? path.join(root, '.claude', 'bus', 'scheduler') : path.join(bus.BUS, 'scheduler'));
+const dirOf = (root) => (root ? path.join(root, '.cursor', 'bus-cursor', 'scheduler') : path.join(bus.BUS, 'scheduler'));
+const busDirFor = (root) => (root ? path.join(root, '.cursor', 'bus-cursor') : bus.BUS);
 const jobFile = (root, name) => path.join(dirOf(root), `${name}.md`);
 const logFile = (root, name) => path.join(dirOf(root), `${name}.log`);
 const stateFile = (root, name) => path.join(dirOf(root), `${name}.state.json`);
@@ -308,7 +309,7 @@ function runForAgent(job) {
 
 function headlessPrompt(job) {
   return [
-    `Тебя запустил планировщик шины bus: задача «${job.name}» по расписанию (${cron.describe(job.cron)}). Каталог: ${cwdOf(job.root)}.`,
+    `Тебя запустил планировщик Bus Cursor: задача «${job.name}» по расписанию (${cron.describe(job.cron)}). Каталог: ${cwdOf(job.root)}.`,
     'Ты работаешь в фоне, без чата: вопросы задавать некому - что неясно, реши сам по месту или опиши в итоге.',
     'Твой итоговый ответ уйдёт пользователю в ленту шины: закончи коротким итогом - что сделано, что нет и почему.',
     '',
@@ -324,11 +325,11 @@ function headlessPrompt(job) {
 function reportToFeed(job, report) {
   const to = job.root ? bus.orchestratorOf(job.root) : null;
   const text = bus.clean(`Расписание «${job.name}»: ${report.length > FEED_REPORT ? `${report.slice(0, FEED_REPORT)}… (целиком - schedule log ${job.name})` : report || '(пустой отчёт)'}`);
-  bus.journalNote(job.root ? path.join(job.root, '.claude', 'bus') : bus.BUS, { from: 'schedule', fk: 's', to: to ? to.name : 'user', tk: to ? 'p' : 'h', type: 'DONE', text, job: job.name });
+  bus.journalNote(busDirFor(job.root), { from: 'schedule', fk: 's', to: to ? to.name : 'user', tk: to ? 'p' : 'h', type: 'DONE', text, job: job.name });
 }
 
-/** Движок задачи без адресата: свой в задаче, иначе schedule.runtime каталога, пусто - какой установлен (wake.pickRuntime). */
-const runtimeOfJob = (job) => wake.pickRuntime(job.runtime || conf(job.root)['schedule.runtime']);
+/** Движок задачи без адресата: свой в задаче, иначе schedule.runtime каталога, пусто - Cursor, если CLI есть (wake.pickRuntime). */
+const runtimeOfJob = (job) => wake.pickRuntime(job.runtime || conf(job.root)['schedule.runtime'] || 'cursor');
 
 /** Чем пойдёт задача - для list и add: у Claude модель, у Cursor движок и его модель, если задана. */
 const engineOf = (job) => (runtimeOfJob(job) === 'cursor' ? (job.model ? `cursor, ${job.model}` : 'cursor') : modelOf(job));
@@ -542,7 +543,7 @@ const USAGE = `bus.js schedule - задачи по расписанию (cron); 
   schedule run <имя>                 запустить сейчас, мимо cron
   schedule log <имя> [N]             хвост отчётов запусков (по умолчанию 40 строк)
   schedule daemon [start|stop|status]   демон под pm2; обычно поднимается и гаснет сам
---global - задача в ~/.claude/bus/scheduler/ (только headless, исполняется в домашней папке)`;
+--global - задача в ~/.cursor/bus-cursor/scheduler/ (только headless, исполняется в домашней папке)`;
 
 const clock = (ms) => (ms ? stamp(true, ms) : '-');
 

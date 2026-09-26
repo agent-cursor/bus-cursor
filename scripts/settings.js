@@ -76,10 +76,10 @@ const SCHEMA = [
   { key: 'orchestrator.projectFast', group: 'orchestrator', type: 'choice', options: ['', 'on', 'off'], default: '', form: false, label: N('Fast mode оркестратора проекта'),
     hint: N('Пусто - как у всех оркестраторов.') },
 
-  { key: 'schedule.model', group: 'schedule', type: 'model', default: 'sonnet', label: N('Модель задач по расписанию'),
-    hint: N('На какой модели идёт задача по расписанию, если в самой задаче модель не указана. Такие задачи работают без присмотра, поэтому по умолчанию не самая дорогая модель.') },
-  { key: 'schedule.runtime', group: 'schedule', type: 'choice', options: ['', 'claude', 'cursor'], default: '', label: N('Движок задач без адресата'),
-    hint: N('Чем запускать задачу по расписанию без агента-адресата: claude (Claude Code) или cursor (Cursor CLI). Пусто - Claude Code, если он установлен, иначе Cursor. У Cursor свои имена моделей: модель задачи уходит ему как есть, «Модель задач по расписанию» - нет.') },
+  { key: 'schedule.model', group: 'schedule', type: 'model', default: '', form: false, label: N('Модель задач по расписанию (Claude)'),
+    hint: N('Только для движка Claude Code: модель headless-задачи, если в самой задаче не указана. У Cursor модель берётся из задачи (или Auto).') },
+  { key: 'schedule.runtime', group: 'schedule', type: 'choice', options: ['cursor', 'claude', ''], default: 'cursor', form: false, label: N('Движок задач без адресата'),
+    hint: N('Чем запускать задачу по расписанию без агента-адресата. В Bus Cursor по умолчанию Cursor CLI (agent -p).') },
   { key: 'schedule.timeoutMin', group: 'schedule', type: 'int', default: 60, min: 1, max: 120, unit: N('мин'), label: N('Таймаут задачи'),
     hint: N('Сколько минут даётся задаче по расписанию, если в ней самой таймаут не указан.') },
   { key: 'schedule.minGapMin', group: 'schedule', type: 'int', default: 5, min: 1, max: 60, unit: N('мин'), label: N('Минимальный интервал'),
@@ -89,12 +89,12 @@ const SCHEMA = [
     hint: N('С какого веса непрочитанной и несжатой переписки он показывается рядом с агентом в списке.') },
   { key: 'ui.heavyTokens', group: 'ui', type: 'int', default: 3000, min: 0, max: 100000, atLeast: 'ui.showLoadFrom', unit: N('токенов'), label: N('Тяжёлый диалог от'),
     hint: N('С какого веса диалог подсвечивается: пора нажать «Сжать диалог», иначе агент затянет всё это в контекст.') },
-  { key: 'ui.runtime', group: 'ui', type: 'choice', options: ['', 'claude', 'cursor'], default: 'cursor', label: N('Движок для сжатия и правки роли'),
-    hint: N('Чем выполнять «Сжать диалог» и «Переписать с ИИ»: cursor (Cursor CLI) или claude (Claude Code). Пусто - Cursor, если CLI есть, иначе Claude. Модели ниже - только для Claude: Cursor берёт свою по умолчанию (или модель агента).') },
-  { key: 'ui.summaryModel', group: 'ui', type: 'model', default: 'haiku', label: N('Модель для «Сжать диалог»'),
-    hint: N('Какая модель пересказывает переписку в сводку. Задача простая - хватает самой дешёвой.') },
-  { key: 'ui.rewriteModel', group: 'ui', type: 'model', default: 'opus', label: N('Модель для правки роли'),
-    hint: N('Какая модель переписывает роль агента по твоей просьбе в форме агента. От неё зависит качество роли, поэтому по умолчанию сильная.') },
+  { key: 'ui.runtime', group: 'ui', type: 'choice', options: ['cursor', 'claude', ''], default: 'cursor', form: false, label: N('Движок для сжатия и правки роли'),
+    hint: N('Чем выполнять «Сжать диалог» и «Переписать с ИИ». В Bus Cursor по умолчанию Cursor CLI.') },
+  { key: 'ui.summaryModel', group: 'ui', type: 'model', default: '', form: false, label: N('Модель для «Сжать диалог» (Claude)'),
+    hint: N('Только для Claude Code. У Cursor модель берётся сама (Auto).') },
+  { key: 'ui.rewriteModel', group: 'ui', type: 'model', default: '', form: false, label: N('Модель для правки роли (Claude)'),
+    hint: N('Только для Claude Code. У Cursor модель берётся сама (Auto).') },
 ];
 
 const BY_KEY = new Map(SCHEMA.map((item) => [item.key, item]));

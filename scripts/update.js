@@ -1,12 +1,13 @@
 /**
- * Обновление шины из GitHub Release. Проверка - один раз при старте UI, установка - по кнопке на странице.
+ * Обновление Bus Cursor из GitHub Release репозитория agent-cursor/bus-cursor.
+ * Проверка - один раз при старте UI, установка - по кнопке на странице.
  *
- * Метка версии - release.json в папке скилла: { version, repo, files }. Её пишет только сборка публичной копии, поэтому
- * там, где метки нет (исходник шины) или папка скилла - git-клон, обновление выключено и в сеть мы не ходим.
+ * Метка версии - release.json в папке скилла: { version, repo, files }.
+ * Там, где метки нет или папка скилла - git-клон, обновление выключено и в сеть не ходим.
  *
- * Ставим без npx и git: дерево тега берём из API GitHub, файлы - с raw.githubusercontent.com (лимитом API он не считается),
- * каждый сверяем с git-хешем из дерева. Меняется только папка скилла: хуки в settings.json пользователя релиз не трогает.
- * Копия прежней папки - <папка>.backup, одна: новая установка её затирает. Сервер после установки живёт на старом коде до перезапуска.
+ * Ставим без npx и git: дерево тега берём из API GitHub, файлы - с raw.githubusercontent.com,
+ * каждый сверяем с git-хешем из дерева. Меняется только папка скилла.
+ * Копия прежней папки - <папка>.backup (для bus-cursor это skills/bus-cursor.backup).
  */
 
 const fs = require('fs');
@@ -22,7 +23,9 @@ const RAW = process.env.BUS_UPDATE_RAW || 'https://raw.githubusercontent.com';
 const CHECK_TIMEOUT_MS = 5000;
 const FILE_TIMEOUT_MS = 20000;
 const NOTES_LENGTH = 600;
-const PREFIX = 'skills/bus/'; // где скилл лежит в репе релиза
+// Скилл лежит в корне репозитория agent-cursor/bus-cursor (не в skills/bus/).
+// Пустой prefix - все файлы тега; иначе - только пути с этим префиксом (из release.json.prefix).
+const DEFAULT_PREFIX = '';
 const SEMVER = /^\d+\.\d+\.\d+$/;
 const REPO = /^[\w.-]+\/[\w.-]+$/;
 
@@ -39,7 +42,8 @@ function release(dir = SKILL_DIR) {
   try {
     const r = JSON.parse(fs.readFileSync(path.join(dir, 'release.json'), 'utf8'));
     if (!SEMVER.test(r.version) || !REPO.test(r.repo)) return null;
-    return { version: r.version, repo: r.repo, files: Array.isArray(r.files) ? r.files.filter((f) => typeof f === 'string') : [] };
+    const prefix = typeof r.prefix === 'string' ? r.prefix : DEFAULT_PREFIX;
+    return { version: r.version, repo: r.repo, prefix, files: Array.isArray(r.files) ? r.files.filter((f) => typeof f === 'string') : [] };
   } catch {
     return null;
   }
@@ -52,7 +56,7 @@ function safeRel(rel) {
 }
 
 async function get(url, timeoutMs) {
-  const res = await fetch(url, { headers: { 'User-Agent': 'claude-bus', Accept: 'application/vnd.github+json' }, signal: AbortSignal.timeout(timeoutMs), redirect: 'follow' });
+  const res = await fetch(url, { headers: { 'User-Agent': 'bus-cursor', Accept: 'application/vnd.github+json' }, signal: AbortSignal.timeout(timeoutMs), redirect: 'follow' });
   if (!res.ok) throw new Error(`${res.status} ${url}`);
   return res;
 }
@@ -80,15 +84,16 @@ async function check({ dir = SKILL_DIR } = {}) {
   }
 }
 
-/** Файлы тега под skills/bus/ → [{ rel, sha, url }]; путь наружу, симлинк или урезанное дерево - отказ до скачивания. */
-async function listFiles(repo, tag) {
+/** Файлы тега репозитория скилла → [{ rel, sha, url }]; путь наружу, симлинк или урезанное дерево - отказ до скачивания. */
+async function listFiles(repo, tag, prefix = DEFAULT_PREFIX) {
   const tree = await getJson(`${API}/repos/${repo}/git/trees/${encodeURIComponent(tag)}?recursive=1`, FILE_TIMEOUT_MS);
   if (!tree || !Array.isArray(tree.tree)) throw new BusError(tr('GitHub вернул не дерево файлов релиза.'));
   if (tree.truncated) throw new BusError(tr('Дерево релиза пришло не целиком - установка отменена.'));
   const files = [];
   for (const entry of tree.tree) {
-    if (typeof entry.path !== 'string' || !entry.path.startsWith(PREFIX)) continue;
-    const rel = entry.path.slice(PREFIX.length);
+    if (typeof entry.path !== 'string') continue;
+    if (prefix && !entry.path.startsWith(prefix)) continue;
+    const rel = prefix ? entry.path.slice(prefix.length) : entry.path;
     if (entry.type === 'tree') continue;
     if (entry.type !== 'blob' || entry.mode === '120000' || !safeRel(rel) || !/^[0-9a-f]{40}$/.test(entry.sha)) throw new BusError(tr('В релизе подозрительный путь: {path}. Установка отменена.', { path: entry.path.slice(0, 120) }));
     files.push({ rel, sha: entry.sha, url: `${RAW}/${repo}/${encodeURIComponent(tag)}/${entry.path.split('/').map(encodeURIComponent).join('/')}` });
@@ -129,7 +134,7 @@ async function install({ dir = SKILL_DIR, tag } = {}) {
   const version = versionOf(tag);
   if (!SEMVER.test(version)) throw new BusError(tr('Не знаю, до какой версии обновлять: проверка обновлений не прошла.'));
 
-  const files = await listFiles(current.repo, tag);
+  const files = await listFiles(current.repo, tag, current.prefix);
   const stage = fs.mkdtempSync(path.join(os.tmpdir(), 'bus-update-'));
   try {
     // allSettled, а не all: сорвался один файл - остальные ещё пишут во временную папку, и finally снёс бы её у них из-под ног

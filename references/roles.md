@@ -30,7 +30,7 @@ Fast mode во frontmatter субагента не задать: галочка 
 - **Промпт** - хук SessionStart `orchestrator --hook` (matcher `startup|clear|compact`), ставит `ensureGlobalHook`. Печатает `# Роль оркестратора «<имя>» …` и текст; пусто или каталог не в шине - молчит. С `BUS_WAKE=1` (фоновый субагент в каталоге проекта) молчит; headless-задача расписания идёт с `BUS_ORCHESTRATOR=1` и роль получает.
 - **Модель, effort, fast** - `syncOrchestrator` пишет `model`, `effortLevel`, `fastMode` в `.claude/settings.local.json` проекта (новый файл - в `.git/info/exclude`). Что писала шина - `<ящик>/orchestrator-applied.json`: снятое значение уходит из файла, только если там всё ещё шинное; ручное пользователя цело. Зовут: карандаш, шестерёнка (общие - все проекты реестра), `settings set orchestrator.*`, подключение проекта, хук SessionStart; `remove` проекта убирает шинное. Действует со следующей сессии.
 - **Побочка:** `claude -p --agent` в каталоге проекта читает тот же файл - агент без `model` / `effort` во frontmatter идёт на оркестраторских. `fastMode` фоновому агенту `wake.sessionSettings` пишет всегда явно.
-- **Расписание:** headless-задача без `model` - модель оркестратора, потом `schedule.model`.
+- **Расписание:** headless-задача без адресата идёт через Cursor CLI (`agent -p`); модель - только из самой задачи (пусто - Auto). Агенту (`to:`) - его движок и модель.
 
 ## Блок «Шина»
 

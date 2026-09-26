@@ -12,8 +12,8 @@
  *
  * Агенты: создать, править роль, удалить - из панели редактора; файл роли берётся из своего списка агентов по ключу, не из запроса.
  *
- * Модель сервер зовёт в двух местах и только по кнопке пользователя: сводка диалога и правка роли по просьбе (`claude -p`). Запуск из временной
- * папки, а не из проекта: иначе в фоновом claude сработал бы хук inbox --hook проекта и забрал входящие оркестратора.
+ * Модель сервер зовёт в двух местах и только по кнопке пользователя: сводка диалога и правка роли по просьбе (Cursor CLI или claude -p). Запуск из временной
+ * папки, а не из проекта: иначе в фоновом запуске сработал бы хук inbox --hook проекта и забрал входящие оркестратора.
  */
 
 const fs = require('fs');
@@ -33,6 +33,9 @@ const update = require('./update.js');
 const app = require('./app.js'); // окно --app и ярлык на рабочем столе
 const rateLimits = require('./lib/rate-limits.js'); // лимиты Cursor для шапки: кэш + Dashboard API
 const cursorModels = require('./lib/cursor-models.js'); // модели Cursor для формы агента
+
+/** Журнал и ящики проекта - <корень>/.cursor/bus-cursor (не путать со старым .claude/bus). */
+const projectBus = (root) => path.join(root, '.cursor', 'bus-cursor');
 
 // Язык ответа - язык вкладки, приславшей запрос (заголовок X-Bus-Lang): у двух вкладок он разный, поэтому не глобальная переменная.
 // Вне запроса (опрос, старт, консоль) языка нет - tr отдаёт русский. Тексты bus.js, scheduler.js и wake.js не переводятся:
@@ -477,7 +480,7 @@ function tick(rebuild = false) {
   }
   const fresh = [];
   for (const root of [null, ...snapshot.roots]) {
-    const busDir = root ? path.join(root, '.claude', 'bus') : bus.BUS;
+    const busDir = root ? projectBus(root) : bus.BUS;
     fresh.push(...readAppended(bus.journalFile(busDir), root));
   }
   if (messages.size > KEEP_MESSAGES) for (const id of [...messages.keys()].sort().slice(0, messages.size - KEEP_MESSAGES)) messages.delete(id);
@@ -513,7 +516,7 @@ function tick(rebuild = false) {
     broadcast('limits', next);
   }).catch(() => {});
   // Расписание: файлы задач правят и руками, итоги пишет раннер - сверяем тем же проходом. Каталога scheduler/ нигде нет - модуль не грузим
-  if ([null, ...snapshot.roots].some((root) => fs.existsSync(root ? path.join(root, '.claude', 'bus', 'scheduler') : path.join(bus.BUS, 'scheduler')))) {
+  if ([null, ...snapshot.roots].some((root) => fs.existsSync(root ? path.join(projectBus(root), 'scheduler') : path.join(bus.BUS, 'scheduler')))) {
     const schedule = scheduleState(snapshot);
     const sig = JSON.stringify(schedule);
     if (sig !== scheduleSignature) {
@@ -550,7 +553,7 @@ function scheduleState(snapshot = collectAgents()) {
     // Адресат задачи - заведённый субагент, видимый из каталога; глобальная задача идёт только headless
     agents: root ? snapshot.agents.filter((a) => a.registered && a.alive && (a.kind === 'global' || (a.kind === 'local' && a.root === root))).map((a) => a.name) : [],
   }));
-  return { jobs: s.allJobs().map(s.view), daemon: s.daemonStatus(), targets, here: snapshot.here.root, defaultModel: settings.get(snapshot.here.root)['schedule.model'], defaultTimeout: settings.get(snapshot.here.root)['schedule.timeoutMin'] };
+  return { jobs: s.allJobs().map(s.view), daemon: s.daemonStatus(), targets, here: snapshot.here.root, defaultModel: '', defaultTimeout: settings.get(snapshot.here.root)['schedule.timeoutMin'], defaultRuntime: 'cursor' };
 }
 
 /** Каталог задачи приходит со страницы - берём только из тех, что видит шина: иначе UI писал бы файлы куда попросят. */
@@ -568,7 +571,7 @@ function scheduleAction(action, body) {
   const name = String(body.name || '');
   const result = { ok: true, warning: '', daemonNote: '' }; // daemon в ответе - объект состояния из scheduleState()
   if (action === 'save') {
-    const saved = s.saveJob(root, { name, cron: body.cron, to: body.to, model: body.model, timeout: body.timeout, catchup: Boolean(body.catchup), rules: Boolean(body.rules), enabled: body.enabled !== false, prompt: body.prompt }, { force: Boolean(body.force), overwrite: !body.isNew });
+    const saved = s.saveJob(root, { name, cron: body.cron, to: body.to, model: body.model, runtime: body.to ? '' : (body.runtime || 'cursor'), timeout: body.timeout, catchup: Boolean(body.catchup), rules: Boolean(body.rules), enabled: body.enabled !== false, prompt: body.prompt }, { force: Boolean(body.force), overwrite: !body.isNew });
     result.warning = saved.warning;
   } else if (action === 'toggle') s.setEnabled(root, name, Boolean(body.on));
   else if (action === 'delete') s.removeJob(root, name);
@@ -1138,7 +1141,7 @@ function serveFile(res, url) {
   } catch {
     return reply(res, 404, { error: tr('Файл удалён.') });
   }
-  const roots = [bus.BUS, ...collectAgents().roots.map((root) => path.join(root, '.claude', 'bus'))];
+  const roots = [bus.BUS, ...collectAgents().roots.map((root) => projectBus(root))];
   const allowed = roots.some((dir) => {
     try {
       return within(real, fs.realpathSync(path.join(dir, 'files')));
@@ -1395,7 +1398,7 @@ const DELETE_LIMIT = 1000;
  */
 function purge(snapshot, drop) {
   const hereRoot = snapshot.here.root;
-  const places = [null, ...snapshot.roots].sort((a, b) => Number(b === hereRoot) - Number(a === hereRoot)).map((root) => ({ root, busDir: root ? path.join(root, '.claude', 'bus') : bus.BUS }));
+  const places = [null, ...snapshot.roots].sort((a, b) => Number(b === hereRoot) - Number(a === hereRoot)).map((root) => ({ root, busDir: root ? projectBus(root) : bus.BUS }));
   const ids = new Set();
   for (const { root, busDir } of places) {
     for (const record of bus.rewriteJournal(busDir, (r) => drop(r, root))) if (!record.kind) ids.add(String(record.id)); // сводки и маркеры диалогов - не сообщения
@@ -1438,11 +1441,11 @@ function newDialog({ a: aKey, b: bKey }) {
 }
 
 /**
- * «×» закрывает вкладку, а не стирает: метка в <проект>/.claude/bus/closed.json, журнал не трогаем - это вид страницы.
+ * «×» закрывает вкладку, а не стирает: метка в <проект>/.cursor/bus-cursor/closed.json, журнал не трогаем - это вид страницы.
  * Метка того же вида, что id сообщений (base36-время): вкладка закрыта, пока метка новее последней записи диалога,
  * поэтому ответ агента или send из чата в закрытый диалог открывает его сам. Стереть - из истории, deleteDialog.
  */
-const closedFile = (root) => path.join(root, '.claude', 'bus', 'closed.json');
+const closedFile = (root) => path.join(projectBus(root), 'closed.json');
 
 function readClosedFile(root) {
   const data = readJson(closedFile(root), {}); // файла нет или он битый - меток нет
@@ -1514,7 +1517,7 @@ function roleOf(key, snapshot) {
 }
 
 /** Ящик агента: у локального (и обёртки) - в проекте, у глобального - в домашней шине. */
-const boxOf = (agent) => path.join(agent.kind === 'local' ? path.join(agent.root, '.claude', 'bus') : bus.BUS, agent.name);
+const boxOf = (agent) => path.join(agent.kind === 'local' ? projectBus(agent.root) : bus.BUS, agent.name);
 
 /**
  * Fast mode есть только на Opus. Явно выбранная другая модель - отказ сразу; «главная модель» пропускаем: какая она у пользователя, сервер не знает,
@@ -1652,7 +1655,7 @@ function proposalOf(box, role) {
 
 /** Задачи расписания каталога, которые шлют TASK этому агенту: с удалением агента они остаются и начнут падать. */
 function jobsFor(root, name) {
-  if (!fs.existsSync(path.join(root, '.claude', 'bus', 'scheduler'))) return [];
+  if (!fs.existsSync(path.join(projectBus(root), 'scheduler'))) return [];
   return scheduler().listJobs(root).filter((job) => job.to === name).map((job) => job.name);
 }
 
@@ -2138,7 +2141,7 @@ async function start(args = []) {
     // Страховка расписания: задачи включены, а демон лежит (pm2 после перезагрузки не воскрес) - поднимаем. После старта и не в ущерб ему: pm2 стоит секунды
     setImmediate(() => {
       try {
-        if ([null, ...collectAgents().roots].some((root) => fs.existsSync(root ? path.join(root, '.claude', 'bus', 'scheduler') : path.join(bus.BUS, 'scheduler')))) scheduler().ensureDaemon();
+        if ([null, ...collectAgents().roots].some((root) => fs.existsSync(root ? path.join(projectBus(root), 'scheduler') : path.join(bus.BUS, 'scheduler')))) scheduler().ensureDaemon();
       } catch (e) {
         console.error(`расписание: ${e.message}`);
       }

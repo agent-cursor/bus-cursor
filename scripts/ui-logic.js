@@ -781,8 +781,8 @@
     return { preset: 'custom', expr: parts.join(' ') };
   }
 
-  /** «→ dima» или «→ сессия проекта · sonnet» - кому и чем исполнится задача. */
-  const scheduleTarget = (job, defaultModel) => (job.to ? `→ ${job.to}` : `→ ${tr('сессия проекта')} · ${job.model || defaultModel}`);
+  /** «→ dima» или «→ сессия проекта · Auto» - кому и чем исполнится задача (Cursor). */
+  const scheduleTarget = (job, defaultModel) => (job.to ? `→ ${job.to}` : `→ ${tr('сессия проекта')} · ${job.model || defaultModel || tr('Auto')}`);
 
   /** «21.09 09:00» - ближайший запуск; «-» - выключена, кривая или cron не наступит никогда. */
   function scheduleNextLabel(next) {
