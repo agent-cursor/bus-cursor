@@ -560,28 +560,29 @@
     background: var(--glass-1);
     -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
     animation: from-bottom .8s .16s var(--ease) backwards;
-    min-height: 120px;
+    overflow: hidden;
   }
   #composer::before { top: 0; }
-  /* Нет агентов: содержимое композера заблюрено, поверх - приглашение создать */
+  /* Нет агентов: простое наложение на весь блок композера */
   #composer.empty > :not(.compose-lock):not(.to-bottom) {
-    filter: blur(5px);
-    opacity: .45;
     pointer-events: none;
     user-select: none;
   }
   .compose-lock {
-    position: absolute; inset: 0; z-index: 6;
+    position: absolute;
+    left: 0; right: 0; top: 0; bottom: 0;
+    z-index: 6;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 12px; padding: 16px var(--gutter);
+    margin: 0; width: auto; height: auto; box-sizing: border-box;
     text-align: center;
-    background: color-mix(in srgb, var(--panel) 42%, transparent);
-    -webkit-backdrop-filter: blur(10px) saturate(140%);
-    backdrop-filter: blur(10px) saturate(140%);
+    background: color-mix(in srgb, var(--panel) 55%, transparent);
+    -webkit-backdrop-filter: blur(8px) saturate(140%);
+    backdrop-filter: blur(8px) saturate(140%);
   }
   .compose-lock[hidden] { display: none !important; }
   .compose-lock p {
-    margin: 0; max-width: 280px;
+    margin: 0;
     font: 500 14px/1.4 var(--body); color: var(--ink);
   }
   .compose-lock .send {
@@ -1705,12 +1706,14 @@
     -webkit-backdrop-filter: none !important;
     animation: none !important;
     border-top: 1px solid var(--line);
-    min-height: 118px !important;
+    overflow: hidden !important;
   }
   .compose-lock {
-    background: color-mix(in srgb, var(--panel) 55%, transparent) !important;
-    backdrop-filter: blur(12px) saturate(140%) !important;
-    -webkit-backdrop-filter: blur(12px) saturate(140%) !important;
+    left: 0 !important; right: 0 !important; top: 0 !important; bottom: 0 !important;
+    width: auto !important; height: auto !important;
+    background: color-mix(in srgb, var(--panel) 62%, transparent) !important;
+    backdrop-filter: blur(8px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(8px) saturate(140%) !important;
   }
   .compose-lock .send {
     text-transform: none !important;
