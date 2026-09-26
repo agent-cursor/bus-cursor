@@ -3131,7 +3131,7 @@
     <label class="wide" id="agentAboutLabel"><span class="label">Описание<small>когда этого агента поднимать; пусто - первая строка роли</small></span><input id="agentAbout" type="text" autocomplete="off"></label>
     <label id="agentEffortLabel" hidden><span class="label">Effort<small>сколько модель думает</small></span><select id="agentEffort"></select></label>
     <p class="role-ai-note wide" id="agentCursorNote">Cursor-агента Bus Cursor поднимает через Cursor CLI (agent -p): роль и входящие уходят ему в промпт. Вброса посреди хода (btw) нет, расход - оценка, запреты «Доступа» - правилом в промпте, а не жёстко.</p>
-    <p class="role-ai-note wide" id="agentBossNote" hidden>Модель, effort и fast - для сессий Claude Code. В чате Cursor модель выбирается в самом Cursor, промпт оркестратора приходит хуком.</p>
+    <p class="role-ai-note wide" id="agentBossNote" hidden>В чате Cursor модель выбирается в пикере Cursor. Промпт оркестратора шина кладёт хуком sessionStart.</p>
     <label class="check" id="agentFastLabel" hidden><input type="checkbox" id="agentFast"><span>fast mode<small id="agentFastRole">только Opus; при фоновом подъёме Bus Cursor</small><small id="agentFastBoss" hidden>только Opus; со следующей сессии</small></span></label>
     <label class="check wide" id="agentRulesLabel" hidden><input type="checkbox" id="agentRules"><span>глобальные правила<small>~/.claude/CLAUDE.md и rules/ при фоновом подъёме; +≈3.3к токенов</small></span></label>
 
@@ -3176,7 +3176,7 @@
       <div class="role-diff" id="agentAiDiff" role="region" aria-label="Изменения ИИ" tabindex="0" hidden></div>
     </fieldset>
 
-    <label class="wide"><span class="label" id="agentBodyRole">Роль<small>зона ответственности, правила работы</small></span><span class="label" id="agentBodyBoss" hidden>Промпт проекта<small>дописывается к общему; сессия получает его в начале, после /clear и после сжатия</small></span><textarea id="agentBody" required spellcheck="false"></textarea></label>
+    <label class="wide"><span class="label" id="agentBodyRole">Роль<small>зона ответственности, правила работы</small></span><span class="label" id="agentBodyBoss" hidden>Промпт проекта<small>дописывается к общему; сессия получает его хуком sessionStart</small></span><textarea id="agentBody" required spellcheck="false"></textarea></label>
     <details id="agentCommonWrap" hidden><summary class="label">Общий промпт всех оркестраторов - правится в шестерёнке</summary><pre class="role-bus" id="agentCommon"></pre></details>
     <details id="agentBusWrap" hidden><summary class="label">Блок «Bus Cursor» - его ведёт скрипт</summary><pre class="role-bus" id="agentBus"></pre></details>
     <p class="role-where" id="agentWhere"></p>
@@ -4994,8 +4994,8 @@ const AGENT_MODELS = [['', N('главная модель - дорого')], ['s
 const AGENT_EFFORTS = [['', N('по умолчанию у модели')], ['low', N('low - быстро и дёшево')], ['medium', 'medium'], ['high', 'high'], ['xhigh', 'xhigh'], ['max', N('max - дольше и дороже')]];
 // agent: null - форма нового; before - описание и роль до правки ИИ: с ними сравнивает diff, к ним возвращает «Откатить»
 // access: off - снятые группы, serversOff - снятые по одному MCP-серверы, manual - роль с рукописной tools (галочки спрятаны), convert - нажали «Перевести на галочки»
-// orchestrator - открыт оркестратор (fillOrchestratorMode), commonModel - модель всех оркестраторов для проверки fast mode
-const agentPanel = { open: false, agent: null, busy: false, before: null, opener: null, orchestrator: false, commonModel: '', access: { off: [], serversOff: [], servers: [], extra: [], manual: false, convert: false } };
+// orchestrator - открыт оркестратор (fillOrchestratorMode): только промпт проекта; модель чата - в пикере Cursor
+const agentPanel = { open: false, agent: null, busy: false, before: null, opener: null, orchestrator: false, access: { off: [], serversOff: [], servers: [], extra: [], manual: false, convert: false } };
 
 function agentError(text) {
   $('agentError').textContent = text || '';
@@ -5003,25 +5003,22 @@ function agentError(text) {
 }
 
 /**
- * Оркестратор - та же форма без имени, описания, доступа и блока «Шина»: роль - это промпт проекта, модель, effort и fast.
- * Пустая модель и effort - «как у всех оркестраторов» (шестерёнка); общий промпт показан ниже для чтения.
+ * Оркестратор - та же форма без имени, описания, доступа, модели и блока «Bus Cursor»:
+ * правится только промпт проекта (+ общий из шестерёнки, только чтение). Модель чата - в пикере Cursor.
  */
 function fillOrchestratorMode(role) {
   const boss = Boolean(role && role.orchestrator);
   agentPanel.orchestrator = boss;
-  agentPanel.commonModel = boss ? role.common.model : '';
   for (const id of ['agentNameLabel', 'agentAboutLabel', 'agentAccess', 'agentBodyRole', 'agentCursorModelLabel', 'agentCursorNote']) $(id).hidden = boss;
-  for (const id of ['agentBodyBoss', 'agentBossNote', 'agentModelLabel', 'agentEffortLabel', 'agentFastLabel', 'agentFastBoss']) $(id).hidden = !boss;
-  $('agentFastRole').hidden = boss;
-  $('agentRulesLabel').hidden = true; // глобальные правила Claude - только у Claude Code
+  for (const id of ['agentBodyBoss', 'agentBossNote']) $(id).hidden = !boss;
+  // model / effort / fast / CLAUDE.md - наследие Claude Code; в Bus Cursor оркестратору не задаём
+  for (const id of ['agentModelLabel', 'agentEffortLabel', 'agentFastLabel', 'agentFastBoss', 'agentRulesLabel']) $(id).hidden = true;
+  $('agentFastRole').hidden = false;
   $('agentBody').required = !boss; // пустой промпт проекта - законно: остаётся общий
-  $('agentCommonWrap').hidden = !boss || !role.common.prompt;
+  $('agentCommonWrap').hidden = !boss || !(role && role.common && role.common.prompt);
   $('agentCommonWrap').open = false;
-  $('agentCommon').textContent = boss ? role.common.prompt : '';
+  $('agentCommon').textContent = boss && role.common ? role.common.prompt : '';
 }
-
-/** Первая строка списка у оркестратора - «как у всех» с общим значением; у агента - свой список как есть. */
-const inheritOption = (list, common, none) => [['', common ? tr('как у всех: {value}', { value: common }) : tr(none)], ...list.slice(1)];
 
 /** Список моделей Cursor из /api/state или /api/cursor-models; выбранная, которой нет в списке, дописывается. */
 function fillCursorModels(selected) {
@@ -5056,18 +5053,12 @@ function fillAgentForm(role) {
   $('agentTitle').textContent = fresh ? tr('Новый агент') : boss ? tr('Оркестратор {name}', { name: role.name }) : tr('Агент {name}', { name: role.name });
   $('agentName').value = fresh ? '' : role.name;
   $('agentName').disabled = !fresh; // имя - это ящик, реестр и история: не переименовывается
-  const model = fresh ? 'sonnet' : role.model;
-  const modelList = boss ? inheritOption(AGENT_MODELS, role.common.model, N('не задана - как в сессии')) : AGENT_MODELS;
-  const models = modelList.some(([value]) => value === model) ? modelList : [...modelList, [model, model]];
-  setOptions($('agentModel'), models.map(([value, label]) => el('option', { value }, tr(label))));
-  $('agentModel').value = model;
+  setOptions($('agentModel'), AGENT_MODELS.map(([value, label]) => el('option', { value }, tr(label))));
+  $('agentModel').value = fresh ? 'sonnet' : (role.model || '');
   $('agentAbout').value = fresh || boss ? '' : role.description;
-  const effort = fresh ? '' : role.effort;
-  const effortList = boss ? inheritOption(AGENT_EFFORTS, role.common.effort, N('по умолчанию у модели')) : AGENT_EFFORTS;
-  const efforts = effortList.some(([value]) => value === effort) ? effortList : [...effortList, [effort, effort]];
-  setOptions($('agentEffort'), efforts.map(([value, label]) => el('option', { value }, tr(label))));
-  $('agentEffort').value = effort;
-  $('agentFast').checked = !fresh && Boolean(role.fast);
+  setOptions($('agentEffort'), AGENT_EFFORTS.map(([value, label]) => el('option', { value }, tr(label))));
+  $('agentEffort').value = fresh ? '' : (role.effort || '');
+  $('agentFast').checked = false;
   $('agentRules').checked = false;
   fillCursorModels(fresh || boss ? '' : role.cursorModel || '');
   $('agentBody').value = fresh ? '' : role.body;
@@ -5088,7 +5079,7 @@ function fillAgentForm(role) {
   $('agentWarn').hidden = fresh || !role.warning;
   $('agentDelete').hidden = fresh || !role.deletable;
   $('agentNoDelete').hidden = fresh || boss || role.deletable;
-  if (boss) $('agentWhere').textContent = tr('Модель, effort и fast - в {file}, со следующей сессии; промпт - хуком SessionStart.', { file: role.where });
+  if (boss) $('agentWhere').textContent = tr('Промпт - хуком sessionStart (~/.cursor/hooks.json); модель чата - в пикере Cursor.');
   $('agentSave').textContent = fresh ? tr('Создать') : tr('Сохранить');
   $('agentRewrite').lastElementChild.textContent = tr('Переписать с ИИ'); // после часов «Переписываю…» статичный узел подписи выпал - язык ставим сами
   agentError('');
@@ -5281,20 +5272,17 @@ $('agentForm').addEventListener('submit', async (e) => {
   if (fresh && !L.validAgentName(name)) return agentError(tr('Имя: латиница в нижнем регистре, цифры и дефис, до 31 символа; files, scheduler и schedule заняты шиной.'));
   const boss = agentPanel.orchestrator;
   const fields = boss
-    ? { model: $('agentModel').value, effort: $('agentEffort').value, fast: $('agentFast').checked, body: $('agentBody').value }
+    ? { body: $('agentBody').value }
     : { description: $('agentAbout').value, model: '', effort: '', fast: false, rules: false, body: $('agentBody').value, runtime: 'cursor', cursorModel: $('agentCursorModel').value.trim() };
   // Роль с рукописной tools, которую на галочки не переводили, доступ не шлёт - сервер строку не тронет. У оркестратора доступа в форме нет
   const access = agentPanel.access;
   if (!boss && (!access.manual || access.convert)) Object.assign(fields, { denied: L.accessDenied(access.off, access.serversOff) }, access.convert ? { convertTools: true } : {});
-  // Сервер откажет так же; здесь - чтобы причина встала сразу, без запроса. У оркестратора «как у всех» - это модель из шестерёнки
-  const model = fields.model || (boss ? agentPanel.commonModel : '');
-  if (fields.fast && model && !/opus|inherit/i.test(model)) return agentError(tr('Fast mode есть только на Opus. Поставь модель opus или сними галочку.'));
   $('agentSave').disabled = true;
   try {
     const r = fresh ? await post('/api/agent/create', { name, ...fields }) : await post('/api/agent/save', { key: agentPanel.agent.key, ...fields });
     closeAgentPanel();
     const warn = (r.warnings || []).join(' ');
-    if (boss) say(`${tr('Оркестратор сохранён. Модель, effort и fast - со следующей сессии, промпт - с новой сессии или после /clear.')}${warn ? ` ${warn}` : ''}`, Boolean(warn));
+    if (boss) say(`${tr('Оркестратор сохранён. Промпт - с новой сессии Cursor (хук sessionStart).')}${warn ? ` ${warn}` : ''}`, Boolean(warn));
     else say(fresh ? tr('Агент «{name}» создан и заведён в шину: {file}', { name, file: r.file }) : tr('Роль сохранена: {file}', { file: r.file }));
     if (fresh) {
       pendingTo = r.key; // «Кому» переезжает на нового
@@ -7115,7 +7103,7 @@ $('settingsForm').addEventListener('submit', async (e) => {
   try {
     const r = await post('/api/settings', { values: settingsDirtyPatch }); // отказ 400 несёт field - поле, которое подсветить
     applySettingsResponse(r);
-    // Общие оркестраторов уже сохранены, но settings.local.json какого-то проекта не записался (битый JSON) - сказать, где
+    // Промпт оркестраторов уже сохранён (хук sessionStart); предупреждения с сервера - если есть
     const warn = (r.warnings || []).join(' ');
     settingsSay(warn ? `${tr('Сохранено.')} ${warn}` : tr('Сохранено.'), Boolean(warn));
   } catch (err) {

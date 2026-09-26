@@ -97,13 +97,24 @@ function run({ cwd, agent = null, role = '', model = null, prompt: text, timeout
   return new Promise((resolve) => {
     const started = Date.now();
     const { file, arg } = promptFile(cwd, text, resume ? '' : role);
+    const finishEarly = (reason) => {
+      fs.rmSync(file, { force: true });
+      resolve({ ok: false, ms: Date.now() - started, tokens: 0, context: 0, window: 0, usage: { tokens: 0, input: 0, cacheWrite: 0, cacheRead: 0, output: 0 }, cost: 0, reason, report: '', sessionId: '' });
+    };
+    const cmd = resolveCommand();
+    if (!cmd) return finishEarly(missingHint());
     const resumeArg = resume && SESSION_ID.test(resume) ? ['--resume', resume] : [];
     const args = [...(readonly ? READONLY_ARGS : ARGS), ...resumeArg, ...(model ? ['--model', `"${model}"`] : []), arg];
     // CLAUDECODE снимаем: раннер могли поднять из сессии Claude, а по этой переменной send решает, что чат сам поднимет агента (wake:).
     // BUS_ORCHESTRATOR не ставим: роль оркестратора headless-задаче кладёт в промпт сам вызывающий (role), хук sessionStart её не дублирует
     const env = { ...process.env, BUS_WAKE: '1', TG_LISTENER_RUN: '1', BUS_RUN: agent && RUN_ID.test(runId) ? `${agent}:${runId}` : '', BUS_ORCHESTRATOR: '' };
     delete env.CLAUDECODE;
-    const child = spawn(`${command()} ${args.join(' ')}`, { cwd, shell: true, windowsHide: true, env });
+    // Ярлык Bus Cursor мог стартовать до установки CLI - каталог бинарника дописываем в PATH на этот запуск
+    if (path.isAbsolute(cmd)) {
+      const dir = path.dirname(cmd);
+      env.PATH = `${dir}${path.delimiter}${env.PATH || ''}`;
+    }
+    const child = spawn(`${shellQuote(cmd)} ${args.join(' ')}`, { cwd, shell: true, windowsHide: true, env });
     let tail = '';
     let stderr = '';
     let buffer = '';
@@ -166,7 +177,7 @@ function run({ cwd, agent = null, role = '', model = null, prompt: text, timeout
       report(true);
       resolve(result);
     };
-    child.on('error', (e) => finish({ ok: false, ms: Date.now() - started, tokens: 0, context: 0, window: 0, usage: usage(), cost: 0, reason: `Cursor (${command()}) не запустился: ${e.message}`, report: '', sessionId }));
+    child.on('error', (e) => finish({ ok: false, ms: Date.now() - started, tokens: 0, context: 0, window: 0, usage: usage(), cost: 0, reason: /ENOENT|not found/i.test(e.message) ? missingHint() : `Cursor (${cmd}) не запустился: ${e.message}`, report: '', sessionId }));
     child.on('close', (code) => {
       if (!final && buffer.trim()) {
         try {
@@ -180,11 +191,14 @@ function run({ cwd, agent = null, role = '', model = null, prompt: text, timeout
       // result.result у Cursor - склейка всех реплик хода; отчёт - последняя реплика, как у claude
       const text = lastText || (typeof result.result === 'string' ? result.result.trim().slice(-2000) : '');
       const ok = !timedOut && !silent && Boolean(final) && !result.is_error;
+      const raw = (stderr || (result.is_error ? text : '') || tail).trim().slice(-200);
       const why = timedOut
         ? `таймаут ${Math.round(timeoutMs / 1000)} с`
         : silent
           ? `Cursor молчит ${Math.round(FIRST_EVENT_MS / 1000)} с - не залогинен (agent login) или сменился формат потока`
-          : `Cursor вернул ошибку (код ${code}): ${(stderr || (result.is_error ? text : '') || tail).trim().slice(-200) || 'пустой ответ'}`;
+          : missingFromOutput(stderr || raw, code)
+            ? missingHint()
+            : `Cursor вернул ошибку (код ${code}): ${raw || 'пустой ответ'}`;
       finish({ ok, ms: Date.now() - started, tokens: estimate(), context: 0, window: 0, usage: usage(), cost: 0, reason: ok ? '' : why, report: text, sessionId });
     });
     child.stdin.on('error', () => {});
@@ -203,9 +217,58 @@ function installed(cmd) {
   return found;
 }
 
-// Установщик Cursor ставит agent и cursor-agent (старое имя); берём что нашлось, ничего - agent, ошибка скажет «не найден»
-const command = () => CURSOR_CMD || (installed('agent') ? 'agent' : installed('cursor-agent') ? 'cursor-agent' : 'agent');
-const available = () => Boolean(CURSOR_CMD) || installed('agent') || installed('cursor-agent');
+/** Типичные пути установщика Cursor CLI (ярлык Bus Cursor часто стартует без обновлённого PATH). */
+function knownBins(env = process.env) {
+  const home = env.HOME || env.USERPROFILE || os.homedir();
+  const local = env.LOCALAPPDATA || (process.platform === 'win32' ? path.join(home, 'AppData', 'Local') : '');
+  if (process.platform === 'win32') {
+    return [
+      path.join(local, 'cursor-agent', 'agent.cmd'),
+      path.join(local, 'cursor-agent', 'cursor-agent.cmd'),
+      path.join(home, '.local', 'bin', 'agent.exe'),
+      path.join(home, '.local', 'bin', 'agent.cmd'),
+      path.join(home, '.local', 'bin', 'cursor-agent.exe'),
+    ];
+  }
+  return [
+    path.join(home, '.local', 'bin', 'agent'),
+    path.join(home, '.local', 'bin', 'cursor-agent'),
+  ];
+}
+
+/** → путь или имя команды Cursor CLI, '' если не найден. */
+function resolveCommand(env = process.env) {
+  if (CURSOR_CMD) return CURSOR_CMD;
+  if (installed('agent')) return 'agent';
+  if (installed('cursor-agent')) return 'cursor-agent';
+  for (const bin of knownBins(env)) {
+    try {
+      if (bin && fs.existsSync(bin)) return bin;
+    } catch {
+      // нет доступа - следующий кандидат
+    }
+  }
+  return '';
+}
+
+const missingHint = () => (process.platform === 'win32'
+  ? `Cursor CLI (agent) не установлен или не в PATH. В PowerShell: irm 'https://cursor.com/install?win32=true' | iex   затем agent login. Перезапусти Bus Cursor.`
+  : `Cursor CLI (agent) не установлен или не в PATH. В терминале: curl https://cursor.com/install -fsS | bash   затем agent login. Перезапусти Bus Cursor.`);
+
+/** stderr cmd.exe про «не является командой» (в т.ч. кракозябры OEM) → подсказка про установку. */
+function missingFromOutput(stderr, code) {
+  const text = String(stderr || '');
+  if (/not recognized|is not recognized|command not found|не является|ENOENT/i.test(text)) return true;
+  // Windows OEM: «не является внутренней…» часто приходит кракозябрами; код 1 и мгновенный выход с «agent» в тексте
+  if (process.platform === 'win32' && code === 1 && /agent/i.test(text) && text.length < 500) return true;
+  return false;
+}
+
+const shellQuote = (cmd) => (cmd === 'agent' || cmd === 'cursor-agent' ? cmd : `"${String(cmd).replace(/"/g, '')}"`);
+
+// Установщик Cursor ставит agent и cursor-agent; PATH мог не подхватиться у ярлыка - смотрим и известные папки
+const command = () => resolveCommand() || 'agent';
+const available = () => Boolean(resolveCommand());
 
 // ---------- Cursor IDE как оркестратор: хуки и правило ----------
 
@@ -280,4 +343,4 @@ function ensureRule(root, exclude = null) {
   return true;
 }
 
-module.exports = { run, liveEntries, toolLine, promptFile, installed, available, command, CURSOR_HOME, HOOKS_FILE, present, ensureHooks, ensureRule };
+module.exports = { run, liveEntries, toolLine, promptFile, installed, available, command, resolveCommand, knownBins, missingHint, CURSOR_HOME, HOOKS_FILE, present, ensureHooks, ensureRule };

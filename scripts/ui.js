@@ -1522,7 +1522,7 @@ const GLOBAL_NOTE = N('Роль общая на все проекты: прав�
 function roleOf(key, snapshot) {
   const agent = snapshot.agents.find((a) => a.key === String(key || ''));
   if (!agent) throw new bus.BusError(tr('Такого агента нет. Обнови страницу.'));
-  if (!agent.editable) throw new bus.BusError(agent.kind === 'project' ? tr('У проекта роли-файла нет: это сессия Claude в каталоге.') : tr('Файл роли пропал с диска: {where}', { where: agent.where }));
+  if (!agent.editable) throw new bus.BusError(agent.kind === 'project' ? tr('У проекта роли-файла нет: это чат Cursor в каталоге.') : tr('Файл роли пропал с диска: {where}', { where: agent.where }));
   const shared = agent.kind === 'global' || Boolean(agent.wraps);
   const dir = shared ? path.join(bus.CONFIG_DIR, 'agents') : path.join(agent.root, '.cursor', 'agents');
   const file = agent.wraps ? bus.findDefinition(dir, agent.name) : agent.where;
@@ -1612,12 +1612,12 @@ function orchestratorEntry(key, snapshot) {
  */
 function orchestratorRole(agent) {
   const values = settings.get(agent.root);
-  const common = { prompt: values['orchestrator.prompt'], model: values['orchestrator.model'], effort: values['orchestrator.effort'], fast: values['orchestrator.fast'] };
+  const common = { prompt: values['orchestrator.prompt'] };
   return {
     orchestrator: true, key: agent.key, name: agent.name, kind: agent.kind, registered: true, deletable: false,
     where: 'sessionStart → ~/.cursor/hooks.json',
-    body: values['orchestrator.projectPrompt'], model: '', effort: '',
-    fast: false, common,
+    body: values['orchestrator.projectPrompt'],
+    common,
   };
 }
 

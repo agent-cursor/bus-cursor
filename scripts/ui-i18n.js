@@ -597,7 +597,7 @@
     'Этих сообщений в журналах уже нет.': 'These messages are no longer in the logs.',
     'Роль общая на все проекты: правка изменит агента везде, где он работает.': 'The role is shared by all projects: an edit changes the agent everywhere it works.',
     'Такого агента нет. Обнови страницу.': 'No such agent. Reload the page.',
-    'У проекта роли-файла нет: это сессия Claude в каталоге.': 'A project has no role file: it is a Claude session in the directory.',
+    'У проекта роли-файла нет: это чат Cursor в каталоге.': 'A project has no role file: it is a Cursor chat in the directory.',
     'Файл роли пропал с диска: {where}': 'The role file is gone from disk: {where}',
     'Роль «{name}» лежит не в {dir} - такую из UI не правлю.': 'Role “{name}” is not inside {dir} - the UI does not edit such roles.',
     'fast - true или false.': 'fast must be true or false.',
