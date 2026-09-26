@@ -786,25 +786,31 @@
   /* Голосовой ввод: подсказка в покое и индикатор записи с пульсом - один вид в композере и в форме агента */
   .voice-hint {
     display: inline-flex; align-items: center; gap: 6px;
-    font-size: 12px; line-height: 20px; color: var(--ink-soft);
+    margin: 0; padding: 4px 8px; border: 0; border-radius: var(--r-sm);
+    font: inherit; font-size: 12px; line-height: 20px; color: var(--ink-soft);
+    background: transparent; cursor: pointer;
   }
+  .voice-hint:hover { color: var(--ink); background: var(--tap); }
   .voice-hint .icon { width: 14px; height: 14px; opacity: .7; }
   .voice-rec {
     display: inline-flex; align-items: center; gap: 8px;
-    padding: 3px 12px 3px 3px; border-radius: 999px;
-    font-size: 13px; line-height: 20px; color: var(--ink);
+    margin: 0; padding: 3px 12px 3px 3px; border-radius: 999px;
+    font: inherit; font-size: 13px; line-height: 20px; color: var(--ink);
     background: color-mix(in srgb, var(--accent) 16%, var(--glass-2));
     border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    cursor: pointer;
   }
+  .voice-rec:hover { filter: brightness(1.05); }
   .voice-rec[hidden], .voice-hint[hidden] { display: none !important; }
   .voice-rec-icon {
     display: grid; place-items: center;
     width: 28px; height: 28px; border-radius: 50%;
     background: var(--accent); color: #fff;
     animation: voice-pulse 1.15s ease-in-out infinite;
+    pointer-events: none;
   }
   .voice-rec-icon .icon { width: 15px; height: 15px; stroke-width: 2.2; }
-  .voice-rec-label { font-weight: 500; white-space: nowrap; }
+  .voice-rec-label { font-weight: 500; white-space: nowrap; pointer-events: none; }
   @keyframes voice-pulse {
     0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 50%, transparent); }
     55% { box-shadow: 0 0 0 9px transparent; }
@@ -958,7 +964,7 @@
     #types, .type-filters { flex: none; }
     #composer { grid-template-columns: minmax(0, 1fr) auto; } /* вторая колонка - папка и скрепка */
     #composer .send, .result { grid-column: 1 / -1; }
-    #attachHint, .keys, .voice-hint, .voice-rec { display: none; } /* перетаскивать и держать пробел на телефоне нечем, а лента и так зажата формой */
+    #attachHint, .keys { display: none; } /* перетаскивать на телефоне нечем; голос - кликом по mic */
     .thumb { max-width: 100%; }
     .schedule form { grid-template-columns: 1fr; }
     .schedule { animation-name: from-bottom-soft; }
@@ -1939,8 +1945,8 @@
       <div class="composer-tools">
         <button class="ghost iconbtn" id="filesBtn" type="button" title="Файл проекта - то же, что набрать @" aria-label="Файл проекта" aria-expanded="false" aria-controls="mention"><svg class="icon"><use href="#i-folder"/></svg></button>
         <button class="ghost iconbtn" id="pickBtn" type="button" title="Приложить файл" aria-label="Приложить файл"><svg class="icon"><use href="#i-clip"/></svg></button>
-        <span class="voice-hint" id="composerVoiceHint" hidden title="Удерживай пробел - диктовка"><svg class="icon"><use href="#i-mic"/></svg><span>пробел</span></span>
-        <span class="voice-rec" id="composerVoiceRec" hidden role="status" aria-live="polite"><span class="voice-rec-icon" aria-hidden="true"><svg class="icon"><use href="#i-mic"/></svg></span><span class="voice-rec-label">Голосовой ввод</span></span>
+        <button type="button" class="voice-hint" id="composerVoiceHint" hidden title="Диктовка: клик или удержание пробела"><svg class="icon"><use href="#i-mic"/></svg><span>пробел</span></button>
+        <button type="button" class="voice-rec" id="composerVoiceRec" hidden title="Остановить запись" aria-label="Остановить голосовой ввод"><span class="voice-rec-icon" aria-hidden="true"><svg class="icon"><use href="#i-mic"/></svg></span><span class="voice-rec-label">Голосовой ввод</span></button>
       </div>
       <button class="send send-round" id="sendBtn" type="submit" title="Отправить" aria-label="Отправить"><svg class="icon"><use href="#i-send"/></svg></button>
       <div class="attach">
@@ -2109,8 +2115,8 @@
         <button class="squeeze" id="agentRewrite" type="button"><svg class="icon"><use href="#i-squeeze"/></svg><span>Переписать с ИИ</span></button>
         <button class="ghost" id="agentAiUndo" type="button" hidden>Откатить</button>
         <button class="ghost" id="agentReject" type="button" hidden>Отклонить правку агента</button>
-        <span class="voice-hint" id="agentVoiceHint" hidden title="Удерживай пробел - диктовка"><svg class="icon"><use href="#i-mic"/></svg><span>пробел</span></span>
-        <span class="voice-rec" id="agentVoiceRec" hidden role="status" aria-live="polite"><span class="voice-rec-icon" aria-hidden="true"><svg class="icon"><use href="#i-mic"/></svg></span><span class="voice-rec-label">Голосовой ввод</span></span>
+        <button type="button" class="voice-hint" id="agentVoiceHint" hidden title="Диктовка: клик или удержание пробела"><svg class="icon"><use href="#i-mic"/></svg><span>пробел</span></button>
+        <button type="button" class="voice-rec" id="agentVoiceRec" hidden title="Остановить запись" aria-label="Остановить голосовой ввод"><span class="voice-rec-icon" aria-hidden="true"><svg class="icon"><use href="#i-mic"/></svg></span><span class="voice-rec-label">Голосовой ввод</span></button>
       </div>
       <p class="role-ai-note" id="agentAiNote" role="status">ИИ правит описание и роль прямо в форме. На диск ничего не уходит, пока не нажмёшь «Сохранить».</p>
       <div class="role-diff" id="agentAiDiff" role="region" aria-label="Изменения ИИ" tabindex="0" hidden></div>
@@ -4226,14 +4232,13 @@ $('text').addEventListener('blur', closeMention);
 window.addEventListener('resize', fitText);
 fitText();
 
-// ---------- голосовой ввод: удержание пробела ----------
+// ---------- голосовой ввод: пробел и клик по mic (вкл/выкл) ----------
 
-// Распознаёт браузер (Web Speech API, Chrome и Edge), сервер шины звука не видит. Текст ложится в поле, а не уходит агенту:
-// распознавание путает имена и термины, а TASK стоит токенов - пользователь сначала читает, что надиктовал.
-// Статус записи - плашка .voice-rec (иконка с пульсом + «Голосовой ввод») в композере и в «Переписать с ИИ», не текст в agentAiNote / result.
+// Распознаёт браузер (Web Speech API, Chrome и Edge), сервер шины звука не видит. Текст ложится в поле, а не уходит агенту.
+// Старт: удержание пробела ≥HOLD_MS или клик по mic. Стоп: повторный пробел, клик по плашке/mic, Esc.
 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-const HOLD_MS = 400; // короче - это пробел или клик, дольше - диктовка
-const voice = { held: false, timer: null, tap: 'none', target: null, rec: null, field: null, before: '', after: '', final: '', error: '' };
+const HOLD_MS = 400; // короче - это пробел или клик кнопки, дольше - старт диктовки
+const voice = { armed: false, timer: null, tap: 'none', target: null, rec: null, field: null, before: '', after: '', final: '', error: '' };
 
 function syncVoiceHints() {
   const on = Boolean(SpeechRec) && !voice.rec;
@@ -4277,12 +4282,26 @@ function showDictated(text) {
   voice.field.dispatchEvent(new Event('input', { bubbles: true })); // поиск фильтрует ленту по input
 }
 
+/** Остановить запись (повторный пробел, клик, Esc, blur). */
+function stopVoice() {
+  clearTimeout(voice.timer);
+  voice.timer = null;
+  voice.armed = false;
+  if (!voice.rec) return;
+  try {
+    voice.rec.stop();
+  } catch {
+    // уже остановлен
+  }
+}
+
 function startVoice() {
   voice.timer = null;
   if (!SpeechRec) return voiceSay(L.voiceNote('unsupported'), true);
   if (agentPanel.busy) return; // ИИ пишет роль: его ответ затёр бы заметку про диктовку
+  if (voice.rec) return stopVoice();
   // Фокус не в поле: в панели агента диктуют просьбу к ИИ, иначе - сообщение
-  const field = voice.tap === 'type' ? voice.target : agentPanel.open ? $('agentAsk') : $('text');
+  const field = voice.tap === 'type' && voice.target ? voice.target : agentPanel.open ? $('agentAsk') : $('text');
   field.focus();
   Object.assign(voice, { field, before: field.value.slice(0, field.selectionStart), after: field.value.slice(field.selectionEnd), final: '', error: '' });
 
@@ -4299,6 +4318,7 @@ function startVoice() {
   rec.onerror = (e) => (voice.error = e.error);
   rec.onend = () => {
     voice.rec = null;
+    voice.armed = false;
     field.classList.remove('listening');
     hideVoiceRec();
     if (voice.error === 'aborted') showDictated('');
@@ -4316,12 +4336,30 @@ function startVoice() {
   voice.rec = rec;
   field.classList.add('listening');
   showVoiceRec();
-  if (!voice.held) rec.stop(); // пробел отпустили, пока поднимался микрофон
+}
+
+/** Клик по mic / плашке записи: включить или выключить. */
+function toggleVoiceClick(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (!SpeechRec) return voiceSay(L.voiceNote('unsupported'), true);
+  if (voice.rec) return stopVoice();
+  const field = agentPanel.open ? $('agentAsk') : $('text');
+  Object.assign(voice, { tap: 'type', target: field });
+  startVoice();
+}
+
+for (const id of ['composerVoiceHint', 'agentVoiceHint', 'composerVoiceRec', 'agentVoiceRec']) {
+  $(id).addEventListener('click', toggleVoiceClick);
 }
 
 // capture: раньше, чем пробел успеет напечатать себя в поле, нажать кнопку или прокрутить страницу
 document.addEventListener('keydown', (e) => {
-  if (voice.rec && e.key === 'Escape') return voice.rec.abort();
+  if (voice.rec && e.key === 'Escape') {
+    e.preventDefault();
+    try { voice.rec.abort(); } catch { stopVoice(); }
+    return;
+  }
   if (e.key === 'Escape' && mention.open) return; // список «@» закроет поле само - выделение в ленте не трогаем
   if (e.key === 'Escape' && agentPanel.open) return closeAgentPanel();
   if (e.key === 'Escape' && scheduleOpen) return closeSchedule();
@@ -4336,28 +4374,34 @@ document.addEventListener('keydown', (e) => {
     if (voice.timer) commitTap(); // быстрый набор: следующая буква нажата раньше, чем отпущен пробел - пробел встаёт перед ней
     return;
   }
-  if (voice.held) return e.preventDefault(); // автоповтор зажатой клавиши
+  // Уже пишем - повторный пробел останавливает
+  if (voice.rec) {
+    e.preventDefault();
+    if (!e.repeat) stopVoice();
+    return;
+  }
+  if (voice.armed) return e.preventDefault(); // автоповтор зажатой клавиши
   if (e.repeat || e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return;
   const el = document.activeElement || document.body;
+  if (el.closest && el.closest('.voice-hint, .voice-rec')) return; // пробел на кнопке mic - её клик, не жест
   const tap = L.spaceTap(el.tagName, el.type);
   if (tap === 'skip' || el.isContentEditable) return;
   e.preventDefault();
-  Object.assign(voice, { held: true, tap, target: el, timer: setTimeout(startVoice, HOLD_MS) });
+  Object.assign(voice, { armed: true, tap, target: el, timer: setTimeout(startVoice, HOLD_MS) });
 }, true);
 
 document.addEventListener('keyup', (e) => {
-  if (e.code !== 'Space' || !voice.held) return;
-  voice.held = false;
+  if (e.code !== 'Space' || !voice.armed) return;
+  voice.armed = false;
   e.preventDefault(); // Chrome нажимает кнопку по keyup пробела - клик тапа делает commitTap, второй не нужен
-  if (voice.timer) commitTap();
-  else if (voice.rec) voice.rec.stop();
+  if (voice.timer) commitTap(); // короткое нажатие - пробел/клик; запись после старта живёт до повторного пробела или клика
 }, true);
 
-// Окно потеряло фокус с зажатым пробелом - keyup сюда уже не придёт
+// Окно потеряло фокус - keyup сюда уже не придёт; микрофон не оставляем висеть
 window.addEventListener('blur', () => {
   clearTimeout(voice.timer);
-  Object.assign(voice, { held: false, timer: null });
-  if (voice.rec) voice.rec.stop();
+  Object.assign(voice, { armed: false, timer: null });
+  if (voice.rec) stopVoice();
 });
 document.addEventListener('visibilitychange', scheduleRead);
 let searchTimer = null;
