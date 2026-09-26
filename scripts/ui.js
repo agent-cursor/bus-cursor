@@ -51,9 +51,10 @@ const POLL_MS = 1000;
 const LIVE_LINES = 30; // сколько последних строк живого хода агента едет на страницу
 const HEARTBEAT_MS = 25000; // комментарий в SSE-поток: без него прокси и браузер считают соединение мёртвым
 const IDLE_EXIT_MS = 15 * 60 * 1000;
-// Окно (--app) закрыли - гаснем почти сразу; 10 с хватает на F5 и переподключение SSE. До первого подключения - обычные 15 мин:
-// холодный старт браузера бывает долгим
-const APP_IDLE_MS = Number(process.env.BUS_APP_IDLE_MS) || 10 * 1000;
+// Окно (--app) закрыли: pagehide шлёт /api/quit, SSE обрывается - гаснем быстро.
+// Короткий запас на F5 (переподключение SSE); до первого подключения - обычные 15 мин (холодный старт браузера).
+const APP_IDLE_MS = Number(process.env.BUS_APP_IDLE_MS) || 2000;
+const APP_QUIT_MS = Number(process.env.BUS_APP_QUIT_MS) || 400; // после /api/quit и обрыва SSE - почти сразу
 const ICON_SVG = path.join(__dirname, '..', 'assets', 'bus.svg');
 const ICON_MARK = path.join(__dirname, '..', 'assets', 'bus-core.svg');
 const BODY_LIMIT = 16 * 1024;
@@ -106,6 +107,7 @@ let pollTimer = null;
 let idleTimer = null;
 let appMode = false; // запущен ярлыком или --app: живёт, пока открыто окно
 let appSeen = false; // окно уже подключалось - с этого момента простой короткий
+let quitRequested = false; // страница окна (--app) закрывается: после обрыва SSE выходим быстрее
 let cwd = ''; // рабочий каталог UI: каталог запуска или выбранный в шапке (changeDir)
 let chosen = false; // каталог выбрал пользователь - единственный проект шины вместо него не подхватываем
 let summarizing = false;
@@ -860,6 +862,35 @@ function switchRunning(port, dir) {
   });
 }
 
+/** Живой UI на порту - наш: токен в его файле. Просим выйти (закроют окно или повторный ярлык, пока процесс ещё гаснет). → true, если принял. */
+function quitRunning(port) {
+  const saved = readJson(serverFile(port), null);
+  if (!saved || typeof saved.token !== 'string') return Promise.resolve(false);
+  const payload = '{}';
+  return new Promise((resolve) => {
+    const req = http.request({ host: '127.0.0.1', port, path: '/api/quit', method: 'POST', timeout: 2000, headers: { 'content-type': 'application/json', 'x-bus-token': saved.token, 'content-length': Buffer.byteLength(payload) } }, (res) => {
+      res.resume();
+      res.on('end', () => resolve(res.statusCode === 200));
+    });
+    req.on('error', () => resolve(false));
+    req.on('timeout', () => req.destroy());
+    req.end(payload);
+  });
+}
+
+/** Ждём, пока порт освободится после /api/quit. → true, если свободен. */
+function waitPortFree(port, ms = 4000) {
+  const started = Date.now();
+  return new Promise((resolve) => {
+    const tick = async () => {
+      if (!(await ping(port))) return resolve(true);
+      if (Date.now() - started >= ms) return resolve(false);
+      setTimeout(tick, 100);
+    };
+    tick();
+  });
+}
+
 // ---------- SSE ----------
 
 function broadcast(event, data) {
@@ -885,7 +916,13 @@ function updateTimers() {
     pollTimer = null;
   }
   clearTimeout(idleTimer);
-  if (!clients.size) idleTimer = setTimeout(() => process.exit(0), appMode && appSeen ? APP_IDLE_MS : IDLE_EXIT_MS);
+  if (!clients.size) {
+    const ms = appMode && appSeen
+      ? (quitRequested ? APP_QUIT_MS : APP_IDLE_MS)
+      : IDLE_EXIT_MS;
+    idleTimer = setTimeout(() => process.exit(0), ms);
+  }
+  // quitRequested сбрасывает только новый subscribe - иначе pagehide /api/quit при живом SSE сам себя отменял
 }
 
 function subscribe(res) {
@@ -894,6 +931,7 @@ function subscribe(res) {
   const heartbeat = setInterval(() => res.write(': ping\n\n'), HEARTBEAT_MS);
   clients.add(res);
   appSeen = true;
+  quitRequested = false;
   updateTimers();
   // 'close' ответа, а не запроса: у запроса он срабатывает по концу чтения, а не по разрыву соединения
   res.on('close', () => {
@@ -1942,7 +1980,7 @@ async function handle(req, res, port) {
     if (url.pathname === '/cron.js') return reply(res, 200, pageFile(CRON), 'text/javascript; charset=utf-8');
     if (url.pathname === '/api/schedule') return reply(res, 200, scheduleState());
     if (url.pathname === '/api/settings') return reply(res, 200, settingsState());
-    if (url.pathname === '/api/ping') return reply(res, 200, { app: APP, cwd, root: projectRootOf(cwd) });
+    if (url.pathname === '/api/ping') return reply(res, 200, { app: APP, cwd, root: projectRootOf(cwd), clients: clients.size, appMode });
     if (url.pathname === '/api/dirs') return reply(res, 200, dirsState());
     // Листинг диска - тот же токен, что у вложений: чужой вкладке файловую систему не показываем
     if (url.pathname === '/api/dirs/list') return url.searchParams.get('k') === token ? reply(res, 200, listDirs(url.searchParams.get('path') || '')) : reply(res, 403, { error: tr('Нет токена страницы. Обнови вкладку.') });
@@ -2008,6 +2046,12 @@ async function handle(req, res, port) {
       restartCheck();
       restarting = true;
       res.once('finish', relaunch);
+      return reply(res, 200, { ok: true });
+    }
+    if (url.pathname === '/api/quit') {
+      // Окно --app закрывают крестиком (pagehide) или повторный ярлык застал процесс без клиентов
+      quitRequested = true;
+      updateTimers();
       return reply(res, 200, { ok: true });
     }
     if (url.pathname === '/api/settings') return reply(res, 200, saveSettings(body));
@@ -2142,6 +2186,14 @@ async function start(args = []) {
       const other = await ping(port);
       // Только свой UI (тот же APP): переключить каталог или открыть. Claude Bus (bus-ui) и любой другой процесс - чужие, берём следующий порт
       if (other && other.app === APP) {
+        // Окно закрыли, а процесс ещё гаснет (простой /api/quit): освободим порт и поднимемся сами - иначе ярлык цепляется к старому коду
+        if (appMode && open && Number(other.clients) === 0) {
+          await quitRunning(port);
+          if (await waitPortFree(port)) {
+            port -= 1; // цикл for сделает port++ и снова попробует этот же
+            continue;
+          }
+        }
         const elsewhere = launchRoot && !(other.root && samePath(other.root, launchRoot));
         const switched = elsewhere && (await switchRunning(port, launch));
         if (switched || !elsewhere || samePath(other.cwd, launch)) {
@@ -2154,7 +2206,7 @@ async function start(args = []) {
     }
     const url = `http://127.0.0.1:${port}`;
     rememberServer(port);
-    console.log(`UI: ${url} - каталог ${cwd}. Остановить: Ctrl+C; ${appMode ? `закроешь окно - погаснет через ${APP_IDLE_MS / 1000} с` : `без открытой вкладки сам погаснет через ${IDLE_EXIT_MS / 60000} мин`}.`);
+    console.log(`UI: ${url} - каталог ${cwd}. Остановить: Ctrl+C; ${appMode ? `закроешь окно - погаснет сразу` : `без открытой вкладки сам погаснет через ${IDLE_EXIT_MS / 60000} мин`}.`);
     updateTimers();
     rateLimits.refresh().catch(() => {});
     cursorModels.refresh().catch(() => {});

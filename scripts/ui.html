@@ -7201,6 +7201,17 @@ if (new URLSearchParams(location.search).has('app')) {
     setInterval(saveWindow, 2000); // о перемещении окна событий нет - сверяем раз в 2 с, изменение размера ловит тот же опрос
   };
   restoreWindow();
+  // Крестик окна --app: просим сервер выйти. F5 тоже шлёт это - запас APP_QUIT_MS / переподключение SSE отменяет выход.
+  const quitServer = () => {
+    try {
+      fetch('/api/quit', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Bus-Token': TOKEN, ...langHeader() }, body: '{}', keepalive: true }).catch(() => {});
+    } catch {
+      // закрытие окна - сеть уже могла оборваться
+    }
+  };
+  window.addEventListener('pagehide', (e) => {
+    if (!e.persisted) quitServer();
+  });
 }
 
 connect();
