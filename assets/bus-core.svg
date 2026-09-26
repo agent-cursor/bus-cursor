@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2=".6" y2="1">
+      <stop offset="0" stop-color="#26313e"/>
+      <stop offset="1" stop-color="#0d131a"/>
+    </linearGradient>
+    <radialGradient id="warm" cx=".3" cy=".5" r=".45">
+      <stop offset="0" stop-color="#e6955c" stop-opacity=".22"/>
+      <stop offset="1" stop-color="#e6955c" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="cool" cx=".9" cy=".95" r=".6">
+      <stop offset="0" stop-color="#7b5fd6" stop-opacity=".30"/>
+      <stop offset="1" stop-color="#7b5fd6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rail" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f5b27e" stop-opacity="0"/>
+      <stop offset=".16" stop-color="#f7bb8a"/>
+      <stop offset=".62" stop-color="#e08a4c"/>
+      <stop offset="1" stop-color="#c8702f" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".14"/>
+      <stop offset=".4" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="8"/>
+    </filter>
+    <clipPath id="clip"><rect x="8" y="8" width="240" height="240" rx="56"/></clipPath>
+    <!-- узел: ромб со скруглёнными углами, центр в 0,0 -->
+    <rect id="node" x="-17" y="-17" width="34" height="34" rx="7" transform="rotate(45)"/>
+  </defs>
+
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#tile)"/>
+  <g clip-path="url(#clip)">
+    <rect width="256" height="256" fill="url(#warm)"/>
+    <rect width="256" height="256" fill="url(#cool)"/>
+  </g>
+
+  <!-- отводы: от рейки вправо, колено вниз к узлу — как у сообщений в ленте -->
+  <g fill="none" stroke="#fff" stroke-opacity=".32" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M84 52 H110 Q124 52 124 66 V70 H148"/>
+    <path d="M84 110 H126 Q140 110 140 124 V128 H164"/>
+    <path d="M84 168 H102 Q116 168 116 182 V186 H140"/>
+  </g>
+
+  <!-- рейка: свечение и нить -->
+  <rect x="64" y="28" width="28" height="200" rx="14" fill="url(#rail)" opacity=".6" filter="url(#glow)"/>
+  <rect x="72" y="28" width="12" height="200" rx="6" fill="url(#rail)"/>
+
+  <!-- узлы цвета агентов: залит — ответ пользователю, контур — обычное сообщение -->
+  <g filter="url(#glow)" opacity=".75">
+    <use href="#node" x="166" y="70" fill="#eda36a"/>
+    <use href="#node" x="182" y="128" fill="#ac95f0"/>
+    <use href="#node" x="158" y="186" fill="#6bc98f"/>
+  </g>
+  <use href="#node" x="166" y="70" fill="#eda36a"/>
+  <use href="#node" x="182" y="128" fill="#15101f" fill-opacity=".35" stroke="#b9a5f5" stroke-width="7"/>
+  <use href="#node" x="158" y="186" fill="#6bc98f"/>
+
+  <!-- стекло: блик сверху и светлый край -->
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#gloss)"/>
+  <rect x="9" y="9" width="238" height="238" rx="55" fill="none" stroke="#fff" stroke-opacity=".13" stroke-width="2"/>
+  <!-- cursor-badge ~25% bottom-right -->
+  <image id="cursor-badge" x="178" y="178" width="64" height="64" href="data:image/png;base64,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" preserveAspectRatio="xMidYMid meet"/>
+</svg>

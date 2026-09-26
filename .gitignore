@@ -1,0 +1,7 @@
+node_modules/
+*.log
+.DS_Store
+app-window.json
+app-shortcut.json
+*.backup/
+.cursor/bus-cursor/
