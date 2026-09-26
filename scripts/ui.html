@@ -2033,15 +2033,14 @@
   <p class="sched-warn" id="agentWarn" hidden></p>
   <form id="agentForm">
     <label id="agentNameLabel"><span class="label">Имя<small>латиница, цифры, дефис</small></span><input id="agentName" type="text" maxlength="31" pattern="[a-z0-9][a-z0-9\-]{0,30}" required autocomplete="off" spellcheck="false"></label>
-    <label id="agentRuntimeLabel"><span class="label">Движок<small>чем Bus Cursor поднимает агента в фоне</small></span><select id="agentRuntime"><option value="cursor">Cursor</option><option value="claude">Claude Code</option></select></label>
-    <label id="agentCursorModelLabel" hidden><span class="label">Модель Cursor<small>пусто - по умолчанию Cursor</small></span><input id="agentCursorModel" type="text" maxlength="60" autocomplete="off" spellcheck="false" placeholder="gpt-5, sonnet-4.5…"></label>
-    <label id="agentModelLabel"><span class="label">Модель</span><select id="agentModel"></select></label>
+    <label id="agentCursorModelLabel"><span class="label">Модель<small>из доступных в Cursor; пусто - Auto</small></span><select id="agentCursorModel"></select></label>
+    <label id="agentModelLabel" hidden><span class="label">Модель</span><select id="agentModel"></select></label>
     <label class="wide" id="agentAboutLabel"><span class="label">Описание<small>когда этого агента поднимать; пусто - первая строка роли</small></span><input id="agentAbout" type="text" autocomplete="off"></label>
-    <label id="agentEffortLabel"><span class="label">Effort<small>сколько модель думает</small></span><select id="agentEffort"></select></label>
-    <p class="role-ai-note wide" id="agentCursorNote" hidden>Cursor-агента Bus Cursor поднимает через Cursor CLI (agent -p): роль и входящие уходят ему в промпт. Вброса посреди хода (btw) нет, расход - оценка, запреты «Доступа» - правилом в промпте, а не жёстко.</p>
+    <label id="agentEffortLabel" hidden><span class="label">Effort<small>сколько модель думает</small></span><select id="agentEffort"></select></label>
+    <p class="role-ai-note wide" id="agentCursorNote">Cursor-агента Bus Cursor поднимает через Cursor CLI (agent -p): роль и входящие уходят ему в промпт. Вброса посреди хода (btw) нет, расход - оценка, запреты «Доступа» - правилом в промпте, а не жёстко.</p>
     <p class="role-ai-note wide" id="agentBossNote" hidden>Модель, effort и fast - для сессий Claude Code. В чате Cursor модель выбирается в самом Cursor, промпт оркестратора приходит хуком.</p>
-    <label class="check" id="agentFastLabel"><input type="checkbox" id="agentFast"><span>fast mode<small id="agentFastRole">только Opus; при фоновом подъёме Bus Cursor</small><small id="agentFastBoss" hidden>только Opus; со следующей сессии</small></span></label>
-    <label class="check wide" id="agentRulesLabel"><input type="checkbox" id="agentRules"><span>глобальные правила<small>~/.claude/CLAUDE.md и rules/ при фоновом подъёме; +≈3.3к токенов</small></span></label>
+    <label class="check" id="agentFastLabel" hidden><input type="checkbox" id="agentFast"><span>fast mode<small id="agentFastRole">только Opus; при фоновом подъёме Bus Cursor</small><small id="agentFastBoss" hidden>только Opus; со следующей сессии</small></span></label>
+    <label class="check wide" id="agentRulesLabel" hidden><input type="checkbox" id="agentRules"><span>глобальные правила<small>~/.claude/CLAUDE.md и rules/ при фоновом подъёме; +≈3.3к токенов</small></span></label>
 
     <fieldset class="role-ai" id="agentAccess">
       <legend class="label">Доступ</legend>
@@ -2211,7 +2210,7 @@ function icon(name) {
   return svg;
 }
 
-const state = { agents: [], here: {}, types: [], maxFiles: 10, maxFileBytes: 30 * 1024 * 1024, messages: new Map(), summaries: new Map(), dialogs: new Map(), closed: {}, hues: new Map(), schedule: null, access: { servers: [], weights: null }, live: {}, liveOpen: new Set() };
+const state = { agents: [], here: {}, types: [], maxFiles: 10, maxFileBytes: 30 * 1024 * 1024, messages: new Map(), summaries: new Map(), dialogs: new Map(), closed: {}, hues: new Map(), schedule: null, access: { servers: [], weights: null }, cursorModels: [], live: {}, liveOpen: new Set() };
 let picked = []; // загруженные, но ещё не отправленные вложения: { id, name, size }
 let showCovered = false; // в режиме пары: раскрыты ли сообщения, которые уже ушли в сводку
 const filters = { agents: new Set(), types: new Set(), q: '', dialog: null }; // dialog - открытая вкладка { pair, d }, ставит renderDialogs
@@ -3241,7 +3240,7 @@ async function load() {
     if (!$('text').value.trim() && !picked.length) return location.reload();
     say(tr('Bus Cursor обновился, а эта вкладка - старая: отправка из неё не пройдёт. Скопируй текст и обнови страницу (F5).'), true);
   }
-  Object.assign(state, { access: data.access || state.access, types: data.types, maxFiles: data.maxFiles || state.maxFiles, maxFileBytes: data.maxFileBytes || state.maxFileBytes });
+  Object.assign(state, { access: data.access || state.access, types: data.types, maxFiles: data.maxFiles || state.maxFiles, maxFileBytes: data.maxFileBytes || state.maxFileBytes, cursorModels: data.cursorModels || state.cursorModels || [] });
   L.setThresholds({ showLoadFrom: data.showLoadFrom, heavyTokens: data.heavyTokens }); // настройки проекта - пороги веса переписки, дефолт остаётся, пока не пришло число
   renderTypes();
   state.live = data.live || {};
@@ -3252,6 +3251,8 @@ async function load() {
   if (data.error) say(data.error, true);
   if (data.update) applyUpdate(data.update);
   renderLimits(data.rateLimits);
+  // Модели подтянулись с API после первого ответа - обновим открытую форму агента
+  if ($('agentPanel') && !$('agentPanel').hidden && !agentPanel.orchestrator) fillCursorModels($('agentCursorModel').value);
 }
 
 let feedLoaded = false; // в конец ленту ставит только первая загрузка: реконнект SSE и reset после удаления место чтения не трогают
@@ -3414,8 +3415,10 @@ function fillOrchestratorMode(role) {
   const boss = Boolean(role && role.orchestrator);
   agentPanel.orchestrator = boss;
   agentPanel.commonModel = boss ? role.common.model : '';
-  for (const id of ['agentNameLabel', 'agentAboutLabel', 'agentRulesLabel', 'agentAccess', 'agentBodyRole', 'agentFastRole', 'agentRuntimeLabel']) $(id).hidden = boss;
-  for (const id of ['agentBodyBoss', 'agentFastBoss', 'agentBossNote']) $(id).hidden = !boss;
+  for (const id of ['agentNameLabel', 'agentAboutLabel', 'agentAccess', 'agentBodyRole', 'agentCursorModelLabel', 'agentCursorNote']) $(id).hidden = boss;
+  for (const id of ['agentBodyBoss', 'agentBossNote', 'agentModelLabel', 'agentEffortLabel', 'agentFastLabel', 'agentFastBoss']) $(id).hidden = !boss;
+  $('agentFastRole').hidden = boss;
+  $('agentRulesLabel').hidden = true; // глобальные правила Claude - только у Claude Code
   $('agentBody').required = !boss; // пустой промпт проекта - законно: остаётся общий
   $('agentCommonWrap').hidden = !boss || !role.common.prompt;
   $('agentCommonWrap').open = false;
@@ -3425,21 +3428,31 @@ function fillOrchestratorMode(role) {
 /** Первая строка списка у оркестратора - «как у всех» с общим значением; у агента - свой список как есть. */
 const inheritOption = (list, common, none) => [['', common ? tr('как у всех: {value}', { value: common }) : tr(none)], ...list.slice(1)];
 
-/**
- * Поля движка: у Cursor-агента модель Claude, effort, fast и глобальные правила не при деле - прячем, показываем модель Cursor и что
- * у него иначе. «Доступ» остаётся: запреты уйдут ему правилом в промпт. У оркестратора движка нет - его чат сам Claude Code или Cursor.
- */
-function renderRuntime() {
-  const cursor = !agentPanel.orchestrator && $('agentRuntime').value === 'cursor';
-  for (const id of ['agentModelLabel', 'agentEffortLabel', 'agentFastLabel']) $(id).hidden = cursor;
-  $('agentRulesLabel').hidden = cursor || agentPanel.orchestrator;
-  for (const id of ['agentCursorModelLabel', 'agentCursorNote']) $(id).hidden = !cursor;
+/** Список моделей Cursor из /api/state или /api/cursor-models; выбранная, которой нет в списке, дописывается. */
+function fillCursorModels(selected) {
+  const cur = typeof selected === 'string' ? selected.trim() : '';
+  const fromApi = Array.isArray(state.cursorModels) ? state.cursorModels : [];
+  const list = [['', tr('Auto - по умолчанию Cursor')]];
+  for (const m of fromApi) {
+    if (!m || typeof m.id !== 'string' || m.id === 'default') continue;
+    list.push([m.id, m.label && m.label !== m.id ? `${m.label} (${m.id})` : m.id]);
+  }
+  if (cur && !list.some(([v]) => v === cur)) list.push([cur, cur]);
+  setOptions($('agentCursorModel'), list.map(([value, label]) => el('option', { value }, label)));
+  $('agentCursorModel').value = list.some(([v]) => v === cur) ? cur : '';
 }
 
-$('agentRuntime').addEventListener('change', () => {
-  renderRuntime();
-  renderAccess();
-});
+/** Если в state ещё нет моделей (старый сервер / первая загрузка) - тянем /api/cursor-models. */
+async function ensureCursorModels() {
+  if (Array.isArray(state.cursorModels) && state.cursorModels.length > 1) return state.cursorModels;
+  try {
+    const data = await getJson('/api/cursor-models');
+    if (Array.isArray(data.models) && data.models.length) state.cursorModels = data.models;
+  } catch {
+    // офлайн - останется Auto
+  }
+  return state.cursorModels || [];
+}
 
 function fillAgentForm(role) {
   const fresh = !role;
@@ -3460,10 +3473,8 @@ function fillAgentForm(role) {
   setOptions($('agentEffort'), efforts.map(([value, label]) => el('option', { value }, tr(label))));
   $('agentEffort').value = effort;
   $('agentFast').checked = !fresh && Boolean(role.fast);
-  $('agentRules').checked = !fresh && Boolean(role.rules);
-  $('agentRuntime').value = (!fresh && role.runtime === 'claude') ? 'claude' : 'cursor';
-  $('agentCursorModel').value = fresh || boss ? '' : role.cursorModel || '';
-  renderRuntime();
+  $('agentRules').checked = false;
+  fillCursorModels(fresh || boss ? '' : role.cursorModel || '');
   $('agentBody').value = fresh ? '' : role.body;
   const manual = !fresh && Boolean(role.toolsLine);
   const servers = fresh ? state.access.servers : role.servers || [];
@@ -3511,7 +3522,7 @@ function renderAccess() {
   $('accessManual').hidden = !a.manual || a.convert;
   for (const id of ['accessHead', 'accessGroups', 'accessServers']) $(id).hidden = hidden;
   // Замер токенов - про подъём Claude Code; у Cursor-агента цифр нет, галочки - только правило в промпт
-  const cursor = !agentPanel.orchestrator && $('agentRuntime').value === 'cursor';
+  const cursor = !agentPanel.orchestrator;
   const weights = cursor ? null : state.access.weights;
   const weight = L.accessWeight(weights, a.off);
   for (const box of $('accessGroups').querySelectorAll('input[data-access]')) {
@@ -3608,6 +3619,7 @@ async function openAgentPanel(agent) {
   agentPanel.open = true;
   agentPanel.agent = agent;
   agentPanel.opener = document.activeElement;
+  if (!role || !role.orchestrator) await ensureCursorModels();
   fillAgentForm(role);
   $('agentBackdrop').hidden = false;
   $('agentPanel').hidden = false;
@@ -3669,7 +3681,7 @@ $('agentForm').addEventListener('submit', async (e) => {
   const boss = agentPanel.orchestrator;
   const fields = boss
     ? { model: $('agentModel').value, effort: $('agentEffort').value, fast: $('agentFast').checked, body: $('agentBody').value }
-    : { description: $('agentAbout').value, model: $('agentModel').value, effort: $('agentEffort').value, fast: $('agentFast').checked, rules: $('agentRules').checked, body: $('agentBody').value, runtime: $('agentRuntime').value, cursorModel: $('agentCursorModel').value.trim() };
+    : { description: $('agentAbout').value, model: '', effort: '', fast: false, rules: false, body: $('agentBody').value, runtime: 'cursor', cursorModel: $('agentCursorModel').value.trim() };
   // Роль с рукописной tools, которую на галочки не переводили, доступ не шлёт - сервер строку не тронет. У оркестратора доступа в форме нет
   const access = agentPanel.access;
   if (!boss && (!access.manual || access.convert)) Object.assign(fields, { denied: L.accessDenied(access.off, access.serversOff) }, access.convert ? { convertTools: true } : {});

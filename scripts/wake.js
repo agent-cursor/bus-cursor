@@ -718,14 +718,14 @@ function runAgent({ runtime = 'claude', ...options }) {
 }
 
 /**
- * Движок безымянного запуска (задача расписания без адресата, служебные задачи UI) по настройке: '' - claude, если он есть
- * (или подменён тестами), иначе cursor, если есть он; нет ни того, ни другого - claude, его ошибка и скажет, чего не хватает.
+ * Движок безымянного запуска (задача расписания без адресата, служебные задачи UI) по настройке: '' - cursor, если CLI есть,
+ * иначе claude; явный claude/cursor из настройки - как есть. BUS_CLAUDE_CMD в тестах принудительно claude.
  */
 function pickRuntime(value) {
   if (RUNTIMES.includes(value)) return value;
   if (process.env.BUS_CLAUDE_CMD) return 'claude';
   const cursor = require('./cursor.js');
-  return !cursor.installed('claude') && cursor.available() ? 'cursor' : 'claude';
+  return cursor.available() ? 'cursor' : 'claude';
 }
 
 /** Текст роли субагента для Cursor: тело определения (у обёртки - глобальной роли) и блок «Bus Cursor». Агента не видно - пусто. */

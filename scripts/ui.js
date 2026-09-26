@@ -32,6 +32,7 @@ const L = require('./ui-logic.js'); // поиск файлов для «@» - т
 const update = require('./update.js');
 const app = require('./app.js'); // окно --app и ярлык на рабочем столе
 const rateLimits = require('./lib/rate-limits.js'); // лимиты Cursor для шапки: кэш + Dashboard API
+const cursorModels = require('./lib/cursor-models.js'); // модели Cursor для формы агента
 
 // Язык ответа - язык вкладки, приславшей запрос (заголовок X-Bus-Lang): у двух вкладок он разный, поэтому не глобальная переменная.
 // Вне запроса (опрос, старт, консоль) языка нет - tr отдаёт русский. Тексты bus.js, scheduler.js и wake.js не переводятся:
@@ -1639,7 +1640,7 @@ function agentRole(key) {
   const servers = mcpServers(agent.kind === 'local' ? agent.root : snapshot.here.root);
   const role = bus.readRole(file);
   const box = agent.registered ? boxOf(agent) : null;
-  return { servers, key: agent.key, kind: agent.kind, wraps: Boolean(agent.wraps), registered: agent.registered, deletable: agent.deletable, where: file, warning: shared ? tr(GLOBAL_NOTE) : '', fast: Boolean(box) && wake.isFast(box), rules: Boolean(box) && wake.hasRules(box), runtime: box ? wake.runtimeOf(box) : 'claude', cursorModel: box ? wake.cursorModelOf(box) : '', ...role, proposal: box ? proposalOf(box, role) : null };
+  return { servers, key: agent.key, kind: agent.kind, wraps: Boolean(agent.wraps), registered: agent.registered, deletable: agent.deletable, where: file, warning: shared ? tr(GLOBAL_NOTE) : '', fast: Boolean(box) && wake.isFast(box), rules: Boolean(box) && wake.hasRules(box), runtime: box ? wake.runtimeOf(box) : 'cursor', cursorModel: box ? wake.cursorModelOf(box) : '', ...role, proposal: box ? proposalOf(box, role) : null };
 }
 
 /** Черновик самоправки для редактора. stale - роль на диске правили после того, как агент её разбирал: diff покажет и эти правки как откат. */
@@ -1659,7 +1660,7 @@ function agentAction(action, body) {
   const snapshot = collectAgents();
   if (action === 'create') {
     const fast = checkFast(body.fast, body.model);
-    const engine = checkRuntime(body.runtime, body.cursorModel);
+    const engine = checkRuntime('cursor', body.cursorModel); // Bus Cursor - только Cursor
     if (!snapshot.here.root) attachHere(); // каталог не в шине - новый агент подключает его, как первое сообщение
     const root = snapshot.here.root || collectAgents().here.root;
     const name = String(body.name || '');
@@ -1677,10 +1678,9 @@ function agentAction(action, body) {
     const { agent, file } = roleOf(body.key, snapshot);
     const fast = checkFast(body.fast, body.model);
     const rules = checkRules(body.rules);
-    const engine = checkRuntime(body.runtime, body.cursorModel);
+    const engine = checkRuntime('cursor', body.cursorModel); // Bus Cursor - только Cursor
     // Флаг лежит в ящике, а ящик появляется с регистрацией: у определения «не в шине» его некуда положить и некому прочесть - фоном такого не будят
     if (fast && !agent.registered) throw new bus.BusError(tr('Fast mode шина включает при фоновом подъёме, а «{name}» в шину не заведён. Напиши ему первое сообщение - заведётся - и включи.', { name: agent.name }));
-    if (engine.runtime === 'cursor' && !agent.registered) throw new bus.BusError(tr('Движок шина выбирает при фоновом подъёме, а «{name}» в шину не заведён. Напиши ему первое сообщение - заведётся - и переключи.', { name: agent.name }));
     if (body.convertTools !== undefined && typeof body.convertTools !== 'boolean') throw new bus.BusError(tr('convertTools - true или false.'));
     const saved = bus.updateAgent({ file, description: body.description, model: body.model, effort: body.effort, body: body.body, denied: body.denied, convertTools: body.convertTools === true });
     if (agent.wraps) bus.syncWrapper(agent.where, { model: String(body.model || ''), effort: String(body.effort || ''), access: body.denied ? saved : null });
@@ -1937,10 +1937,18 @@ async function handle(req, res, port) {
     if (url.pathname === '/api/file') return url.searchParams.get('k') === token ? serveFile(res, url) : reply(res, 403, { error: tr('Нет токена страницы. Обнови вкладку.') });
     // Текст роли - не для чужой вкладки: тот же токен, что у вложений
     if (url.pathname === '/api/agent') return url.searchParams.get('k') === token ? reply(res, 200, agentRole(url.searchParams.get('key'))) : reply(res, 403, { error: tr('Нет токена страницы. Обнови вкладку.') });
+    if (url.pathname === '/api/cursor-models') {
+      let models = cursorModels.readModels();
+      if (!models.length) models = await cursorModels.refresh().catch(() => []);
+      else cursorModels.refresh().catch(() => {}); // фоном обновить кэш
+      return reply(res, 200, { models });
+    }
     if (url.pathname === '/api/state') {
       // Открытие страницы - всегда с диска: вырезанную из журнала строку по размеру файла не поймать
       const snapshot = tick(true) || { agents: [], here: { cwd, root: null, project: null }, error: tr('Реестр шины сейчас не читается.') };
-      return reply(res, 200, { ...snapshot, page: pageVersion(), types: bus.TYPES, access: accessPayload(snapshot.here.root), ...limitsPayload(snapshot.here.root), ...statePayload(), live: liveState(), update: updatePayload(), rateLimits: rateLimits.readSnapshot() });
+      let models = cursorModels.readModels();
+      if (!models.length) models = await cursorModels.refresh().catch(() => []);
+      return reply(res, 200, { ...snapshot, page: pageVersion(), types: bus.TYPES, access: accessPayload(snapshot.here.root), ...limitsPayload(snapshot.here.root), ...statePayload(), live: liveState(), update: updatePayload(), rateLimits: rateLimits.readSnapshot(), cursorModels: models });
     }
     return reply(res, 404, { error: tr('Нет такой страницы.') });
   }
@@ -2123,6 +2131,7 @@ async function start(args = []) {
     console.log(`UI: ${url} - каталог ${cwd}. Остановить: Ctrl+C; ${appMode ? `закроешь окно - погаснет через ${APP_IDLE_MS / 1000} с` : `без открытой вкладки сам погаснет через ${IDLE_EXIT_MS / 60000} мин`}.`);
     updateTimers();
     rateLimits.refresh().catch(() => {});
+    cursorModels.refresh().catch(() => {});
     if (open) show(url);
     setImmediate(firstRun);
     checkUpdate();
