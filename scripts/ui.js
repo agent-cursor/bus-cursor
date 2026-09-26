@@ -110,6 +110,10 @@ let chosen = false; // каталог выбрал пользователь - е
 let summarizing = false;
 let rewriting = false;
 let updateState = { state: 'off' }; // проверка обновления идёт в фоне после старта; до её конца кнопки нет
+{
+  const current = update.release();
+  if (current) updateState.current = current.version;
+}
 let updating = false;
 let restarting = false; // перезапуск пошёл: порт закрывается, таймеры простоя больше не заводим
 let httpServer = null; // слушающий сервер - его закрывает перезапуск
@@ -1775,17 +1779,22 @@ async function rewriteRole({ key, name, instruction, description, body }) {
 
 /** На страницу - без тега и причины сбоя: причина одной строкой уходит в консоль сервера. */
 const updatePayload = () => {
-  const { state, current, latest, notes, url } = updateState;
-  return { state, current, latest, notes, url };
+  const { state, current, latest, notes, url, reason } = updateState;
+  return { state, current, latest, notes, url, reason };
 };
 
-function checkUpdate() {
-  if (process.env.BUS_UPDATE_CHECK === '0') return; // тесты UI: публичная копия с release.json иначе полезла бы в сеть
-  update.check().then((result) => {
+async function checkUpdate() {
+  if (process.env.BUS_UPDATE_CHECK === '0') return updatePayload(); // тесты UI: публичная копия с release.json иначе полезла бы в сеть
+  try {
+    const result = await update.check();
     updateState = result;
     if (result.state === 'error') console.error(`обновление: не проверил - ${result.reason}`);
     broadcast('update', updatePayload());
-  }, (e) => console.error(`обновление: ${e.message}`));
+    return updatePayload();
+  } catch (e) {
+    console.error(`обновление: ${e.message}`);
+    return updatePayload();
+  }
 }
 
 async function installUpdate() {
@@ -1992,6 +2001,7 @@ async function handle(req, res, port) {
       return reply(res, 200, { rateLimits: next });
     }
     if (url.pathname === '/api/update') return reply(res, 200, await installUpdate());
+    if (url.pathname === '/api/update/check') return reply(res, 200, await checkUpdate());
     if (url.pathname === '/api/restart') {
       restartCheck();
       restarting = true;

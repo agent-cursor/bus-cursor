@@ -65,13 +65,21 @@ const getJson = async (url, timeoutMs = CHECK_TIMEOUT_MS) => (await get(url, tim
 /** git-хеш файла: так его считает git, и так он лежит в sha дерева. */
 const blobSha = (buf) => crypto.createHash('sha1').update(`blob ${buf.length}\0`).update(buf).digest('hex');
 
+/** → true, если в папке скилла нельзя ставить релизы поверх (нет метки или это git-клон). BUS_UPDATE_TEST=1 - временно разрешить клон. */
+const updateBlocked = (dir) => {
+  const current = release(dir);
+  if (!current) return true;
+  return fs.existsSync(path.join(dir, '.git')) && process.env.BUS_UPDATE_TEST !== '1';
+};
+
 /**
  * → { state: 'off' } - метки нет или папка под git; 'none' - стоит последняя; 'available' - есть новее (current, latest, notes, url, tag);
  * 'error' - не проверили (сеть, лимит API, мусор в ответе): кнопки нет, причина - в reason для консоли сервера.
  */
 async function check({ dir = SKILL_DIR } = {}) {
   const current = release(dir);
-  if (!current || fs.existsSync(path.join(dir, '.git'))) return { state: 'off' };
+  if (!current) return { state: 'off' };
+  if (updateBlocked(dir)) return { state: 'off', current: current.version };
   try {
     const latest = await getJson(`${API}/repos/${current.repo}/releases/latest`);
     const version = versionOf(latest && latest.tag_name);
@@ -138,7 +146,7 @@ async function install({ dir = SKILL_DIR, tag, onProgress } = {}) {
     }
   };
   const current = release(dir);
-  if (!current || fs.existsSync(path.join(dir, '.git'))) throw new BusError(tr('Обновление тут выключено: нет release.json или папка скилла - git-клон.'));
+  if (updateBlocked(dir)) throw new BusError(tr('Обновление тут выключено: нет release.json или папка скилла - git-клон.'));
   const version = versionOf(tag);
   if (!SEMVER.test(version)) throw new BusError(tr('Не знаю, до какой версии обновлять: проверка обновлений не прошла.'));
 

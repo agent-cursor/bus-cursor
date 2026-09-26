@@ -100,15 +100,17 @@
   :root[data-theme="dark"] { --field-base: #242f3d; }
   :root.has-video,
   :root[data-bg]:not([data-bg=""]) {
-    --glass-1: color-mix(in srgb, var(--panel) calc(var(--dim) * 88%), transparent);
-    --glass-2: color-mix(in srgb, var(--panel) calc(var(--dim) * 78%), transparent);
-    --glass-3: color-mix(in srgb, var(--panel) calc(var(--dim) * 70%), transparent);
-    --field: color-mix(in srgb, var(--field-base) calc(var(--dim) * 86%), transparent);
-    --sheet: color-mix(in srgb, var(--panel) calc(var(--dim) * 90%), transparent);
-    --raised: color-mix(in srgb, var(--panel) calc(var(--dim) * 92%), transparent);
+    --glass-1: color-mix(in srgb, var(--panel) 88%, transparent);
+    --glass-2: color-mix(in srgb, var(--panel) 78%, transparent);
+    --glass-3: color-mix(in srgb, var(--panel) 70%, transparent);
+    --field: color-mix(in srgb, var(--field-base) 86%, transparent);
+    --sheet: color-mix(in srgb, var(--panel) 90%, transparent);
+    --raised: color-mix(in srgb, var(--panel) 92%, transparent);
     --blur: blur(18px) saturate(140%);
-    --veil: color-mix(in srgb, var(--bg) calc(var(--dim) * 48%), transparent);
     --copper-glow: color-mix(in srgb, var(--copper-hi) 35%, transparent);
+  }
+  :root.has-video {
+    --veil: color-mix(in srgb, var(--bg) calc(var(--dim) * 55%), transparent);
   }
 
   /* ---- цветные CSS-фоны (выбор в ⚙, localStorage bus-bg) ---- */
@@ -448,21 +450,53 @@
   .ghost:disabled { opacity: .55; }
   .iconbtn { width: var(--h); padding: 0; }
   .ghost.update-pulse {
+    position: relative;
+    z-index: 0;
     color: var(--done);
-    background: color-mix(in srgb, var(--done) 14%, var(--glass-1));
-    border-color: color-mix(in srgb, var(--done) 40%, var(--line));
-    animation: update-soft-pulse 2.2s ease-in-out infinite;
+    background: color-mix(in srgb, var(--done) 18%, var(--glass-1));
+    border-color: color-mix(in srgb, var(--done) 50%, var(--line));
+    overflow: visible;
   }
+  .ghost.update-pulse::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -3px;
+    border-radius: inherit;
+    background: color-mix(in srgb, var(--done) 35%, transparent);
+    pointer-events: none;
+    animation: update-glow 1.7s ease-in-out infinite;
+  }
+  .ghost.update-pulse .icon { position: relative; z-index: 1; }
   .ghost.update-pulse:hover:not(:disabled) {
     color: var(--done);
-    background: color-mix(in srgb, var(--done) 22%, var(--glass-1));
+    background: color-mix(in srgb, var(--done) 26%, var(--glass-1));
     border-color: var(--done);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--done) 18%, transparent);
+    transform: none;
   }
-  .ghost.update-pulse:disabled { opacity: .7; cursor: progress; animation: none; }
-  @keyframes update-soft-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--done) 35%, transparent); }
-    50% { box-shadow: 0 0 0 7px transparent; }
+  .ghost.update-pulse:hover:not(:disabled)::before {
+    animation: none;
+    background: color-mix(in srgb, var(--done) 42%, transparent);
+    box-shadow: 0 0 16px -2px color-mix(in srgb, var(--done) 55%, transparent);
+  }
+  .ghost.update-pulse:disabled { opacity: .7; cursor: progress; }
+  .ghost.update-pulse:disabled::before { animation: none; opacity: .4; }
+  @keyframes update-glow {
+    0%, 100% {
+      transform: scale(1);
+      opacity: .55;
+      background: color-mix(in srgb, var(--done) 28%, transparent);
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--done) 40%, transparent);
+    }
+    50% {
+      transform: scale(1.35);
+      opacity: 1;
+      background: color-mix(in srgb, var(--done) 55%, transparent);
+      box-shadow: 0 0 18px 2px color-mix(in srgb, var(--done) 45%, transparent);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ghost.update-pulse::before { animation: none; }
   }
   .update-backdrop {
     position: fixed; inset: 0; z-index: 70;
@@ -540,11 +574,6 @@
   .update-done-text { margin: 0 0 16px; font: 14px/1.45 var(--body); color: var(--ink); }
   .update-done-text.bad { color: var(--danger); }
   #toggleAgents { display: none; }
-  /* Пока связь есть, молчим: индикатор «всё хорочто» - шум. Полоса появляется, только когда лента перестала быть живой */
-  .link { display: none; align-items: center; gap: 8px; padding: 8px var(--gutter); font-size: 14px; background: color-mix(in srgb, var(--danger) 88%, transparent); color: var(--on-danger); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: 0 8px 24px -10px color-mix(in srgb, var(--danger) 70%, transparent); }
-  .link.down { display: flex; animation: from-top .4s var(--ease); }
-  .link i { width: 8px; height: 8px; rotate: 45deg; border-radius: 2px; background: currentColor; flex: none; animation: blink 1.2s ease-in-out infinite; }
-  @keyframes blink { 50% { opacity: .35; } }
 
   /* ---- раскладка ---- */
   .layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); flex: 1 1 0; min-height: 0; position: relative; }
@@ -721,6 +750,7 @@
   #squeeze:disabled { cursor: not-allowed; opacity: .55; }
   #squeeze[data-busy] { opacity: 1; }
   #squeeze[data-busy] .icon:first-child { animation: blink 1s ease-in-out infinite; }
+  @keyframes blink { 50% { opacity: .35; } }
   #squeeze .early { color: var(--copper); }
   /* Итог сжатия и подсказки - строкой под бирками, тоже стеклом */
   .pair .note { max-width: 420px; padding: 8px 12px; border: 1px solid var(--line); border-radius: var(--r); font-size: 14px; line-height: 1.45; color: var(--ink); }
@@ -1463,7 +1493,46 @@
   .app-pick .shortcut-btn .icon { width: 18px; height: 18px; flex: none; }
   .app-pick .shortcut-btn span { line-height: 1.2; }
   .app-pick > .hint { margin: 0; padding: 0; max-width: 42rem; }
+  #settingsForm { flex: 1; min-height: 0; }
   #settingsForm > .hint.settings-scope-hint { margin: 16px 0 8px; padding: 0; grid-column: 1 / -1; }
+  .settings-about {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 16px var(--gutter) 18px;
+    border-top: 1px solid var(--line);
+    flex: none;
+  }
+  .settings-about-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 12px;
+  }
+  .settings-about-ver {
+    font: 600 13px/1.3 var(--mono);
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-soft);
+    flex: 1;
+    min-width: 0;
+  }
+  .settings-about-row .ghost {
+    min-height: var(--h);
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .settings-about-row .ghost .icon { width: 15px; height: 15px; }
+  .settings-about-copy {
+    margin: 0;
+    font: 12px/1.45 var(--body);
+    color: var(--ink-soft);
+  }
+  .settings-about-copy a {
+    color: var(--copper);
+    text-decoration: none;
+    text-underline-offset: 2px;
+  }
+  .settings-about-copy a:hover { text-decoration: underline; }
   .settings-list { display: grid; gap: 0; }
   .settings-group-label { margin: 0; padding: 24px 0 0; }
   .settings-group-label:first-child { padding-top: 0; }
@@ -1710,15 +1779,17 @@
   /* Стекло поверх фона - после Telegram-оверрайда переменных */
   :root.has-video,
   :root[data-bg]:not([data-bg=""]) {
-    --glass-1: color-mix(in srgb, var(--panel) calc(var(--dim) * 88%), transparent);
-    --glass-2: color-mix(in srgb, var(--panel) calc(var(--dim) * 78%), transparent);
-    --glass-3: color-mix(in srgb, var(--panel) calc(var(--dim) * 70%), transparent);
-    --field: color-mix(in srgb, var(--field-base) calc(var(--dim) * 86%), transparent);
-    --sheet: color-mix(in srgb, var(--panel) calc(var(--dim) * 90%), transparent);
-    --raised: color-mix(in srgb, var(--panel) calc(var(--dim) * 92%), transparent);
+    --glass-1: color-mix(in srgb, var(--panel) 88%, transparent);
+    --glass-2: color-mix(in srgb, var(--panel) 78%, transparent);
+    --glass-3: color-mix(in srgb, var(--panel) 70%, transparent);
+    --field: color-mix(in srgb, var(--field-base) 86%, transparent);
+    --sheet: color-mix(in srgb, var(--panel) 90%, transparent);
+    --raised: color-mix(in srgb, var(--panel) 92%, transparent);
     --blur: blur(18px) saturate(140%);
-    --veil: color-mix(in srgb, var(--bg) calc(var(--dim) * 48%), transparent);
     --copper-glow: color-mix(in srgb, var(--copper-hi) 35%, transparent);
+  }
+  :root.has-video {
+    --veil: color-mix(in srgb, var(--bg) calc(var(--dim) * 55%), transparent);
   }
 
   /* ---- контролы: тонкие, без коробок ---- */
@@ -1821,14 +1892,24 @@
 
   .ghost.update-pulse {
     color: var(--done) !important;
-    background: color-mix(in srgb, var(--done) 12%, transparent) !important;
+    background: color-mix(in srgb, var(--done) 16%, transparent) !important;
     border: 0 !important;
-    animation: update-soft-pulse 2.2s ease-in-out infinite !important;
+    animation: none !important;
+    transform: none !important;
+  }
+  .ghost.update-pulse::before {
+    animation: update-glow 1.7s ease-in-out infinite !important;
   }
   .ghost.update-pulse:hover:not(:disabled) {
     filter: none !important;
-    background: color-mix(in srgb, var(--done) 20%, transparent) !important;
+    background: color-mix(in srgb, var(--done) 26%, transparent) !important;
     color: var(--done) !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  .ghost.update-pulse:hover:not(:disabled)::before {
+    animation: none !important;
+    background: color-mix(in srgb, var(--done) 45%, transparent) !important;
   }
   .update-backdrop {
     backdrop-filter: blur(10px) !important;
@@ -1924,14 +2005,6 @@
     border-color: color-mix(in srgb, var(--danger) 40%, var(--line)) !important;
     background: color-mix(in srgb, var(--danger) 6%, var(--panel)) !important;
   }
-  .link {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    box-shadow: none !important;
-    padding: 6px var(--gutter) !important;
-    font-size: 13px !important;
-  }
-  .link i { border-radius: 50% !important; rotate: 0deg !important; width: 6px !important; height: 6px !important; }
 
   /* ---- сайдбар ---- */
   .layout { grid-template-columns: 280px minmax(0, 1fr) !important; grid-template-rows: minmax(0, 1fr) !important; flex: 1 1 0 !important; min-height: 0 !important; }
@@ -2685,7 +2758,6 @@
   <button class="ghost" id="toggleAgents" type="button" aria-expanded="false" aria-controls="agents"><svg class="icon"><use href="#i-users"/></svg>Агенты</button>
   <button class="ghost iconbtn" id="settingsBtn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="settings" aria-label="Настройки проекта" title="Настройки проекта"><svg class="icon"><use href="#i-gear"/></svg></button>
 </header>
-<div class="link" id="link" role="alert"><i></i><span></span></div>
 
 <div class="layout">
   <aside id="agents" aria-label="Агенты"></aside>
@@ -2990,10 +3062,10 @@
       <div class="bg-grid" id="bgColorGrid" role="radiogroup" aria-labelledby="bgColorLabel"></div>
       <p class="bg-section-label" id="bgVideoLabel">Видео</p>
       <div class="bg-grid" id="bgGrid" role="radiogroup" aria-labelledby="bgVideoLabel"></div>
-      <!-- Затемнение - плотность стекла над фоном; без фона (плоский) прячется -->
+      <!-- Затемнение - вуаль только над видео -->
       <div class="bg-dim" id="bgDimWrap" hidden>
         <label class="label" for="bgDim">Затемнение</label>
-        <input type="range" id="bgDim" min="20" max="95" step="5" title="Плотность панелей над фоном: меньше - фон виднее, больше - текст контрастнее">
+        <input type="range" id="bgDim" min="20" max="95" step="5" title="Затемнение видео: меньше - ролик ярче, больше - спокойнее под панелями">
         <output id="bgDimValue" for="bgDim"></output>
         <button class="settings-revert" id="bgDimReset" type="button" hidden></button>
       </div>
@@ -3014,6 +3086,17 @@
       <button class="ghost" id="settingsClose2" type="button">Закрыть</button>
     </div>
   </form>
+  <div class="settings-about">
+    <div class="settings-about-row">
+      <span class="settings-about-ver" id="settingsVersion">Bus Cursor</span>
+      <button type="button" class="ghost" id="settingsCheckUpdate"><svg class="icon"><use href="#i-download"/></svg><span>Проверить обновления</span></button>
+    </div>
+    <p class="settings-about-copy">
+      © <a href="https://github.com/SafonovAG" target="_blank" rel="noopener noreferrer">SafonovAG</a>
+      · <a href="https://t.me/safonov_ag" target="_blank" rel="noopener noreferrer">@safonov_ag</a>
+      · <a href="https://github.com/agent-cursor/bus-cursor" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </p>
+  </div>
 </section>
 
 <div class="update-backdrop" id="updateBackdrop" hidden></div>
@@ -3076,8 +3159,8 @@ function setOptions(select, nodes) {
 }
 // ---------- язык ----------
 
-// По умолчанию английский; выбор живёт в localStorage, как тема. Демон, CLI и тесты в node остаются на русском - это язык только страницы
-try { I.setLang(I.LANGS.includes(localStorage.getItem('bus-lang')) ? localStorage.getItem('bus-lang') : 'en'); } catch { I.setLang('en'); }
+// По умолчанию русский; выбор живёт в localStorage, как тема.
+try { I.setLang(I.LANGS.includes(localStorage.getItem('bus-lang')) ? localStorage.getItem('bus-lang') : 'ru'); } catch { I.setLang('ru'); }
 const langHeader = () => ({ 'X-Bus-Lang': I.lang() }); // сервер отвечает ошибками на языке вкладки
 
 /**
@@ -4464,18 +4547,21 @@ function replaceFeed(data, late = []) {
 }
 
 function connect() {
-  const link = $('link');
   const source = new EventSource('/api/events');
   // Состояние грузим после того, как подписка открылась, и заново - после каждого обрыва. Наоборот (сначала состояние, потом подписка)
   // оставалось окно: сообщение, которое сервер в этот миг разослал другой вкладке, сюда не попадало до перезагрузки.
   // Пришедшее по SSE раньше ответа /api/state не двоится: лента - Map по id
   source.onopen = () => {
-    link.className = 'link';
+    clearLinkToast();
     load().catch((err) => say(tr('Не загрузилось: {why}', { why: err.message }), true));
   };
   source.onerror = () => {
-    link.className = 'link down';
-    link.lastElementChild.textContent = updateView.restarting ? tr('Bus Cursor перезапускается…') : tr('Сервер не отвечает, лента не обновляется. Подними заново: bus.js ui');
+    setLinkToast(
+      updateView.restarting
+        ? tr('Bus Cursor перезапускается…')
+        : tr('Сервер не отвечает, лента не обновляется. Подними заново: bus.js ui'),
+      !updateView.restarting,
+    );
   };
   source.addEventListener('agents', (e) => {
     applyAgents(JSON.parse(e.data));
@@ -4542,14 +4628,7 @@ const updateView = {
   progress: null,
   note: '',
   bad: false,
-  postponed: '',
 };
-
-try {
-  updateView.postponed = sessionStorage.getItem('bus-update-later') || '';
-} catch {
-  updateView.postponed = '';
-}
 
 function applyUpdate(data) {
   data = data || { state: 'off' };
@@ -4653,17 +4732,12 @@ function closeUpdateModal(force = false) {
 }
 
 function postponeUpdate() {
-  const ver = updateView.data.latest || '';
-  updateView.postponed = ver;
-  try { sessionStorage.setItem('bus-update-later', ver); } catch {}
   closeUpdateModal(true);
-  renderUpdate();
 }
 
 function renderUpdate() {
-  const { data, busy, postponed } = updateView;
-  const available = data.state === 'available' && postponed !== data.latest;
-  $('updateBtn').hidden = !available && data.state !== 'installed';
+  const { data, busy } = updateView;
+  const available = data.state === 'available';
   if (data.state === 'installed') {
     $('updateBtn').hidden = false;
     $('updateBtn').classList.remove('update-pulse');
@@ -4679,6 +4753,7 @@ function renderUpdate() {
   }
   $('updateBtn').disabled = busy && !updateView.open;
   if (updateView.open) renderUpdateModal();
+  syncSettingsAbout();
 }
 
 $('updateBtn').addEventListener('click', (e) => {
@@ -4688,8 +4763,8 @@ $('updateBtn').addEventListener('click', (e) => {
 $('updateLater').addEventListener('click', postponeUpdate);
 $('updateCloseDone').addEventListener('click', () => closeUpdateModal(true));
 $('updateBackdrop').addEventListener('click', () => {
-  if (updateView.phase === 'idle') postponeUpdate();
-  else if (updateView.phase === 'done' || updateView.phase === 'error') closeUpdateModal(true);
+  if (updateView.busy) return;
+  closeUpdateModal(true);
 });
 $('updateModal').addEventListener('click', (e) => e.stopPropagation());
 
@@ -4722,8 +4797,6 @@ $('updateDownload').addEventListener('click', async () => {
       note: tr('Обновлено до v{version}. Перезапусти шину - заработает новая версия', { version: updateView.data.latest }),
       bad: false,
     });
-    try { sessionStorage.removeItem('bus-update-later'); } catch {}
-    updateView.postponed = '';
   } catch (err) {
     Object.assign(updateView, {
       phase: 'error',
@@ -5164,12 +5237,14 @@ $('agentReject').addEventListener('click', async () => {
 
 const TOAST_MS = 30 * 1000;
 const toastTimers = new WeakMap();
+let linkToast = null;
 
 function dismissToast(node) {
   if (!node || !node.isConnected) return;
   const t = toastTimers.get(node);
   if (t) clearTimeout(t);
   toastTimers.delete(node);
+  if (node === linkToast) linkToast = null;
   if (node.classList.contains('out')) return;
   node.classList.add('out');
   const done = () => node.remove();
@@ -5178,15 +5253,18 @@ function dismissToast(node) {
 }
 
 function clearToasts() {
-  for (const node of [...$('toasts').children]) dismissToast(node);
+  for (const node of [...$('toasts').children]) {
+    if (node.dataset.sticky) continue;
+    dismissToast(node);
+  }
 }
 
-function pushToast(text, bad = false) {
+function pushToast(text, bad = false, { sticky = false } = {}) {
   const node = el('div', {
-    className: `toast${bad ? ' bad' : ' ok'}`,
+    className: `toast${bad ? ' bad' : sticky ? '' : ' ok'}`,
     role: bad ? 'alert' : 'status',
   },
-    el('span', { className: 'toast-icon', ariaHidden: true }, icon(bad ? 'x' : 'check')),
+    el('span', { className: 'toast-icon', ariaHidden: true }, icon(bad ? 'x' : sticky ? 'bolt' : 'check')),
     el('p', { className: 'toast-body' }, text),
     el('button', {
       type: 'button',
@@ -5196,12 +5274,33 @@ function pushToast(text, bad = false) {
       onclick: () => dismissToast(node),
     }, icon('x')),
   );
+  if (sticky) node.dataset.sticky = '1';
   $('toasts').append(node);
-  toastTimers.set(node, setTimeout(() => dismissToast(node), TOAST_MS));
+  if (!sticky) toastTimers.set(node, setTimeout(() => dismissToast(node), TOAST_MS));
   return node;
 }
 
-/** Общие уведомления скила: сверху по центру. Пустой текст - убрать все тосты. */
+function setLinkToast(text, bad = true) {
+  const msg = String(text || '').trim();
+  if (!msg) return clearLinkToast();
+  if (linkToast && linkToast.isConnected) {
+    linkToast.querySelector('.toast-body').textContent = msg;
+    linkToast.classList.toggle('bad', bad);
+    const ic = linkToast.querySelector('.toast-icon');
+    if (ic) ic.replaceChildren(icon(bad ? 'x' : 'bolt'));
+    linkToast.setAttribute('role', bad ? 'alert' : 'status');
+    return linkToast;
+  }
+  linkToast = pushToast(msg, bad, { sticky: true });
+  return linkToast;
+}
+
+function clearLinkToast() {
+  if (!linkToast) return;
+  dismissToast(linkToast);
+}
+
+/** Общие уведомления скила: сверху по центру. Пустой текст - убрать обычные тосты (связь не трогаем). */
 function say(text, bad = false) {
   const msg = String(text || '').trim();
   if (!msg) return clearToasts();
@@ -5793,7 +5892,6 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && mention.open) return; // список «@» закроет поле само - выделение в ленте не трогаем
   if (e.key === 'Escape' && updateView.open) {
     if (updateView.busy) return;
-    if (updateView.phase === 'idle') return postponeUpdate();
     return closeUpdateModal(true);
   }
   if (e.key === 'Escape' && agentPanel.open) return closeAgentPanel();
@@ -5972,7 +6070,8 @@ function syncBgPicker() {
     input.checked = input.value === bgName || (cssBgId(bgName) && input.value === cssBgKey(cssBgId(bgName)));
   }
   // Затемнение нужно и для видео, и для цветных тем (стекло над фоном)
-  $('bgDimWrap').hidden = bgName === '0';
+  // Затемнение - только для видео (вуаль на ролике)
+  $('bgDimWrap').hidden = bgName === '0' || Boolean(cssBgId(bgName));
 }
 
 /** Затемнение: плотность стекла над фоном в процентах. */
@@ -6643,6 +6742,28 @@ function applySettingsLimits(limits) {
   if (scheduleOpen) getJson('/api/schedule').then((data) => applySchedule(data)).catch(() => {});
 }
 
+function syncSettingsAbout() {
+  const ver = $('settingsVersion');
+  const btn = $('settingsCheckUpdate');
+  if (!ver || !btn) return;
+  const { data, busy } = updateView;
+  const current = data.current || '—';
+  ver.textContent = data.state === 'available' && data.latest
+    ? tr('Bus Cursor v{current} · доступна v{latest}', { current, latest: data.latest })
+    : tr('Bus Cursor v{version}', { version: current });
+  const label = btn.querySelector('span');
+  if (busy) {
+    btn.disabled = true;
+    if (label) label.textContent = tr('Обновляю…');
+  } else if (data.state === 'available') {
+    btn.disabled = false;
+    if (label) label.textContent = tr('Открыть обновление');
+  } else {
+    btn.disabled = false;
+    if (label) label.textContent = tr('Проверить обновления');
+  }
+}
+
 async function openSettings() {
   settingsOpen = true;
   settingsOpener = document.activeElement;
@@ -6651,6 +6772,7 @@ async function openSettings() {
   $('settingsBtn').setAttribute('aria-expanded', 'true');
   settingsSay('');
   syncUiPrefs();
+  syncSettingsAbout();
   renderBgPicker();
   try {
     await ensureCursorModels();
@@ -6680,6 +6802,39 @@ function closeSettings() {
 $('settingsBtn').addEventListener('click', () => (settingsOpen ? closeSettings() : openSettings()));
 $('settingsClose').addEventListener('click', closeSettings);
 $('settingsClose2').addEventListener('click', closeSettings);
+$('settingsCheckUpdate').addEventListener('click', async () => {
+  const btn = $('settingsCheckUpdate');
+  if (btn.disabled) return;
+  if (updateView.data.state === 'available') {
+    closeSettings();
+    openUpdateModal();
+    return;
+  }
+  btn.disabled = true;
+  const label = btn.querySelector('span');
+  if (label) label.textContent = tr('Проверяю…');
+  try {
+    const data = await post('/api/update/check', {});
+    applyUpdate(data);
+    if (data.state === 'available') {
+      say(tr('Доступно обновление v{version}', { version: data.latest }));
+      closeSettings();
+      openUpdateModal();
+    } else if (data.state === 'none') {
+      say(tr('Уже последняя версия: v{version}', { version: data.current || '—' }));
+    } else if (data.state === 'off') {
+      say(tr('Обновления тут выключены: нет release.json или папка скилла - git-клон.'), true);
+    } else if (data.state === 'error') {
+      say(tr('Не обновилось: {why}', { why: data.reason || tr('неизвестная ошибка') }), true);
+    } else {
+      say(tr('Обновлять нечего: новой версии шины нет.'));
+    }
+  } catch (err) {
+    say(tr('Не обновилось: {why}', { why: err.message }), true);
+  } finally {
+    syncSettingsAbout();
+  }
+});
 $('settingsBackdrop').addEventListener('click', closeSettings);
 
 $('settingsForm').addEventListener('submit', async (e) => {
