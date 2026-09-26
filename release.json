@@ -2,8 +2,6 @@
   "version": "1.0.0",
   "repo": "agent-cursor/bus-cursor",
   "files": [
-    ".cursor/rules/no-em-dash.mdc",
-    ".cursor/rules/russian-git.mdc",
     ".gitignore",
     "README.md",
     "SKILL.md",

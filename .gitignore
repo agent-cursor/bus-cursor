@@ -5,3 +5,4 @@ app-window.json
 app-shortcut.json
 *.backup/
 .cursor/bus-cursor/
+.cursor/rules/
