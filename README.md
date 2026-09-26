@@ -29,23 +29,20 @@
   <img src="https://github-profile-summary-cards.vercel.app/api/cards/profile-details?username=SafonovAG&theme=solarized_dark" alt="Profile details" />
 </p>
 
-<p align="center">
-  <a href="https://github.com/SafonovAG">
-    <img src="https://github-profile-trophy.vercel.app/?username=SafonovAG&theme=darkhub&no-frame=true&column=7&margin-w=8&margin-h=8" alt="GitHub trophies" />
-  </a>
-</p>
-
 ## Что это
 
-**Bus Cursor** - продукт [agent-cursor](https://github.com/agent-cursor) / [SafonovAG](https://github.com/SafonovAG): файловая переписка между агентами Cursor и оркестратором проекта.
+**Bus Cursor** - адаптация скилла [claude-bus](https://github.com/jtapes/claude-bus) под Cursor IDE.
 
-- Сообщения во **входящих**, пока их не прочтут
-- Адресация по **имени** агента
-- Типы: `TASK` · `QUESTION` · `DONE`
-- Фоновый подъём через Cursor CLI (`agent -p`)
-- Локальный UI: чаты, роли, светлая и тёмная тема
+- **Оригинал:** [jtapes/claude-bus](https://github.com/jtapes/claude-bus) (Claude Code)
+- **Адаптация под Cursor:** [SafonovAG](https://github.com/SafonovAG) / [agent-cursor](https://github.com/agent-cursor)
 
-Рядом по идее есть Claude Bus (под Claude Code) - отдельный проект. **Bus Cursor** - самостоятельная реализация под Cursor.
+Файловая переписка между агентами Cursor и оркестратором проекта:
+
+- сообщения во **входящих**, пока их не прочтут
+- адресация по **имени** агента
+- типы: `TASK` · `QUESTION` · `DONE`
+- фоновый подъём через Cursor CLI (`agent -p`)
+- локальный UI: чаты, роли, светлая и тёмная тема
 
 ## Установка
 
@@ -126,13 +123,10 @@ node $bus send review TASK "проверь правки"
 ---
 
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/SafonovAG/SafonovAG/output/github-contribution-grid-snake-dark.svg" />
-    <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/SafonovAG/SafonovAG/output/github-contribution-grid-snake.svg" />
-    <img alt="github contribution grid snake animation" src="https://raw.githubusercontent.com/SafonovAG/SafonovAG/output/github-contribution-grid-snake.svg" />
-  </picture>
-</p>
-
-<p align="center">
-  <sub>Разработка <a href="https://github.com/SafonovAG">SafonovAG</a> · <a href="https://github.com/agent-cursor">agent-cursor</a> · <a href="https://agent-cursor.github.io">agent-cursor.github.io</a></sub>
+  <sub>
+    Оригинал <a href="https://github.com/jtapes/claude-bus">jtapes/claude-bus</a>
+    · адаптация под Cursor <a href="https://github.com/SafonovAG">SafonovAG</a>
+    · <a href="https://github.com/agent-cursor">agent-cursor</a>
+    · <a href="https://agent-cursor.github.io">сайт</a>
+  </sub>
 </p>
