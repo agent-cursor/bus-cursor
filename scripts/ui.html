@@ -2855,7 +2855,7 @@ function renderRecipients() {
   renderFrom();
   $('sendBtn').disabled = !can.length;
   const empty = !can.length;
-  $('composer').classList.toggle('empty', empty);
+  $('composerDock').classList.toggle('empty', empty);
   $('composeLock').hidden = !empty;
   hadRecipients = Boolean(can.length);
 }
