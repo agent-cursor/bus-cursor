@@ -591,7 +591,7 @@
   .send:disabled .icon { color: inherit; }
   .attach { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font-size: 12px; color: var(--ink-soft); min-width: 0; }
   #picked { display: contents; }
-  .composer-tools { display: flex; gap: 6px; } /* папка (файлы проекта, как «@») и скрепка - одной ячейкой сетки */
+  .composer-tools { display: flex; gap: 6px; align-items: center; } /* папка (файлы проекта, как «@») и скрепка - одной ячейкой сетки */
   #pickBtn, #filesBtn { width: var(--h-lg); min-height: var(--h-lg); }
   #filesBtn[aria-expanded="true"] { color: var(--copper); border-color: var(--copper); }
   #pickBtn:hover:not(:disabled) { transform: scale(1.05) rotate(-12deg); }
@@ -782,7 +782,33 @@
   .role-ai-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .role-ai-note { margin: 0; font-size: 12px; color: var(--ink-soft); flex: 1; min-width: 140px; }
   .role-ai-note.bad { color: var(--danger); }
-  .role-ai-row .keys { margin-left: auto; }
+  .role-ai-row .voice-hint, .role-ai-row .voice-rec { margin-left: auto; }
+  /* Голосовой ввод: подсказка в покое и индикатор записи с пульсом - один вид в композере и в форме агента */
+  .voice-hint {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; line-height: 20px; color: var(--ink-soft);
+  }
+  .voice-hint .icon { width: 14px; height: 14px; opacity: .7; }
+  .voice-rec {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 3px 12px 3px 3px; border-radius: 999px;
+    font-size: 13px; line-height: 20px; color: var(--ink);
+    background: color-mix(in srgb, var(--accent) 16%, var(--glass-2));
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+  .voice-rec[hidden], .voice-hint[hidden] { display: none !important; }
+  .voice-rec-icon {
+    display: grid; place-items: center;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    animation: voice-pulse 1.15s ease-in-out infinite;
+  }
+  .voice-rec-icon .icon { width: 15px; height: 15px; stroke-width: 2.2; }
+  .voice-rec-label { font-weight: 500; white-space: nowrap; }
+  @keyframes voice-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 50%, transparent); }
+    55% { box-shadow: 0 0 0 9px transparent; }
+  }
   /* diff ИИ-правки - как в git: «−» красным, «+» зелёным, изменённые слова фоном погуще */
   .role-diff { max-height: 260px; overflow: auto; font: 12px/1.5 var(--mono); background: var(--field); border: 1px solid var(--line); border-radius: var(--r); animation: fade-up .3s var(--ease); }
   .role-diff-head { position: sticky; top: 0; padding: 2px 10px; font: 12px var(--label); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); background: color-mix(in srgb, var(--bg) 94%, transparent); border-bottom: 1px solid var(--line); }
@@ -932,7 +958,7 @@
     #types, .type-filters { flex: none; }
     #composer { grid-template-columns: minmax(0, 1fr) auto; } /* вторая колонка - папка и скрепка */
     #composer .send, .result { grid-column: 1 / -1; }
-    #attachHint, .keys { display: none; } /* перетаскивать и держать пробел на телефоне нечем, а лента и так зажата формой */
+    #attachHint, .keys, .voice-hint { display: none; } /* перетаскивать и держать пробел на телефоне нечем, а лента и так зажата формой */
     .thumb { max-width: 100%; }
     .schedule form { grid-template-columns: 1fr; }
     .schedule { animation-name: from-bottom-soft; }
@@ -1581,8 +1607,14 @@
   }
   textarea.listening, input.listening {
     border: 0 !important;
-    box-shadow: inset 0 0 0 1.5px var(--copper) !important;
+    box-shadow: inset 0 0 0 1.5px var(--accent) !important;
   }
+  .voice-rec {
+    background: color-mix(in srgb, var(--accent) 18%, var(--panel)) !important;
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent) !important;
+  }
+  .voice-rec-icon { background: var(--accent) !important; color: #fff !important; }
+  .voice-hint { color: var(--ink-soft) !important; }
   form .compose-meta select {
     min-height: var(--h-sm) !important;
     background: transparent !important;
@@ -1833,6 +1865,7 @@
   <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></symbol>
   <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 5h16l-6.5 7.5V19l-3 1.5v-8L4 5z"/></symbol>
   <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><path d="M12 18v4"/><path d="M8 22h8"/></symbol>
 </svg>
 
 <div class="bg-video" id="bgVideo" aria-hidden="true"></div>
@@ -1906,6 +1939,8 @@
       <div class="composer-tools">
         <button class="ghost iconbtn" id="filesBtn" type="button" title="Файл проекта - то же, что набрать @" aria-label="Файл проекта" aria-expanded="false" aria-controls="mention"><svg class="icon"><use href="#i-folder"/></svg></button>
         <button class="ghost iconbtn" id="pickBtn" type="button" title="Приложить файл" aria-label="Приложить файл"><svg class="icon"><use href="#i-clip"/></svg></button>
+        <span class="voice-hint" id="composerVoiceHint" hidden title="Удерживай пробел - диктовка"><svg class="icon"><use href="#i-mic"/></svg><span>пробел</span></span>
+        <span class="voice-rec" id="composerVoiceRec" hidden role="status" aria-live="polite"><span class="voice-rec-icon" aria-hidden="true"><svg class="icon"><use href="#i-mic"/></svg></span><span class="voice-rec-label">Голосовой ввод</span></span>
       </div>
       <button class="send send-round" id="sendBtn" type="submit" title="Отправить" aria-label="Отправить"><svg class="icon"><use href="#i-send"/></svg></button>
       <div class="attach">
@@ -2074,7 +2109,8 @@
         <button class="squeeze" id="agentRewrite" type="button"><svg class="icon"><use href="#i-squeeze"/></svg><span>Переписать с ИИ</span></button>
         <button class="ghost" id="agentAiUndo" type="button" hidden>Откатить</button>
         <button class="ghost" id="agentReject" type="button" hidden>Отклонить правку агента</button>
-        <span class="keys" id="agentVoiceHint" hidden>удержи пробел - диктовка</span>
+        <span class="voice-hint" id="agentVoiceHint" hidden title="Удерживай пробел - диктовка"><svg class="icon"><use href="#i-mic"/></svg><span>пробел</span></span>
+        <span class="voice-rec" id="agentVoiceRec" hidden role="status" aria-live="polite"><span class="voice-rec-icon" aria-hidden="true"><svg class="icon"><use href="#i-mic"/></svg></span><span class="voice-rec-label">Голосовой ввод</span></span>
       </div>
       <p class="role-ai-note" id="agentAiNote" role="status">ИИ правит описание и роль прямо в форме. На диск ничего не уходит, пока не нажмёшь «Сохранить».</p>
       <div class="role-diff" id="agentAiDiff" role="region" aria-label="Изменения ИИ" tabindex="0" hidden></div>
@@ -4193,12 +4229,36 @@ fitText();
 // ---------- голосовой ввод: удержание пробела ----------
 
 // Распознаёт браузер (Web Speech API, Chrome и Edge), сервер шины звука не видит. Текст ложится в поле, а не уходит агенту:
-// распознавание путает имена и термины, а TASK стоит токенов - пользователь сначала читает, что надиктовал
+// распознавание путает имена и термины, а TASK стоит токенов - пользователь сначала читает, что надиктовал.
+// Статус записи - плашка .voice-rec (иконка с пульсом + «Голосовой ввод») в композере и в «Переписать с ИИ», не текст в agentAiNote / result.
 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
 const HOLD_MS = 400; // короче - это пробел или клик, дольше - диктовка
 const voice = { held: false, timer: null, tap: 'none', target: null, rec: null, field: null, before: '', after: '', final: '', error: '' };
-$('agentVoiceHint').hidden = !SpeechRec;
-// Панель агента закрывает собой строку статуса под лентой - пока она открыта, про диктовку пишем в ней самой
+
+function syncVoiceHints() {
+  const on = Boolean(SpeechRec) && !voice.rec;
+  $('agentVoiceHint').hidden = !on;
+  $('composerVoiceHint').hidden = !on;
+}
+
+/** Индикатор записи у активного места: форма агента или композер. */
+function showVoiceRec() {
+  const agent = Boolean(agentPanel.open);
+  $('agentVoiceRec').hidden = !agent;
+  $('composerVoiceRec').hidden = agent;
+  $('agentVoiceHint').hidden = true;
+  $('composerVoiceHint').hidden = true;
+}
+
+function hideVoiceRec() {
+  $('agentVoiceRec').hidden = true;
+  $('composerVoiceRec').hidden = true;
+  syncVoiceHints();
+}
+
+syncVoiceHints();
+
+/** Ошибки голоса - текстом; «слушаю» - только плашка, без подмены подсказки ИИ. */
 const voiceSay = (text, bad = false) => (agentPanel.open ? agentAiNote(text, bad) : say(text, bad));
 
 /** Тап, а не удержание: доигрываем то, что пробел сделал бы сам. */
@@ -4240,19 +4300,22 @@ function startVoice() {
   rec.onend = () => {
     voice.rec = null;
     field.classList.remove('listening');
+    hideVoiceRec();
     if (voice.error === 'aborted') showDictated('');
     else showDictated(voice.final); // недослышанный хвост без isFinal в поле не оставляем
     const note = L.voiceNote(voice.error || (voice.final.trim() ? '' : 'no-speech'));
-    voiceSay(note || (agentPanel.open ? tr('Надиктовано - проверь текст.') : tr('Надиктовано - проверь текст и отправляй.')), Boolean(note) && voice.error !== 'aborted');
+    // Успех - текст уже в поле; ошибки и «ничего не расслышал» - коротко текстом
+    if (note && voice.error !== 'aborted') voiceSay(note, true);
   };
   try {
     rec.start();
   } catch (err) {
+    hideVoiceRec();
     return voiceSay(tr('Голосовой ввод не удался: {why}', { why: err.message }), true);
   }
   voice.rec = rec;
   field.classList.add('listening');
-  voiceSay(tr('Слушаю… отпусти пробел, когда договоришь. Esc - отмена.'));
+  showVoiceRec();
   if (!voice.held) rec.stop(); // пробел отпустили, пока поднимался микрофон
 }
 
