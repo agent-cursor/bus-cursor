@@ -453,50 +453,42 @@
     position: relative;
     z-index: 0;
     color: var(--done);
-    background: color-mix(in srgb, var(--done) 18%, var(--glass-1));
-    border-color: color-mix(in srgb, var(--done) 50%, var(--line));
+    background: color-mix(in srgb, var(--done) 16%, var(--glass-1));
+    border-color: color-mix(in srgb, var(--done) 45%, var(--line));
     overflow: visible;
   }
   .ghost.update-pulse::before {
     content: "";
     position: absolute;
     z-index: -1;
-    inset: -3px;
+    inset: 0;
     border-radius: inherit;
-    background: color-mix(in srgb, var(--done) 35%, transparent);
+    border: 1.5px solid color-mix(in srgb, var(--done) 70%, transparent);
+    background: transparent;
+    box-shadow: none;
     pointer-events: none;
-    animation: update-glow 1.7s ease-in-out infinite;
+    animation: update-ring 1.6s ease-in-out infinite;
   }
   .ghost.update-pulse .icon { position: relative; z-index: 1; }
   .ghost.update-pulse:hover:not(:disabled) {
     color: var(--done);
-    background: color-mix(in srgb, var(--done) 26%, var(--glass-1));
+    background: color-mix(in srgb, var(--done) 24%, var(--glass-1));
     border-color: var(--done);
     transform: none;
   }
   .ghost.update-pulse:hover:not(:disabled)::before {
     animation: none;
-    background: color-mix(in srgb, var(--done) 42%, transparent);
-    box-shadow: 0 0 16px -2px color-mix(in srgb, var(--done) 55%, transparent);
+    border-color: var(--done);
+    opacity: 1;
   }
   .ghost.update-pulse:disabled { opacity: .7; cursor: progress; }
-  .ghost.update-pulse:disabled::before { animation: none; opacity: .4; }
-  @keyframes update-glow {
-    0%, 100% {
-      transform: scale(1);
-      opacity: .55;
-      background: color-mix(in srgb, var(--done) 28%, transparent);
-      box-shadow: 0 0 0 0 color-mix(in srgb, var(--done) 40%, transparent);
-    }
-    50% {
-      transform: scale(1.35);
-      opacity: 1;
-      background: color-mix(in srgb, var(--done) 55%, transparent);
-      box-shadow: 0 0 18px 2px color-mix(in srgb, var(--done) 45%, transparent);
-    }
+  .ghost.update-pulse:disabled::before { animation: none; opacity: .35; }
+  @keyframes update-ring {
+    0%, 100% { opacity: .35; border-color: color-mix(in srgb, var(--done) 40%, transparent); }
+    50% { opacity: 1; border-color: color-mix(in srgb, var(--done) 95%, transparent); }
   }
   @media (prefers-reduced-motion: reduce) {
-    .ghost.update-pulse::before { animation: none; }
+    .ghost.update-pulse::before { animation: none; opacity: .7; }
   }
   .update-backdrop {
     position: fixed; inset: 0; z-index: 70;
@@ -577,7 +569,31 @@
 
   /* ---- раскладка ---- */
   .layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); flex: 1 1 0; min-height: 0; position: relative; }
-  aside { position: relative; overflow-y: auto; min-height: 0; padding: 16px 8px 24px; background: var(--glass-1); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border-right: 1px solid transparent; border-image: linear-gradient(to bottom, transparent, var(--line-strong) 15%, var(--line-strong) 85%, transparent) 1; animation: from-left .8s .08s var(--ease) backwards; }
+  aside {
+    position: relative; display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+    background: var(--glass-1); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+    border-right: 1px solid transparent; border-image: linear-gradient(to bottom, transparent, var(--line-strong) 15%, var(--line-strong) 85%, transparent) 1;
+    animation: from-left .8s .08s var(--ease) backwards;
+  }
+  .agents-list { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 8px 8px; }
+  .agents-foot {
+    flex: none;
+    display: flex;
+    justify-content: center;
+    padding: 10px 12px 14px;
+    border-top: 1px solid var(--line);
+    background: color-mix(in srgb, var(--glass-1) 88%, transparent);
+  }
+  .about-btn {
+    min-height: var(--h);
+    padding: 0 14px;
+    gap: 8px;
+    font: 600 12px/1 var(--label);
+    letter-spacing: .04em;
+    color: var(--ink-soft);
+  }
+  .about-btn:hover:not(:disabled) { color: var(--ink); }
+  .about-btn .icon { width: 15px; height: 15px; }
   main { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; min-height: 0; min-width: 0; height: 100%; position: relative; }
 
   /* ---- агенты ---- */
@@ -1155,6 +1171,13 @@
   .need-project-modal p { margin: 0 0 20px; font: 14px/1.5 var(--body); color: var(--ink-soft); }
   .need-project-modal .actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
   .need-project-modal .send, .need-project-modal .ghost { min-height: var(--h-lg); padding: 0 16px; }
+  .need-project-modal.danger .icon-wrap { background: color-mix(in srgb, var(--danger) 14%, transparent); color: var(--danger); }
+  .need-project-modal .send.danger,
+  .need-project-modal .squeeze.danger {
+    min-height: var(--h-lg); padding: 0 16px;
+  }
+  #confirmBackdrop { z-index: 80; }
+  #confirmModal { z-index: 81; }
 
   /* ---- расписание ---- */
   .sched-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; padding: 0 4px; margin-left: 2px; border-radius: 999px; background: var(--glass-3); color: var(--ink); font: 700 12px/16px var(--label); }
@@ -1495,44 +1518,92 @@
   .app-pick > .hint { margin: 0; padding: 0; max-width: 42rem; }
   #settingsForm { flex: 1; min-height: 0; }
   #settingsForm > .hint.settings-scope-hint { margin: 16px 0 8px; padding: 0; grid-column: 1 / -1; }
-  .settings-about {
-    display: grid;
-    gap: 10px;
-    margin: 0;
-    padding: 16px var(--gutter) 18px;
-    border-top: 1px solid var(--line);
-    flex: none;
+  .about-modal {
+    position: fixed; z-index: 71; left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(400px, calc(100vw - 32px));
+    padding: 28px 24px 22px;
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-pop);
+    text-align: center;
+    animation: need-pop .3s var(--ease);
   }
-  .settings-about-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px 12px;
+  .about-modal .about-close {
+    position: absolute; top: 10px; right: 10px;
   }
-  .settings-about-ver {
-    font: 600 13px/1.3 var(--mono);
+  .about-modal .icon-wrap {
+    width: 52px; height: 52px; margin: 0 auto 14px;
+    display: grid; place-items: center;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--copper) 14%, transparent);
+    color: var(--copper);
+  }
+  .about-modal .icon-wrap .icon { width: 26px; height: 26px; }
+  .about-modal h2 { margin: 0 0 4px; font: 650 18px/1.3 var(--label); color: var(--ink); }
+  .about-ver {
+    margin: 0 0 16px;
+    font: 600 14px/1.35 var(--mono);
     font-variant-numeric: tabular-nums;
     color: var(--ink-soft);
-    flex: 1;
-    min-width: 0;
   }
-  .settings-about-row .ghost {
-    min-height: var(--h);
-    padding: 0 12px;
+  .about-ver mark {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font: 700 11px/1.2 var(--label);
+    letter-spacing: .04em;
+    color: var(--done);
+    background: color-mix(in srgb, var(--done) 14%, transparent);
+    vertical-align: middle;
+  }
+  .about-check {
+    width: 100%;
+    justify-content: center;
+    min-height: var(--h-lg);
+    margin: 0 0 18px;
     gap: 8px;
   }
-  .settings-about-row .ghost .icon { width: 15px; height: 15px; }
-  .settings-about-copy {
-    margin: 0;
-    font: 12px/1.45 var(--body);
+  .about-check .icon { width: 16px; height: 16px; }
+  .about-links {
+    display: grid;
+    gap: 8px;
+    margin: 0 0 14px;
+  }
+  .about-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: var(--h);
+    padding: 0 12px;
+    border-radius: var(--r);
+    border: 1px solid var(--line);
+    background: var(--glass-1);
+    color: var(--ink);
+    text-decoration: none;
+    font: 500 13px/1.3 var(--body);
+    transition: background-color .2s, border-color .2s, color .2s;
+  }
+  .about-link:hover {
+    background: var(--glass-2);
+    border-color: var(--line-strong);
+    color: var(--copper);
+  }
+  .about-link .icon { width: 18px; height: 18px; flex: none; color: var(--ink-soft); }
+  .about-link:hover .icon { color: var(--copper); }
+  .about-link span { flex: 1; text-align: left; min-width: 0; }
+  .about-link small {
+    flex: none;
+    font: 12px/1 var(--label);
     color: var(--ink-soft);
   }
-  .settings-about-copy a {
-    color: var(--copper);
-    text-decoration: none;
-    text-underline-offset: 2px;
+  .about-copy {
+    margin: 0;
+    font: 12px/1.4 var(--body);
+    color: var(--ink-soft);
   }
-  .settings-about-copy a:hover { text-decoration: underline; }
   .settings-list { display: grid; gap: 0; }
   .settings-group-label { margin: 0; padding: 24px 0 0; }
   .settings-group-label:first-child { padding-top: 0; }
@@ -1665,7 +1736,7 @@
     /* Список агентов - поверх ленты, а не над ней: иначе он выдавливает ленту в ноль и форма уезжает за экран */
     .layout { grid-template-columns: minmax(0, 1fr); }
     aside { display: none; position: absolute; inset: 0 0 auto 0; z-index: 5; max-height: 75%; background: color-mix(in srgb, var(--bg) 60%, transparent); -webkit-backdrop-filter: blur(28px) saturate(160%); backdrop-filter: blur(28px) saturate(160%); border-right: 0; border-image: none; border-bottom: 1px solid var(--line-strong); box-shadow: 0 16px 28px -12px #0008; }
-    aside.open { display: block; animation: from-top .35s var(--ease); }
+    aside.open { display: flex; animation: from-top .35s var(--ease); }
     #toggleAgents { display: inline-flex; }
     .where-wrap { order: 5; flex-basis: 100%; }
     .where { order: unset; flex-basis: auto; }
@@ -1897,9 +1968,6 @@
     animation: none !important;
     transform: none !important;
   }
-  .ghost.update-pulse::before {
-    animation: update-glow 1.7s ease-in-out infinite !important;
-  }
   .ghost.update-pulse:hover:not(:disabled) {
     filter: none !important;
     background: color-mix(in srgb, var(--done) 26%, transparent) !important;
@@ -1907,9 +1975,17 @@
     transform: none !important;
     box-shadow: none !important;
   }
+  .ghost.update-pulse::before {
+    animation: update-ring 1.6s ease-in-out infinite !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    inset: 0 !important;
+    border-width: 1.5px !important;
+  }
   .ghost.update-pulse:hover:not(:disabled)::before {
     animation: none !important;
-    background: color-mix(in srgb, var(--done) 45%, transparent) !important;
+    border-color: var(--done) !important;
+    background: transparent !important;
   }
   .update-backdrop {
     backdrop-filter: blur(10px) !important;
@@ -2012,13 +2088,35 @@
   main { height: 100% !important; min-height: 0 !important; }
   .feed-wrap { min-height: 0 !important; }
   aside {
-    padding: 10px 6px 20px !important;
     background: var(--panel) !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     border-right: 1px solid var(--line) !important;
     border-image: none !important;
     animation: none !important;
+  }
+  .agents-list { padding: 10px 6px 8px !important; }
+  .agents-foot {
+    padding: 8px 10px 12px !important;
+    background: var(--panel) !important;
+    border-top-color: var(--line) !important;
+  }
+  .about-btn {
+    border-radius: 12px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0 !important;
+  }
+  .about-modal {
+    border-radius: 16px !important;
+    border-color: var(--line) !important;
+    box-shadow: var(--shadow-pop) !important;
+  }
+  .about-link {
+    border-radius: 12px !important;
+    background: var(--field) !important;
+  }
+  .about-link:hover {
+    background: var(--glass-2) !important;
   }
   .group { margin-bottom: 12px !important; }
   .group > .label { padding: 4px 12px 6px !important; font-size: 11px !important; letter-spacing: .08em !important; }
@@ -2737,6 +2835,10 @@
   <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 5h16l-6.5 7.5V19l-3 1.5v-8L4 5z"/></symbol>
   <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
   <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><path d="M12 18v4"/><path d="M8 22h8"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><path d="M12 8h.01"/></symbol>
+  <symbol id="i-github" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M12 2C6.48 2 2 6.58 2 12.26c0 4.52 2.87 8.35 6.84 9.71.5.1.68-.22.68-.48 0-.24-.01-.87-.01-1.7-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.55-1.14-4.55-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.73 0 0 .84-.27 2.75 1.05A9.3 9.3 0 0 1 12 6.84c.85.004 1.71.12 2.51.35 1.91-1.32 2.75-1.05 2.75-1.05.55 1.42.2 2.47.1 2.73.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.8-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.59.69.49A10.03 10.03 0 0 0 22 12.26C22 6.58 17.52 2 12 2z"/></symbol>
+  <symbol id="i-telegram" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M21.8 4.3 2.9 11.5c-1.3.5-1.3 1.2-.2 1.5l4.8 1.5 1.9 5.7c.2.7.4.9 1 .9.6 0 .8-.3 1.1-.6l2.8-2.7 5.6 4.1c1 .5 1.7.3 2-.9L23.2 5.8c.3-1.3-.4-1.9-1.4-1.5z"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
 </svg>
 
 <div class="bg-video" id="bgVideo" aria-hidden="true"></div>
@@ -2760,7 +2862,14 @@
 </header>
 
 <div class="layout">
-  <aside id="agents" aria-label="Агенты"></aside>
+  <aside id="agents" aria-label="Агенты">
+    <div class="agents-list" id="agentsList"></div>
+    <div class="agents-foot">
+      <button type="button" class="ghost about-btn" id="aboutBtn" aria-haspopup="dialog" aria-controls="aboutModal">
+        <svg class="icon"><use href="#i-info"/></svg><span>О приложении</span>
+      </button>
+    </div>
+  </aside>
   <main>
     <div>
     <div class="filters">
@@ -2952,6 +3061,17 @@
   </div>
 </section>
 
+<div class="need-project-backdrop" id="confirmBackdrop" hidden></div>
+<section class="need-project-modal" id="confirmModal" hidden role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+  <div class="icon-wrap" id="confirmIcon" aria-hidden="true"><svg class="icon"><use href="#i-check"/></svg></div>
+  <h2 id="confirmTitle">Подтвердите</h2>
+  <p id="confirmText"></p>
+  <div class="actions">
+    <button class="send" id="confirmOk" type="button">Да</button>
+    <button class="ghost" id="confirmCancel" type="button">Отмена</button>
+  </div>
+</section>
+
 <div class="sched-backdrop" id="agentBackdrop" hidden></div>
 <section class="schedule" id="agentPanel" hidden role="dialog" aria-modal="true" aria-labelledby="agentTitle">
   <div class="sched-head">
@@ -3086,17 +3206,27 @@
       <button class="ghost" id="settingsClose2" type="button">Закрыть</button>
     </div>
   </form>
-  <div class="settings-about">
-    <div class="settings-about-row">
-      <span class="settings-about-ver" id="settingsVersion">Bus Cursor</span>
-      <button type="button" class="ghost" id="settingsCheckUpdate"><svg class="icon"><use href="#i-download"/></svg><span>Проверить обновления</span></button>
-    </div>
-    <p class="settings-about-copy">
-      © <a href="https://github.com/SafonovAG" target="_blank" rel="noopener noreferrer">SafonovAG</a>
-      · <a href="https://t.me/safonov_ag" target="_blank" rel="noopener noreferrer">@safonov_ag</a>
-      · <a href="https://github.com/agent-cursor/bus-cursor" target="_blank" rel="noopener noreferrer">GitHub</a>
-    </p>
+</section>
+
+<div class="update-backdrop" id="aboutBackdrop" hidden></div>
+<section class="about-modal" id="aboutModal" hidden role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+  <button class="ghost iconbtn about-close" id="aboutClose" type="button" aria-label="Закрыть"><svg class="icon"><use href="#i-x"/></svg></button>
+  <div class="icon-wrap" aria-hidden="true"><svg class="icon"><use href="#i-info"/></svg></div>
+  <h2 id="aboutTitle">Bus Cursor</h2>
+  <p class="about-ver" id="aboutVersion">v—</p>
+  <button type="button" class="ghost about-check" id="aboutCheckUpdate"><svg class="icon"><use href="#i-download"/></svg><span>Проверить обновления</span></button>
+  <div class="about-links">
+    <a class="about-link" href="https://github.com/SafonovAG" target="_blank" rel="noopener noreferrer">
+      <svg class="icon"><use href="#i-user"/></svg><span>SafonovAG</span><small>GitHub</small>
+    </a>
+    <a class="about-link" href="https://t.me/safonov_ag" target="_blank" rel="noopener noreferrer">
+      <svg class="icon"><use href="#i-telegram"/></svg><span>@safonov_ag</span><small>Telegram</small>
+    </a>
+    <a class="about-link" href="https://github.com/agent-cursor/bus-cursor" target="_blank" rel="noopener noreferrer">
+      <svg class="icon"><use href="#i-github"/></svg><span>bus-cursor</span><small>Репозиторий</small>
+    </a>
   </div>
+  <p class="about-copy">© SafonovAG</p>
 </section>
 
 <div class="update-backdrop" id="updateBackdrop" hidden></div>
@@ -3750,7 +3880,7 @@ function toggleAside(open) {
 function renderAgents() {
   if (settingsOpen) updateSettingsAgentPromptEmpty();
   const { here, globals, others } = L.groupAgents(state.agents);
-  const aside = $('agents');
+  const aside = $('agentsList');
   const othersOpen = Boolean(aside.querySelector('details[open]')); // перерисовка не должна схлопывать раскрытую группу под курсором
   // …и уводить фокус: кнопки пересобираются, а с клавиатуры после выбора агента идут дальше по списку
   const focused = aside.contains(document.activeElement) ? document.activeElement.closest('.agent') : null;
@@ -3772,7 +3902,8 @@ function renderAgents() {
     const details = el('details', {}, el('summary', { className: 'label' }, tr('Другие проекты · {n}', { n: others.length })), ...others.map(button));
     details.open = othersOpen || others.some((a) => filters.agents.has(a.key));
     aside.append(el('div', { className: 'group' }, details));
-  }  if (focused) {
+  }
+  if (focused) {
     const again = [...aside.querySelectorAll('.agent')].find((node) => node.dataset.key === focused.dataset.key);
     if (again) again.focus({ preventScroll: true });
   }
@@ -4235,8 +4366,8 @@ async function reopenDialog(target, tab) {
   }
 }
 
-function dropDialog(target, tab) {
-  if (!confirm(tr('Удалить диалог «{title}» ({names}) вместе со сводкой и вложениями? Вернуть нельзя.', { title: tab.title, names: target.names }))) return;
+async function dropDialog(target, tab) {
+  if (!await askConfirm(tr('Удалить диалог «{title}» ({names}) вместе со сводкой и вложениями? Вернуть нельзя.', { title: tab.title, names: target.names }), { danger: true })) return;
   if (chosenDialog.get(target.pair) === tab.d) chosenDialog.delete(target.pair);
   state.dialogs.delete(L.threadKey(target.pair, tab.d));
   setClosed(target, tab.d, null);
@@ -4753,7 +4884,7 @@ function renderUpdate() {
   }
   $('updateBtn').disabled = busy && !updateView.open;
   if (updateView.open) renderUpdateModal();
-  syncSettingsAbout();
+  syncAbout();
 }
 
 $('updateBtn').addEventListener('click', (e) => {
@@ -5132,7 +5263,7 @@ $('agentDelete').addEventListener('click', async () => {
   const agent = agentPanel.agent;
   if (!agent || agentPanel.busy) return;
   const what = agent.wraps ? tr('файл-обёртка в проекте и ящик; сама глобальная роль останется') : tr('файл роли и ящик с непрочитанным');
-  if (!confirm(tr('Удалить агента «{name}»? Уйдут: {what}. Переписка в ленте останется. Вернуть нельзя.', { name: agent.name, what }))) return;
+  if (!await askConfirm(tr('Удалить агента «{name}»? Уйдут: {what}. Переписка в ленте останется. Вернуть нельзя.', { name: agent.name, what }), { danger: true })) return;
   try {
     const r = await post('/api/agent/delete', { key: agent.key });
     closeAgentPanel();
@@ -5311,6 +5442,57 @@ function settingsSay(text, bad = false) {
   say(text, bad);
 }
 
+// ---------- подтверждения (вместо native confirm) ----------
+
+let confirmResolve = null;
+
+/** → true/false. danger - красная «Да» и иконка. */
+function askConfirm(text, { title = tr('Подтвердите'), ok = tr('Да'), cancel = tr('Отмена'), danger = false } = {}) {
+  return new Promise((resolve) => {
+    if (confirmResolve) {
+      const prev = confirmResolve;
+      confirmResolve = null;
+      prev(false);
+    }
+    confirmResolve = resolve;
+    $('confirmTitle').textContent = title;
+    $('confirmText').textContent = text;
+    $('confirmOk').replaceChildren(document.createTextNode(ok));
+    $('confirmCancel').textContent = cancel;
+    $('confirmOk').className = danger ? 'squeeze danger' : 'send';
+    $('confirmModal').classList.toggle('danger', danger);
+    $('confirmIcon').replaceChildren(icon(danger ? 'trash' : 'check'));
+    $('confirmBackdrop').hidden = false;
+    $('confirmModal').hidden = false;
+    $('confirmOk').focus();
+  });
+}
+
+function finishConfirm(ok) {
+  if ($('confirmModal').hidden) return;
+  $('confirmBackdrop').hidden = true;
+  $('confirmModal').hidden = true;
+  const done = confirmResolve;
+  confirmResolve = null;
+  if (done) done(Boolean(ok));
+}
+
+$('confirmOk').addEventListener('click', () => finishConfirm(true));
+$('confirmCancel').addEventListener('click', () => finishConfirm(false));
+$('confirmBackdrop').addEventListener('click', () => finishConfirm(false));
+document.addEventListener('keydown', (e) => {
+  if ($('confirmModal').hidden) return;
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    e.stopPropagation();
+    finishConfirm(false);
+  } else if (e.key === 'Enter' && !e.isComposing) {
+    e.preventDefault();
+    e.stopPropagation();
+    finishConfirm(true);
+  }
+}, true);
+
 /** Ответ сервера → данные; не 2xx - исключение с его текстом (field - поле формы настроек, к которому относится отказ; code - вид отказа, см. L.isFrequentError). */
 async function answer(res) {
   const data = await res.json().catch(() => ({}));
@@ -5444,8 +5626,8 @@ async function destroy(path, body, done) {
   }
 }
 
-$('markedDelete').addEventListener('click', () => {
-  if (!marked.size || !confirm(tr('Удалить выделенные сообщения ({n}) из журнала? Вернуть нельзя.', { n: marked.size }))) return;
+$('markedDelete').addEventListener('click', async () => {
+  if (!marked.size || !await askConfirm(tr('Удалить выделенные сообщения ({n}) из журнала? Вернуть нельзя.', { n: marked.size }), { danger: true })) return;
   destroy('/api/delete', { ids: [...marked] }, (r) => tr('Удалено сообщений: {n}.', { n: r.removed }));
 });
 $('markedNone').addEventListener('click', () => {
@@ -5464,7 +5646,7 @@ $('squeeze').addEventListener('click', async () => {
   const info = renderPair.info;
   const ask = tr('Сжать диалог в сводку? Сообщений: {n}, ≈{weight} токенов; сжатие само стоит ≈3-4к токенов Cursor. Исходные останутся в журнале.', { n: info ? info.tail : '?', weight: info ? L.short(info.weight) : '?' })
     + (info && info.early ? tr(' Сжимать рано: сводка дороже, чем агент прочтёт этот диалог.') : '');
-  if (!confirm(ask)) return;
+  if (!await askConfirm(ask, { title: tr('Сжать диалог'), ok: tr('Сжать') })) return;
   button.dataset.busy = '1';
   button.disabled = true;
   button.lastElementChild.textContent = tr('Сжимаю…');
@@ -5890,6 +6072,8 @@ document.addEventListener('keydown', (e) => {
     return;
   }
   if (e.key === 'Escape' && mention.open) return; // список «@» закроет поле само - выделение в ленте не трогаем
+  if (e.key === 'Escape' && !$('confirmModal').hidden) return; // модалка подтверждения ловит Escape сама (capture)
+  if (e.key === 'Escape' && aboutOpen) return closeAbout();
   if (e.key === 'Escape' && updateView.open) {
     if (updateView.busy) return;
     return closeUpdateModal(true);
@@ -6420,7 +6604,7 @@ async function scheduleRun(job) {
 }
 
 async function scheduleDelete(job) {
-  if (!confirm(tr('Удалить задачу «{name}»? Вернуть нельзя.', { name: job.name }))) return;
+  if (!await askConfirm(tr('Удалить задачу «{name}»? Вернуть нельзя.', { name: job.name }), { danger: true })) return;
   try {
     const r = await post('/api/schedule/delete', { root: job.root, name: job.name });
     applySchedule(r, r.daemonNote);
@@ -6742,15 +6926,17 @@ function applySettingsLimits(limits) {
   if (scheduleOpen) getJson('/api/schedule').then((data) => applySchedule(data)).catch(() => {});
 }
 
-function syncSettingsAbout() {
-  const ver = $('settingsVersion');
-  const btn = $('settingsCheckUpdate');
+function syncAbout() {
+  const ver = $('aboutVersion');
+  const btn = $('aboutCheckUpdate');
   if (!ver || !btn) return;
   const { data, busy } = updateView;
-  const current = data.current || '—';
-  ver.textContent = data.state === 'available' && data.latest
-    ? tr('Bus Cursor v{current} · доступна v{latest}', { current, latest: data.latest })
-    : tr('Bus Cursor v{version}', { version: current });
+  const current = data.current;
+  ver.replaceChildren();
+  ver.append(document.createTextNode(current ? `v${current}` : '—'));
+  if (data.state === 'available' && data.latest) {
+    ver.append(el('mark', {}, tr('доступна v{version}', { version: data.latest })));
+  }
   const label = btn.querySelector('span');
   if (busy) {
     btn.disabled = true;
@@ -6764,6 +6950,65 @@ function syncSettingsAbout() {
   }
 }
 
+let aboutOpen = false;
+let aboutOpener = null;
+
+function openAbout() {
+  aboutOpen = true;
+  aboutOpener = document.activeElement;
+  syncAbout();
+  $('aboutBackdrop').hidden = false;
+  $('aboutModal').hidden = false;
+  $('aboutClose').focus();
+}
+
+function closeAbout() {
+  if (!aboutOpen) return;
+  aboutOpen = false;
+  $('aboutBackdrop').hidden = true;
+  $('aboutModal').hidden = true;
+  const back = aboutOpener;
+  if (back && back.isConnected) back.focus();
+  else $('aboutBtn').focus();
+}
+
+$('aboutBtn').addEventListener('click', () => (aboutOpen ? closeAbout() : openAbout()));
+$('aboutClose').addEventListener('click', closeAbout);
+$('aboutBackdrop').addEventListener('click', closeAbout);
+$('aboutCheckUpdate').addEventListener('click', async () => {
+  const btn = $('aboutCheckUpdate');
+  if (btn.disabled) return;
+  if (updateView.data.state === 'available') {
+    closeAbout();
+    openUpdateModal();
+    return;
+  }
+  btn.disabled = true;
+  const label = btn.querySelector('span');
+  if (label) label.textContent = tr('Проверяю…');
+  try {
+    const data = await post('/api/update/check', {});
+    applyUpdate(data);
+    if (data.state === 'available') {
+      say(tr('Доступно обновление v{version}', { version: data.latest }));
+      closeAbout();
+      openUpdateModal();
+    } else if (data.state === 'none') {
+      say(tr('Уже последняя версия: v{version}', { version: data.current || '—' }));
+    } else if (data.state === 'off') {
+      say(tr('Обновления тут выключены: нет release.json или папка скилла - git-клон.'), true);
+    } else if (data.state === 'error') {
+      say(tr('Не обновилось: {why}', { why: data.reason || tr('неизвестная ошибка') }), true);
+    } else {
+      say(tr('Обновлять нечего: новой версии шины нет.'));
+    }
+  } catch (err) {
+    say(tr('Не обновилось: {why}', { why: err.message }), true);
+  } finally {
+    syncAbout();
+  }
+});
+
 async function openSettings() {
   settingsOpen = true;
   settingsOpener = document.activeElement;
@@ -6772,7 +7017,6 @@ async function openSettings() {
   $('settingsBtn').setAttribute('aria-expanded', 'true');
   settingsSay('');
   syncUiPrefs();
-  syncSettingsAbout();
   renderBgPicker();
   try {
     await ensureCursorModels();
@@ -6785,8 +7029,11 @@ async function openSettings() {
 }
 
 /** Несохранённые правки молча не теряем: подтверждение, как и у прочих необратимых действий страницы. */
-function closeSettings() {
-  if (settingsOpen && Object.keys(settingsDirtyPatch).length && !confirm(tr('Есть несохранённые изменения. Закрыть без сохранения?'))) return;
+async function closeSettings() {
+  if (settingsOpen && Object.keys(settingsDirtyPatch).length) {
+    if (!await askConfirm(tr('Есть несохранённые изменения. Закрыть без сохранения?'))) return;
+  }
+  if (!settingsOpen) return;
   if (voice.field && settingsVoiceSlots.some((s) => voiceField(s) === voice.field)) stopVoice();
   settingsOpen = false;
   settingsVoiceSlots = [];
@@ -6802,39 +7049,6 @@ function closeSettings() {
 $('settingsBtn').addEventListener('click', () => (settingsOpen ? closeSettings() : openSettings()));
 $('settingsClose').addEventListener('click', closeSettings);
 $('settingsClose2').addEventListener('click', closeSettings);
-$('settingsCheckUpdate').addEventListener('click', async () => {
-  const btn = $('settingsCheckUpdate');
-  if (btn.disabled) return;
-  if (updateView.data.state === 'available') {
-    closeSettings();
-    openUpdateModal();
-    return;
-  }
-  btn.disabled = true;
-  const label = btn.querySelector('span');
-  if (label) label.textContent = tr('Проверяю…');
-  try {
-    const data = await post('/api/update/check', {});
-    applyUpdate(data);
-    if (data.state === 'available') {
-      say(tr('Доступно обновление v{version}', { version: data.latest }));
-      closeSettings();
-      openUpdateModal();
-    } else if (data.state === 'none') {
-      say(tr('Уже последняя версия: v{version}', { version: data.current || '—' }));
-    } else if (data.state === 'off') {
-      say(tr('Обновления тут выключены: нет release.json или папка скилла - git-клон.'), true);
-    } else if (data.state === 'error') {
-      say(tr('Не обновилось: {why}', { why: data.reason || tr('неизвестная ошибка') }), true);
-    } else {
-      say(tr('Обновлять нечего: новой версии шины нет.'));
-    }
-  } catch (err) {
-    say(tr('Не обновилось: {why}', { why: err.message }), true);
-  } finally {
-    syncSettingsAbout();
-  }
-});
 $('settingsBackdrop').addEventListener('click', closeSettings);
 
 $('settingsForm').addEventListener('submit', async (e) => {
@@ -6874,7 +7088,7 @@ $('shortcutBtn').addEventListener('click', async () => {
 
 $('settingsReset').addEventListener('click', async () => {
   if (!settingsData || !settingsData.root) return;
-  if (!confirm(tr('Сбросить все настройки проекта {root} к значениям по умолчанию? Вернуть нельзя.', { root: settingsData.root }))) return;
+  if (!await askConfirm(tr('Сбросить все настройки проекта {root} к значениям по умолчанию? Вернуть нельзя.', { root: settingsData.root }), { danger: true })) return;
   $('settingsReset').disabled = true;
   try {
     const r = await post('/api/settings', { reset: true });

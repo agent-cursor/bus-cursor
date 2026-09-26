@@ -800,6 +800,13 @@
     'Сбросить все настройки проекта {root} к значениям по умолчанию? Вернуть нельзя.': 'Reset all settings of project {root} to defaults? Cannot be undone.',
     'Есть несохранённые изменения. Закрыть без сохранения?': 'There are unsaved changes. Close without saving?',
     'Закрыть': 'Close',
+    'Подтвердите': 'Confirm',
+    'Да': 'Yes',
+    'Сжать': 'Compress',
+    'О приложении': 'About',
+    'доступна v{version}': 'v{version} available',
+    'Репозиторий': 'Repository',
+    '© SafonovAG': '© SafonovAG',
 
     // ---------- интерфейс: тема и язык в настройках ----------
     'Интерфейс': 'Interface',
