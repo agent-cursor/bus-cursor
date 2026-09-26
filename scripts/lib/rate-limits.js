@@ -1,8 +1,9 @@
 /**
  * Снимок лимитов Cursor: ~/.cursor/bus-cursor/cache/rate-limits.json.
- * Формат: { plan, auto?, api?, at } - окна { used_percentage, resets_at? }.
- * Берём из DashboardService/GetCurrentPeriodUsage (токен из state.vscdb Cursor).
- * План - includedSpend/limit (как displayMessage в IDE); Auto/API - percentUsed из ответа.
+ * Формат: { auto?, api?, grok?, at } - окна { used_percentage, resets_at? }.
+ * Auto/API ← GetCurrentPeriodUsage (autoPercentUsed / apiPercentUsed).
+ * Grok Bot ← GetSandUsageStatus (usagePercent, недельное окно).
+ * Поле plan (includedSpend/limit) не пишем - в кабинете его нет, путало с «100%».
  */
 
 const fs = require('fs');
@@ -15,8 +16,10 @@ const CACHE_DIR = path.join(BUS_DIR, 'cache');
 const SNAPSHOT = path.join(CACHE_DIR, 'rate-limits.json');
 
 const USAGE_URL = 'https://api2.cursor.sh/aiserver.v1.DashboardService/GetCurrentPeriodUsage';
+const SAND_URL = 'https://api2.cursor.sh/aiserver.v1.DashboardService/GetSandUsageStatus';
 const REFRESH_MS = 5 * 60 * 1000; // не долбим API чаще пяти минут
-const WINDOWS = ['plan', 'auto', 'api'];
+const WINDOWS = ['auto', 'api', 'grok'];
+const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 const readJson = (file) => {
   try {
@@ -58,7 +61,13 @@ function saveSnapshot(rateLimits) {
   if (!rateLimits || typeof rateLimits !== 'object') return;
   const old = readJson(SNAPSHOT);
   const next = old && typeof old === 'object' ? { ...old } : {};
-  for (const [key, win] of Object.entries(rateLimits)) if (known(win) || !known(next[key])) next[key] = win;
+  for (const [key, win] of Object.entries(rateLimits)) {
+    if (win === null) {
+      delete next[key];
+      continue;
+    }
+    if (known(win) || !known(next[key])) next[key] = win;
+  }
   try {
     fs.mkdirSync(CACHE_DIR, { recursive: true });
     fs.writeFileSync(SNAPSHOT, JSON.stringify(next));
@@ -77,28 +86,46 @@ function pctOf(n) {
   return Math.round(Math.max(0, Math.min(100, n)) * 10) / 10;
 }
 
-/** Ответ GetCurrentPeriodUsage → снимок окон. */
+function winOf(used, resets_at) {
+  const used_percentage = pctOf(used);
+  if (used_percentage === null) return null;
+  return Number.isFinite(resets_at) && resets_at > 0
+    ? { used_percentage, resets_at: Math.floor(resets_at) }
+    : { used_percentage };
+}
+
+/** Ответ GetCurrentPeriodUsage → Auto / API. */
 function fromUsageResponse(body) {
   if (!body || typeof body !== 'object') return null;
   const plan = body.planUsage && typeof body.planUsage === 'object' ? body.planUsage : null;
   if (!plan) return null;
   const endMs = Number(body.billingCycleEnd);
   const resets_at = Number.isFinite(endMs) && endMs > 0 ? Math.floor(endMs / 1000) : null;
-  const win = (used) => {
-    const used_percentage = pctOf(used);
-    if (used_percentage === null) return null;
-    return resets_at ? { used_percentage, resets_at } : { used_percentage };
-  };
   const out = {};
-  // displayMessage в IDE считает includedSpend/limit, а не totalPercentUsed
-  if (Number.isFinite(plan.limit) && plan.limit > 0 && Number.isFinite(plan.includedSpend)) {
-    out.plan = win((plan.includedSpend / plan.limit) * 100);
-  } else if (Number.isFinite(plan.totalPercentUsed)) {
-    out.plan = win(plan.totalPercentUsed);
-  }
-  if (Number.isFinite(plan.autoPercentUsed)) out.auto = win(plan.autoPercentUsed);
-  if (Number.isFinite(plan.apiPercentUsed)) out.api = win(plan.apiPercentUsed);
+  if (Number.isFinite(plan.autoPercentUsed)) out.auto = winOf(plan.autoPercentUsed, resets_at);
+  if (Number.isFinite(plan.apiPercentUsed)) out.api = winOf(plan.apiPercentUsed, resets_at);
   return Object.keys(out).length ? out : null;
+}
+
+/**
+ * Ответ GetSandUsageStatus → Grok Bot (недельный лимит).
+ * null - лимита нет / enterprise pool / ответ пустой; тогда ключ grok из снимка убираем.
+ */
+function fromSandResponse(body) {
+  if (!body || typeof body !== 'object') return null;
+  if (body.usesPooledEnterpriseAllowance || body.includedLimitZero) return null;
+  if (body.hasNonZeroIncludedLimit === false) return null;
+  if (!Number.isFinite(body.usagePercent)) return null;
+
+  let resets_at = null;
+  const nextMs = Number(body.nextResetTimestampUtc);
+  if (Number.isFinite(nextMs) && nextMs > 0) {
+    resets_at = nextMs > 1e12 ? Math.floor(nextMs / 1000) : Math.floor(nextMs);
+  } else if (typeof body.currentPeriodStart === 'string' && body.currentPeriodStart) {
+    const start = Date.parse(body.currentPeriodStart);
+    if (Number.isFinite(start)) resets_at = Math.floor((start + WEEK_MS) / 1000);
+  }
+  return winOf(body.usagePercent, resets_at);
 }
 
 function postJson(url, headers, body) {
@@ -152,17 +179,25 @@ async function refresh(opts = {}) {
   refreshing = (async () => {
     const token = readAccessToken();
     if (!token) return readSnapshot();
-    try {
-      const body = await postJson(USAGE_URL, {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Connect-Protocol-Version': '1',
-      }, '{}');
-      const snap = fromUsageResponse(body);
-      if (snap) saveSnapshot(snap);
-    } catch {
-      // офлайн / токен протух - остаётся старый снимок
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Connect-Protocol-Version': '1',
+    };
+    const [usage, sand] = await Promise.allSettled([
+      postJson(USAGE_URL, headers, '{}'),
+      postJson(SAND_URL, headers, '{}'),
+    ]);
+    const snap = {};
+    if (usage.status === 'fulfilled') {
+      const period = fromUsageResponse(usage.value);
+      if (period) Object.assign(snap, period);
     }
+    if (sand.status === 'fulfilled') {
+      const grok = fromSandResponse(sand.value);
+      snap.grok = grok; // null → убрать из кэша, если Grok Bot недоступен
+    }
+    if (Object.keys(snap).length) saveSnapshot(snap);
     return readSnapshot();
   })();
 
@@ -173,7 +208,7 @@ async function refresh(opts = {}) {
   }
 }
 
-/** → { plan?, auto?, api?, at } или null. */
+/** → { auto?, api?, grok?, at } или null. */
 function readSnapshot() {
   const data = readJson(SNAPSHOT);
   if (!data || typeof data !== 'object') return null;
@@ -195,6 +230,7 @@ module.exports = {
   saveSnapshot,
   fromStreamEvent,
   fromUsageResponse,
+  fromSandResponse,
   readAccessToken,
   readSnapshot,
   refresh,

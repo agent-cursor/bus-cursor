@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Рендерит иконки из assets/bus-core.svg (логотип + бейдж Cursor уже внутри).
  * npm i sharp to-ico png2icons
  * node tools/build-icons.js

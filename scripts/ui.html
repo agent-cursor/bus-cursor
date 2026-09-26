@@ -2894,7 +2894,7 @@
     <div class="projects-menu" id="projectsMenu" hidden role="menu" aria-label="Проекты"></div>
   </div>
   <div class="mine" id="mine" title="Открой диалог ответившего агента - его ответы прочитаны: сессия проекта их уже не получит и токены на них не потратит. Не откроешь - сессия увидит счётчик ответов на следующем промпте"><span id="mineText"></span></div>
-  <!-- Лимиты Cursor: компактная кнопка → панель План / Auto / API -->
+  <!-- Лимиты Cursor: компактная кнопка → панель Auto / API / Grok Bot -->
   <div class="limits-wrap" id="limitsWrap" hidden>
     <button class="ghost limits-btn" id="limitsBtn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="limitsMenu" title="Лимиты Cursor" aria-label="Лимиты Cursor"><svg class="icon"><use href="#i-bolt"/></svg><span class="limits-sum" id="limitsSum"></span></button>
     <div class="limits-menu" id="limitsMenu" hidden role="dialog" aria-label="Лимиты Cursor"></div>
@@ -4543,16 +4543,14 @@ let rateSnapshot = null; // последний снимок лимитов: /api
 let limitsOpen = false;
 let limitsRefreshing = false;
 
-/** В шапке показываем План, иначе окно с наибольшим расходом. */
+/** В шапке - окно с наибольшим расходом (Auto / API / Grok Bot). */
 function limitsSummary(view) {
-  const plan = view.windows.find((w) => w.key === 'plan');
-  if (plan) return plan;
   return view.windows.reduce((a, b) => ((b.reset ? -1 : b.pct) > (a.reset ? -1 : a.pct) ? b : a));
 }
 
 function limitsMeta(w) {
   if (w.reset) return tr('окно сброшено');
-  if (w.at && w.left) return tr('сброс {at} · через {left}', { at: w.at, left: w.left });
+  if (w.at && w.left) return tr('через {left}, до {at}', { at: w.at, left: w.left });
   if (w.left) return tr('через {left}', { left: w.left });
   return '';
 }
@@ -4600,7 +4598,7 @@ function renderLimits(snapshot = rateSnapshot) {
   }
   const sum = limitsSummary(view);
   const age = L.duration(view.age / 1000);
-  const tip = tr('Лимиты Cursor (включённый объём плана). Снимок {age} назад', { age }) + (view.stale ? tr(' - устарел: обновится при следующем опросе') : '');
+  const tip = tr('Лимиты Cursor (Auto, API и Grok Bot). Снимок {age} назад', { age }) + (view.stale ? tr(' - устарел: обновится при следующем опросе') : '');
   btn.classList.toggle('stale', view.stale);
   btn.classList.toggle('warn', !sum.reset && sum.level === 'high');
   btn.title = tip;

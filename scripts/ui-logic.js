@@ -7,7 +7,7 @@
   const api = factory(typeof module === 'object' && module.exports ? require('./ui-i18n.js') : root.BusI18n);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.BusLogic = api;
-})(this, function ({ tr, N }) {
+})(this, function ({ tr, N, locale }) {
   const FILE_TOKENS = 25; // путь вложения в строке inbox и history, оценка
   const SHOW_LOAD_FROM = 1000; // стартовый порог, пока не пришли настройки: с этого веса переписка агента показывается в списке
   const HEAVY_TOKENS = 3000; // стартовый порог: с этого веса диалог подсвечивается - пора сжимать
@@ -484,33 +484,33 @@
   const LIMITS_STALE_MS = 30 * 60 * 1000; // снимок старше получаса - тусклый, пока UI снова не спросит Cursor
   const levelOf = (pct) => (pct >= 80 ? 'high' : pct >= 50 ? 'mid' : 'low');
 
-  /** 2д3ч / 3ч12м / 45м / 30с */
+  /** 28д. 23ч. / 3ч12м / 45м / 30с */
   function duration(sec) {
     const s = Math.max(0, Math.floor(sec));
     const d = Math.floor(s / 86400);
     const h = Math.floor((s % 86400) / 3600);
     const m = Math.floor((s % 3600) / 60);
-    if (d > 0) return tr('{d}д{h}ч', { d, h });
+    if (d > 0) return tr('{d}д. {h}ч.', { d, h });
     if (h > 0) return tr('{h}ч{m}м', { h, m });
     if (m > 0) return tr('{m}м', { m });
     return tr('{s}с', { s });
   }
 
-  /** Время сброса окна: ЧЧ:ММ в ближайшие сутки (5ч-окно за полночью - не «26.09»), иначе ДД.ММ. */
+  /** Дата сброса окна: «25 октября»; в ближайшие сутки - ЧЧ:ММ. */
   function resetClock(epochSec, now = Date.now()) {
     const d = new Date(epochSec * 1000);
     if (d.getTime() - now < 86400 * 1000) return clock(d.getTime());
-    return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}`;
+    return d.toLocaleDateString(locale(), { day: 'numeric', month: 'long' });
   }
 
   /**
    * Снимок лимитов Cursor (rate-limits.js → /api/state.rateLimits) → { windows, stale, age } или null.
-   * windows: [{ key, label, pct, level, left, at, reset }] - План / Auto / API.
+   * windows: [{ key, label, pct, level, left, at, reset }] - Auto / API / Grok Bot.
    */
   function rateLimits(snapshot, now = Date.now()) {
     if (!snapshot || typeof snapshot !== 'object') return null;
     const windows = [];
-    for (const [key, label] of [['plan', tr('План')], ['auto', 'Auto'], ['api', 'API']]) {
+    for (const [key, label] of [['auto', tr('Auto')], ['api', tr('API')], ['grok', tr('Grok Bot')]]) {
       const w = snapshot[key];
       if (!w || !Number.isFinite(w.used_percentage)) continue;
       const left = Number.isFinite(w.resets_at) ? w.resets_at - Math.floor(now / 1000) : null;

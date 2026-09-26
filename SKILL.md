@@ -1,4 +1,4 @@
-﻿---
+---
 name: bus-cursor
 description: >-
   Bus Cursor - переписка и задачи между агентами Cursor и пользователем (UI).
