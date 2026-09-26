@@ -553,7 +553,14 @@
   @keyframes rise { from { transform: translate(-50%, 12px); opacity: 0; } }
 
   /* ---- отправка ---- */
-  #composer { position: relative; background: var(--glass-1); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); padding: 12px var(--gutter); display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px 12px; align-items: end; animation: from-bottom .8s .16s var(--ease) backwards; }
+  #composer {
+    position: relative;
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 10px var(--gutter) 12px;
+    background: var(--glass-1);
+    -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+    animation: from-bottom .8s .16s var(--ease) backwards;
+  }
   #composer::before { top: 0; }
   form label { display: grid; gap: 4px; min-width: 0; }
   /* Подпись поля - всегда одна строка: перенос пояснения сдвигал поле вниз, и соседние в ряду переставали стоять вровень */
@@ -567,19 +574,108 @@
   form textarea { display: block; resize: vertical; }
   /* Идёт диктовка: поле, куда ложится текст. Рамка и ровное свечение, без пульса - запись бывает долгой */
   textarea.listening, input.listening { border-color: var(--copper) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--copper) 35%, transparent), 0 0 24px -6px var(--copper-glow) !important; }
-  /* «Кому» и «Тип» - строкой над полем: значение текстом, по клику - тот же выпадающий список. Два поля в ряд отнимали ширину у сообщения */
-  .compose-meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 16px; min-width: 0; }
-  form .compose-meta label { display: flex; align-items: center; gap: 4px; min-width: 0; }
-  form .compose-meta select { width: auto; field-sizing: content; max-width: 36ch; min-height: var(--h-sm); padding: 0 6px; background: none; border-color: transparent; box-shadow: none; font: 600 13px var(--mono); }
-  form .compose-meta select:hover { background: var(--glass-2); border-color: var(--line); }
+
+  /* Чипы над полем: вложения / цитаты / btw / роль - полоса прячется, если всё hidden */
+  .compose-extras {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+    min-width: 0;
+  }
+  .compose-extras:not(:has(> :not([hidden]))) { display: none; }
+  #picked { display: contents; }
+  .compose-opt {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin: 0; padding: 3px 10px 3px 6px; border-radius: 999px;
+    font-size: 12px; line-height: 18px; color: var(--ink-soft);
+    background: var(--field); cursor: pointer; user-select: none;
+  }
+  .compose-opt:has(input:checked) { color: var(--copper); background: var(--copper-soft); }
+  .compose-opt input[type="checkbox"] { width: 16px; height: 16px; margin: 0; }
+  .compose-opt input[type="checkbox"]::before { width: 12px; height: 12px; border-radius: 3px; }
+  .compose-opt input[type="checkbox"]::after { width: 6px; height: 6px; }
+
+  /* Основная строка ввода - как пузырь Telegram */
+  .compose-shell {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 4px; align-items: end;
+    padding: 4px 4px 4px 6px;
+    border-radius: 22px;
+    background: var(--field);
+    box-shadow: 0 1px 0 var(--edge);
+    min-width: 0;
+  }
+  .compose-shell:focus-within {
+    box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--copper) 55%, transparent), 0 0 20px -10px var(--copper-glow);
+  }
+  .composer-tools { display: flex; gap: 2px; align-items: center; padding-bottom: 2px; }
+  #pickBtn, #filesBtn, #composer .voice-hint {
+    width: 34px; min-width: 34px; min-height: 34px; height: 34px;
+    padding: 0; border: 0; background: transparent; box-shadow: none;
+    color: var(--ink-soft);
+  }
+  #pickBtn:hover:not(:disabled), #filesBtn:hover:not(:disabled), #composer .voice-hint:hover:not(:disabled) {
+    color: var(--ink); background: var(--tap); transform: none;
+  }
+  #filesBtn[aria-expanded="true"] { color: var(--copper); background: var(--copper-soft); }
+  #composer .voice-hint { border-radius: 50%; }
+  #composer .voice-hint .icon { width: 18px; height: 18px; opacity: 1; }
+  #composer .voice-rec { margin: 0 2px 2px 0; }
+  .compose-input { display: block; position: relative; min-width: 0; padding: 0; }
+  #composer textarea {
+    field-sizing: content;
+    min-height: 36px; max-height: min(40vh, 360px);
+    resize: none; overflow-y: hidden; line-height: 1.45;
+    width: 100%; padding: 8px 6px;
+    background: transparent; border: 0; box-shadow: none;
+    font-size: 15px;
+  }
+  #composer textarea:hover, #composer textarea:focus {
+    background: transparent; border: 0; box-shadow: none; outline: none;
+  }
+  #composer textarea.listening {
+    box-shadow: none !important;
+    border: 0 !important;
+  }
+  .compose-shell:has(textarea.listening) {
+    box-shadow: 0 0 0 1.5px var(--accent), 0 0 18px -8px color-mix(in srgb, var(--accent) 50%, transparent);
+  }
+  #composer .send.send-round {
+    width: 36px; min-width: 36px; height: 36px; min-height: 36px;
+    padding: 0; border-radius: 50%; gap: 0; align-self: end; margin-bottom: 1px;
+  }
+  #composer .send.send-round .icon { width: 18px; height: 18px; margin-left: 1px; }
+
+  /* Кому / тип / статус - тонкая строка под полем */
+  .compose-meta {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px;
+    min-width: 0; padding: 0 2px;
+  }
+  form .compose-pill { display: inline-flex; align-items: center; margin: 0; min-width: 0; }
+  form .compose-meta select {
+    width: auto; field-sizing: content; max-width: 28ch;
+    min-height: 26px; padding: 0 8px;
+    background: transparent; border: 0; box-shadow: none;
+    border-radius: 999px; font: 600 12px var(--body); color: var(--ink-soft);
+  }
+  form .compose-meta select:hover { background: var(--tap); color: var(--ink); }
+  form .compose-meta select:focus { background: var(--tap); box-shadow: none; outline: none; }
   #type selectedcontent span { display: none; } /* закрытым - только тип, пояснение видно в списке */
   #type option { gap: 0; }
   #type option span { margin-left: .3em; color: var(--ink-soft); font-weight: 400; }
   #type option::checkmark { padding-left: 12px; }
-  #fromHint { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--ink-soft); }
-  /* Поле растёт с текстом до ~40% экрана, дальше - прокрутка. Высоту всегда догоняет fitText (и где field-sizing есть, и где нет). */
-  #composer textarea { field-sizing: content; min-height: 40px; max-height: min(40vh, 360px); resize: none; overflow-y: hidden; line-height: 1.45; }
-  #composer textarea::placeholder { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* длинная подсказка в одну строку, а не обрезанная вторая */
+  #fromHint {
+    flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: 11px; color: var(--ink-soft); opacity: .85;
+  }
+  #fromHint:empty { display: none; }
+  .result {
+    flex: 1 1 100%; margin: 0; min-height: 0;
+    font-size: 12px; line-height: 16px; color: var(--ink-soft);
+  }
+  .result:empty { display: none; }
+  .result.bad { color: var(--danger); }
+  #attachHint { display: none !important; }
+
   /* Главное действие - полупрозрачное, как кнопки qwatra: стекло с медным отсветом и медной рамкой. На наведении отсвет гуще и светится. Не дышит: анимированная тень перерисовывала размытую форму на каждом кадре */
   .send { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: var(--h-lg); background: color-mix(in srgb, var(--copper) 16%, var(--glass-1)); color: var(--ink); border: 1px solid color-mix(in srgb, var(--copper) 55%, transparent); border-radius: var(--r); padding: 0 16px; font: 700 12px/1.2 var(--label); letter-spacing: .08em; text-transform: uppercase; box-shadow: 0 1px 0 var(--edge) inset, 0 8px 22px -12px var(--copper-glow); transition: background-color .25s, border-color .25s, transform .3s var(--ease), box-shadow .3s; }
   .send .icon { color: var(--copper); }
@@ -589,18 +685,9 @@
   .send:active:not(:disabled) { background: color-mix(in srgb, var(--copper) 34%, var(--glass-1)); }
   .send:disabled { background: var(--glass-1); color: var(--ink-soft); border-color: var(--line); box-shadow: none; cursor: not-allowed; }
   .send:disabled .icon { color: inherit; }
-  .attach { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font-size: 12px; color: var(--ink-soft); min-width: 0; }
-  #picked { display: contents; }
-  .composer-tools { display: flex; gap: 6px; align-items: center; } /* папка (файлы проекта, как «@») и скрепка - одной ячейкой сетки */
-  #pickBtn, #filesBtn { width: var(--h-lg); min-height: var(--h-lg); }
-  #filesBtn[aria-expanded="true"] { color: var(--copper); border-color: var(--copper); }
-  #pickBtn:hover:not(:disabled) { transform: scale(1.05) rotate(-12deg); }
   main.drop .feed-wrap { outline: 2px dashed var(--copper); outline-offset: -8px; background: color-mix(in srgb, var(--copper) 6%, transparent); }
-  main.drop #composer textarea { border-color: var(--copper); box-shadow: 0 0 0 3px var(--copper-soft), 0 0 24px -8px var(--copper-glow); } /* бросать можно и на форму - поле это показывает */
-  .result { grid-column: 1 / -1; font-size: 14px; line-height: 20px; color: var(--ink-soft); min-height: 20px; margin: 0; }
+  main.drop .compose-shell { box-shadow: 0 0 0 1.5px var(--copper), 0 0 24px -8px var(--copper-glow); }
   .keys { font-size: 12px; line-height: 20px; color: var(--ink-soft); }
-  .result:empty { display: none; min-height: 0; }
-  .result.bad { color: var(--danger); }
   .need-project-backdrop { position: fixed; inset: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 40%, transparent); -webkit-backdrop-filter: blur(16px) saturate(120%); backdrop-filter: blur(16px) saturate(120%); animation: fade-in .25s var(--ease); }
   .need-project-modal { position: fixed; z-index: 41; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(420px, calc(100vw - 32px)); padding: 28px 24px 22px; background: var(--panel); border: 1px solid var(--line-strong); border-radius: var(--r-lg); box-shadow: var(--shadow-pop); text-align: center; animation: need-pop .3s var(--ease); }
   @keyframes need-pop { from { opacity: 0; transform: translate(-50%, -48%) scale(.96); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
@@ -962,9 +1049,8 @@
     .search { flex-basis: 100%; }
     /* Типы - одной прокручиваемой строкой: шесть фишек в два ряда съедали бы ленту */
     #types, .type-filters { flex: none; }
-    #composer { grid-template-columns: minmax(0, 1fr) auto; } /* вторая колонка - папка и скрепка */
-    #composer .send, .result { grid-column: 1 / -1; }
-    #attachHint, .keys { display: none; } /* перетаскивать на телефоне нечем; голос - кликом по mic */
+    #composer { padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+    .keys { display: none; }
     .thumb { max-width: 100%; }
     .schedule form { grid-template-columns: 1fr; }
     .schedule { animation-name: from-bottom-soft; }
@@ -1587,7 +1673,7 @@
   /* ---- композер ---- */
   #composer {
     padding: 8px var(--gutter) 10px !important;
-    gap: 6px 8px !important;
+    gap: 6px !important;
     background: var(--panel) !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
@@ -1611,36 +1697,72 @@
     background: var(--field) !important;
     outline: none !important;
   }
-  textarea.listening, input.listening {
-    border: 0 !important;
+  .compose-shell {
+    background: var(--field) !important;
+    box-shadow: none !important;
+    border-radius: 20px !important;
+    padding: 4px 4px 4px 6px !important;
+  }
+  .compose-shell:focus-within {
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent) !important;
+  }
+  .compose-shell:has(textarea.listening) {
     box-shadow: inset 0 0 0 1.5px var(--accent) !important;
+  }
+  #composer textarea {
+    min-height: 36px !important;
+    max-height: min(40vh, 360px) !important;
+    padding: 8px 6px !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    overflow-y: hidden !important;
+    field-sizing: content;
+  }
+  #composer textarea:hover,
+  #composer textarea:focus,
+  #composer textarea.listening {
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .compose-opt {
+    background: var(--glass-2) !important;
+    border: 0 !important;
+  }
+  .compose-opt:has(input:checked) {
+    color: var(--accent) !important;
+    background: color-mix(in srgb, var(--accent) 16%, var(--panel)) !important;
+  }
+  form .compose-meta select {
+    min-height: 24px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-size: 12px !important;
+    padding: 0 8px !important;
+  }
+  form .compose-meta select:hover,
+  form .compose-meta select:focus {
+    background: var(--glass-2) !important;
+    box-shadow: none !important;
   }
   .voice-rec {
     background: color-mix(in srgb, var(--accent) 18%, var(--panel)) !important;
     border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent) !important;
   }
   .voice-rec-icon { background: var(--accent) !important; color: #fff !important; }
-  .voice-hint { color: var(--ink-soft) !important; }
-  form .compose-meta select {
-    min-height: var(--h-sm) !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    font-size: 12px !important;
+  #composer .voice-hint { color: var(--ink-soft) !important; background: transparent !important; }
+  #pickBtn, #filesBtn, #composer .voice-hint {
+    width: 34px !important; min-height: 34px !important; height: 34px !important;
   }
-  form .compose-meta select:hover { background: var(--glass-2) !important; }
-  #composer textarea {
-    min-height: 40px !important;
-    max-height: min(40vh, 360px) !important;
-    border-radius: 18px !important;
-    padding: 10px 14px !important;
-    overflow-y: hidden !important;
-    field-sizing: content;
-  }
-  #pickBtn, #filesBtn { width: var(--h) !important; min-height: var(--h) !important; }
   #pickBtn:hover:not(:disabled) { transform: none !important; }
-  #filesBtn[aria-expanded="true"] { color: var(--copper) !important; border: 0 !important; background: var(--copper-soft) !important; }
+  #filesBtn[aria-expanded="true"] {
+    color: var(--copper) !important;
+    border: 0 !important;
+    background: var(--copper-soft) !important;
+  }
   main.drop .feed-wrap { outline: 1.5px dashed var(--copper) !important; background: var(--copper-soft) !important; }
-  main.drop #composer textarea { box-shadow: inset 0 0 0 1.5px var(--copper) !important; }
+  main.drop .compose-shell { box-shadow: inset 0 0 0 1.5px var(--copper) !important; }
 
   /* ---- модалки / панели ---- */
   .need-project-backdrop {
@@ -1930,34 +2052,42 @@
     <div class="feed-wrap" id="wrap"><ol class="feed" id="feed" aria-live="polite"></ol></div>
     <form id="composer">
       <button class="to-bottom" id="toBottom" type="button" hidden>Новые сообщения ↓</button>
-      <div class="compose-meta">
-        <label><span class="label">Кому</span><select id="to" required></select></label>
-        <small id="fromHint"></small>
-        <label><span class="label">Тип</span><select id="type"></select></label>
-      </div>
-      <label class="wide"><textarea id="text" placeholder="Что сделать, где (файл:строка), зачем - агент читает без твоего контекста" aria-label="Сообщение" aria-autocomplete="list" aria-controls="mentionList" aria-expanded="false"></textarea>
-        <!-- «@» в поле - файлы и папки проекта; рисует renderMention. Внутри подписи - чтоб ширину и место брать у поля без JS -->
-        <div class="mention" id="mention" hidden>
-          <div class="mention-head" id="mentionHead"></div>
-          <div class="mention-list" id="mentionList" role="listbox" aria-label="Файлы проекта"></div>
-          <div class="mention-keys">↑↓ · Enter - вставить · → - в папку · ← - вверх · Esc</div>
-        </div></label>
-      <div class="composer-tools">
-        <button class="ghost iconbtn" id="filesBtn" type="button" title="Файл проекта - то же, что набрать @" aria-label="Файл проекта" aria-expanded="false" aria-controls="mention"><svg class="icon"><use href="#i-folder"/></svg></button>
-        <button class="ghost iconbtn" id="pickBtn" type="button" title="Приложить файл" aria-label="Приложить файл"><svg class="icon"><use href="#i-clip"/></svg></button>
-        <button type="button" class="voice-hint" id="composerVoiceHint" hidden title="Диктовка: клик или удержание пробела"><svg class="icon"><use href="#i-mic"/></svg><span>пробел</span></button>
-        <button type="button" class="voice-rec" id="composerVoiceRec" hidden title="Остановить запись" aria-label="Остановить голосовой ввод"><span class="voice-rec-icon" aria-hidden="true"><svg class="icon"><use href="#i-mic"/></svg></span><span class="voice-rec-label">Голосовой ввод</span></button>
-      </div>
-      <button class="send send-round" id="sendBtn" type="submit" title="Отправить" aria-label="Отправить"><svg class="icon"><use href="#i-send"/></svg></button>
-      <div class="attach">
+
+      <!-- Вложения, цитаты и редкие опции - только когда есть что показать -->
+      <div class="compose-extras" id="composeExtras">
         <input type="file" id="pick" multiple hidden>
         <span class="filechip refs" id="refsChip" hidden title="Выделенные в ленте сообщения уйдут агенту цитатами вместе с этим сообщением"></span>
         <span id="picked"></span>
-        <label class="btw-switch" id="btwWrap" hidden title="Агент сейчас работает. Обычное сообщение дождётся конца его работы, btw - дойдёт посреди хода, между вызовами инструментов"><input type="checkbox" id="btw"> btw - вбросить сейчас</label>
-        <label class="btw-switch" id="evolveWrap" hidden title="Когда агент сдаст задачу (DONE), он в той же сессии разберёт, как работал, и предложит правку своей роли: нужное допишет, лишнее уберёт. Черновик с diff откроется в редакторе роли - на диск пойдёт только по «Сохранить»"><input type="checkbox" id="evolve"> самоправка роли</label>
-        <span id="attachHint">Файл - скрепкой или перетащи сюда · скрин - Ctrl+V · файл проекта - @. Агент получит путь и откроет файл, только если он нужен</span>
+        <label class="compose-opt" id="btwWrap" hidden title="Агент сейчас работает. Обычное сообщение дождётся конца, btw - дойдёт посреди хода"><input type="checkbox" id="btw"><span>btw</span></label>
+        <label class="compose-opt" id="evolveWrap" hidden title="После DONE агент предложит правку своей роли - на диск только по «Сохранить»"><input type="checkbox" id="evolve"><span>роль</span></label>
       </div>
-      <p class="result" id="result" role="status"></p>
+
+      <!-- Одна оболочка: инструменты · поле · отправка -->
+      <div class="compose-shell">
+        <div class="composer-tools">
+          <button class="ghost iconbtn" id="filesBtn" type="button" title="Файл проекта (@)" aria-label="Файл проекта" aria-expanded="false" aria-controls="mention"><svg class="icon"><use href="#i-folder"/></svg></button>
+          <button class="ghost iconbtn" id="pickBtn" type="button" title="Приложить файл или перетащить · скрин Ctrl+V" aria-label="Приложить файл"><svg class="icon"><use href="#i-clip"/></svg></button>
+          <button type="button" class="voice-hint" id="composerVoiceHint" hidden title="Диктовка: клик или удержание пробела" aria-label="Голосовой ввод"><svg class="icon"><use href="#i-mic"/></svg></button>
+          <button type="button" class="voice-rec" id="composerVoiceRec" hidden title="Остановить запись" aria-label="Остановить голосовой ввод"><span class="voice-rec-icon" aria-hidden="true"><svg class="icon"><use href="#i-mic"/></svg></span><span class="voice-rec-label">Голосовой ввод</span></button>
+        </div>
+        <label class="compose-input wide">
+          <textarea id="text" placeholder="Сообщение" aria-label="Сообщение" aria-autocomplete="list" aria-controls="mentionList" aria-expanded="false"></textarea>
+          <div class="mention" id="mention" hidden>
+            <div class="mention-head" id="mentionHead"></div>
+            <div class="mention-list" id="mentionList" role="listbox" aria-label="Файлы проекта"></div>
+            <div class="mention-keys">↑↓ · Enter · → папка · ← · Esc</div>
+          </div>
+        </label>
+        <button class="send send-round" id="sendBtn" type="submit" title="Отправить" aria-label="Отправить"><svg class="icon"><use href="#i-send"/></svg></button>
+      </div>
+
+      <div class="compose-meta">
+        <label class="compose-pill" title="Кому"><select id="to" required aria-label="Кому"></select></label>
+        <label class="compose-pill" title="Тип"><select id="type" aria-label="Тип"></select></label>
+        <small id="fromHint"></small>
+        <p class="result" id="result" role="status"></p>
+      </div>
+      <span id="attachHint" hidden></span>
     </form>
   </main>
 </div>
@@ -2672,7 +2802,7 @@ const hereBoss = () => state.agents.find((a) => a.orchestrator && a.here);
 /** Чьим именем уйдёт сообщение: агент ответит ему, а не «пользователю» - такого адресата в шине нет. */
 function renderFrom() {
   const to = state.agents.find((a) => a.key === $('to').value);
-  $('fromHint').textContent = !to || !to.from ? '' : to.attach ? tr('от имени {from} - каталог подключится к шине этим сообщением', { from: to.from }) : tr('от имени {from}', { from: to.from });
+  $('fromHint').textContent = !to || !to.from ? '' : to.attach ? tr('от {from} · подключит каталог', { from: to.from }) : tr('от {from}', { from: to.from });
   // btw есть смысл предлагать, только пока получатель работает; закончил - галочка снимается, сообщение уйдёт обычным
   $('btwWrap').hidden = !L.canBtw(to);
   if ($('btwWrap').hidden) $('btw').checked = false;
@@ -2766,7 +2896,7 @@ function togglePick(id) {
 function renderRefs() {
   const chip = $('refsChip');
   chip.hidden = !marked.size || refsOff;
-  $('attachHint').hidden = picked.length > 0 || !chip.hidden;
+  $('attachHint').hidden = true;
   if (chip.hidden) return chip.replaceChildren();
   const drop = el('button', { type: 'button', title: tr('Отправить без них'), ariaLabel: tr('Отправить без выделенных') }, icon('x'));
   drop.addEventListener('click', () => {
@@ -3923,7 +4053,7 @@ function renderPicked() {
     });
     return el('span', { className: 'filechip' }, icon('file'), f.name, el('small', {}, L.sizeOf(f.size)), drop);
   }));
-  $('attachHint').hidden = picked.length > 0 || !$('refsChip').hidden;
+  $('attachHint').hidden = true;
 }
 
 async function addFiles(list, pasted = false) {
