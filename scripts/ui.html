@@ -3874,6 +3874,7 @@ $('needProjectPick').addEventListener('click', () => {
   openDirs();
   browseTo($('dirsPath').value.trim() || (dirsData && dirsData.current ? dirsData.current.dir : '') || '');
 });
+$('composeNewAgent').addEventListener('click', () => openAgentPanel(null));
 
 function closeAgentPanel() {
   if (agentPanel.busy) return; // ответ ИИ лёг бы в закрытую форму

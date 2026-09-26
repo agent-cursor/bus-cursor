@@ -52,6 +52,8 @@
     'Снять выбор · {n}': 'Clear selection · {n}',
     'Эта директория': 'This directory',
     'Новый агент': 'New agent',
+    'Создать агента': 'Create agent',
+    'Чтобы писать, нужно создать агента': 'To write, create an agent',
     'Глобальные': 'Global',
     'Другие проекты · {n}': 'Other projects · {n}',
     '≈{n} ток.': '≈{n} tok.',
